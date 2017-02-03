@@ -1,0 +1,160 @@
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.50727</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{177CE269-0830-42EC-AACA-47C831D4950E}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>KMZRebuilder</RootNamespace>
+    <AssemblyName>KMZRebuilder</AssemblyName>
+    <ApplicationIcon>leaf.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <PlatformTarget>x86</PlatformTarget>
+    <OutputPath>bin\Debug\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <PlatformTarget>x86</PlatformTarget>
+    <OutputPath>bin\Release\</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="ICSharpCode.SharpZipLib, Version=0.85.5.452, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\Debug\ICSharpCode.SharpZipLib.dll</HintPath>
+    </Reference>
+    <Reference Include="Magick.NET-x86, Version=6.0.0.0, Culture=neutral, PublicKeyToken=2004825badfa91ec, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>.\Magick.NET-x86.dll</HintPath>
+    </Reference>
+    <Reference Include="NaviMapNet, Version=1.0.6001.20706, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>.\NaviMapNet.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>.\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="BenzinPriceAnalyzerForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="BenzinPriceAnalyzerForm.designer.cs">
+      <DependentUpon>BenzinPriceAnalyzerForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MapViewerForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MapViewerForm.Designer.cs">
+      <DependentUpon>MapViewerForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="KMZRebuilederForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="KMZRebuilederForm.Designer.cs">
+      <DependentUpon>KMZRebuilederForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GMLayRenamerForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GMLayRenamerForm.Designer.cs">
+      <DependentUpon>GMLayRenamerForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="KMNumeratorForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="KMNumeratorForm.designer.cs">
+      <DependentUpon>KMNumeratorForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MruList.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="BenzinPriceAnalyzerForm.resx">
+      <DependentUpon>BenzinPriceAnalyzerForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MapViewerForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>MapViewerForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="KMZRebuilederForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>KMZRebuilederForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GMLayRenamerForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>GMLayRenamerForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="KMNumeratorForm.resx">
+      <DependentUpon>KMNumeratorForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="LayersRenamerForm.resx">
+      <DependentUpon>LayersRenamerForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <Compile Include="RussianHighwaysAjaxImporter.cs" />
+    <Compile Include="LayersRenamerForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="LayersRenamerForm.designer.cs">
+      <DependentUpon>LayersRenamerForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="WaitingForm.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="leaf.ico" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
