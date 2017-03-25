@@ -1,6 +1,6 @@
 namespace KMZRebuilder
 {
-    partial class ContentViewer
+    partial class PolyCreator
     {
         /// <summary>
         /// Required designer variable.
@@ -29,7 +29,7 @@ namespace KMZRebuilder
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ContentViewer));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(PolyCreator));
             this.statusStrip2 = new System.Windows.Forms.StatusStrip();
             this.toolStripDropDownButton1 = new System.Windows.Forms.ToolStripDropDownButton();
             this.toolStripMenuItem4 = new System.Windows.Forms.ToolStripMenuItem();
@@ -40,24 +40,20 @@ namespace KMZRebuilder
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusLabel2 = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusLabel3 = new System.Windows.Forms.ToolStripStatusLabel();
-            this.toolStripStatusLabel4 = new System.Windows.Forms.ToolStripStatusLabel();
-            this.toolStripStatusLabel5 = new System.Windows.Forms.ToolStripStatusLabel();
             this.panel1 = new System.Windows.Forms.Panel();
-            this.laySelect = new System.Windows.Forms.ComboBox();
+            this.label3 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
+            this.cD = new System.Windows.Forms.NumericUpDown();
+            this.cL = new System.Windows.Forms.CheckBox();
+            this.cR = new System.Windows.Forms.CheckBox();
+            this.cLR = new System.Windows.Forms.CheckBox();
+            this.button4 = new System.Windows.Forms.Button();
+            this.button3 = new System.Windows.Forms.Button();
+            this.button2 = new System.Windows.Forms.Button();
+            this.button1 = new System.Windows.Forms.Button();
             this.iStorages = new System.Windows.Forms.ComboBox();
             this.label1 = new System.Windows.Forms.Label();
             this.images = new System.Windows.Forms.ImageList(this.components);
-            this.splitContainer1 = new System.Windows.Forms.SplitContainer();
-            this.MapViewer = new NaviMapNet.NaviMapNetViewer();
-            this.objects = new System.Windows.Forms.ListView();
-            this.columnHeader1 = new System.Windows.Forms.ColumnHeader();
-            this.columnHeader2 = new System.Windows.Forms.ColumnHeader();
-            this.columnHeader3 = new System.Windows.Forms.ColumnHeader();
-            this.columnHeader4 = new System.Windows.Forms.ColumnHeader();
-            this.columnHeader5 = new System.Windows.Forms.ColumnHeader();
-            this.columnHeader6 = new System.Windows.Forms.ColumnHeader();
-            this.columnHeader7 = new System.Windows.Forms.ColumnHeader();
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.renameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.markAsSkipWhenSaveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -78,20 +74,13 @@ namespace KMZRebuilder
             this.markAllItemsAsDeletedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.markAllAsNotDeletedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.invertDeletedMarksToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.panel3 = new System.Windows.Forms.Panel();
-            this.textBox2 = new System.Windows.Forms.TextBox();
-            this.label3 = new System.Windows.Forms.Label();
-            this.textBox1 = new System.Windows.Forms.RichTextBox();
-            this.panel2 = new System.Windows.Forms.Panel();
-            this.status = new System.Windows.Forms.TextBox();
+            this.MView = new NaviMapNet.NaviMapNetViewer();
+            this.toolStripStatusLabel4 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolStripStatusLabel5 = new System.Windows.Forms.ToolStripStatusLabel();
             this.statusStrip2.SuspendLayout();
             this.panel1.SuspendLayout();
-            this.splitContainer1.Panel1.SuspendLayout();
-            this.splitContainer1.Panel2.SuspendLayout();
-            this.splitContainer1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.cD)).BeginInit();
             this.contextMenuStrip1.SuspendLayout();
-            this.panel3.SuspendLayout();
-            this.panel2.SuspendLayout();
             this.SuspendLayout();
             // 
             // statusStrip2
@@ -182,24 +171,18 @@ namespace KMZRebuilder
             this.toolStripStatusLabel3.Size = new System.Drawing.Size(109, 17);
             this.toolStripStatusLabel3.Text = "toolStripStatusLabel3";
             // 
-            // toolStripStatusLabel4
-            // 
-            this.toolStripStatusLabel4.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
-            this.toolStripStatusLabel4.Name = "toolStripStatusLabel4";
-            this.toolStripStatusLabel4.Size = new System.Drawing.Size(109, 17);
-            this.toolStripStatusLabel4.Text = "toolStripStatusLabel4";
-            // 
-            // toolStripStatusLabel5
-            // 
-            this.toolStripStatusLabel5.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
-            this.toolStripStatusLabel5.Name = "toolStripStatusLabel5";
-            this.toolStripStatusLabel5.Size = new System.Drawing.Size(109, 17);
-            this.toolStripStatusLabel5.Text = "toolStripStatusLabel5";
-            // 
             // panel1
             // 
-            this.panel1.Controls.Add(this.laySelect);
+            this.panel1.Controls.Add(this.label3);
             this.panel1.Controls.Add(this.label2);
+            this.panel1.Controls.Add(this.cD);
+            this.panel1.Controls.Add(this.cL);
+            this.panel1.Controls.Add(this.cR);
+            this.panel1.Controls.Add(this.cLR);
+            this.panel1.Controls.Add(this.button4);
+            this.panel1.Controls.Add(this.button3);
+            this.panel1.Controls.Add(this.button2);
+            this.panel1.Controls.Add(this.button1);
             this.panel1.Controls.Add(this.iStorages);
             this.panel1.Controls.Add(this.label1);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Top;
@@ -208,28 +191,138 @@ namespace KMZRebuilder
             this.panel1.Size = new System.Drawing.Size(998, 24);
             this.panel1.TabIndex = 8;
             // 
-            // laySelect
+            // label3
             // 
-            this.laySelect.DropDownHeight = 300;
-            this.laySelect.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.laySelect.DropDownWidth = 523;
-            this.laySelect.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.laySelect.FormattingEnabled = true;
-            this.laySelect.IntegralHeight = false;
-            this.laySelect.Location = new System.Drawing.Point(371, 1);
-            this.laySelect.Name = "laySelect";
-            this.laySelect.Size = new System.Drawing.Size(624, 21);
-            this.laySelect.TabIndex = 3;
-            this.laySelect.SelectedIndexChanged += new System.EventHandler(this.laySelect_SelectedIndexChanged);
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(913, 5);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(38, 13);
+            this.label3.TabIndex = 11;
+            this.label3.Text = "meters";
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(303, 4);
+            this.label2.Location = new System.Drawing.Point(778, 5);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(62, 13);
-            this.label2.TabIndex = 2;
-            this.label2.Text = "KMZ Layer:";
+            this.label2.Size = new System.Drawing.Size(58, 13);
+            this.label2.TabIndex = 10;
+            this.label2.Text = "in distance";
+            // 
+            // cD
+            // 
+            this.cD.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.cD.Increment = new decimal(new int[] {
+            5,
+            0,
+            0,
+            0});
+            this.cD.Location = new System.Drawing.Point(838, 2);
+            this.cD.Maximum = new decimal(new int[] {
+            200000,
+            0,
+            0,
+            0});
+            this.cD.Minimum = new decimal(new int[] {
+            50,
+            0,
+            0,
+            0});
+            this.cD.Name = "cD";
+            this.cD.Size = new System.Drawing.Size(69, 20);
+            this.cD.TabIndex = 9;
+            this.cD.Value = new decimal(new int[] {
+            1000,
+            0,
+            0,
+            0});
+            this.cD.ValueChanged += new System.EventHandler(this.cD_ValueChanged);
+            // 
+            // cL
+            // 
+            this.cL.AutoSize = true;
+            this.cL.Checked = true;
+            this.cL.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.cL.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.cL.Location = new System.Drawing.Point(738, 3);
+            this.cL.Name = "cL";
+            this.cL.Size = new System.Drawing.Size(41, 17);
+            this.cL.TabIndex = 8;
+            this.cL.Text = "Left";
+            this.cL.UseVisualStyleBackColor = true;
+            this.cL.CheckedChanged += new System.EventHandler(this.cL_CheckedChanged);
+            // 
+            // cR
+            // 
+            this.cR.AutoSize = true;
+            this.cR.Checked = true;
+            this.cR.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.cR.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.cR.Location = new System.Drawing.Point(692, 3);
+            this.cR.Name = "cR";
+            this.cR.Size = new System.Drawing.Size(48, 17);
+            this.cR.TabIndex = 7;
+            this.cR.Text = "Right";
+            this.cR.UseVisualStyleBackColor = true;
+            this.cR.CheckedChanged += new System.EventHandler(this.cR_CheckedChanged);
+            // 
+            // cLR
+            // 
+            this.cLR.AutoSize = true;
+            this.cLR.Checked = true;
+            this.cLR.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.cLR.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.cLR.Location = new System.Drawing.Point(606, 3);
+            this.cLR.Name = "cLR";
+            this.cLR.Size = new System.Drawing.Size(89, 17);
+            this.cLR.TabIndex = 6;
+            this.cLR.Text = "Poly from Line";
+            this.cLR.UseVisualStyleBackColor = true;
+            this.cLR.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
+            // 
+            // button4
+            // 
+            this.button4.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.button4.Location = new System.Drawing.Point(525, 1);
+            this.button4.Name = "button4";
+            this.button4.Size = new System.Drawing.Size(75, 21);
+            this.button4.TabIndex = 5;
+            this.button4.Text = "Save Poly";
+            this.button4.UseVisualStyleBackColor = true;
+            this.button4.Click += new System.EventHandler(this.button4_Click);
+            // 
+            // button3
+            // 
+            this.button3.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.button3.Location = new System.Drawing.Point(451, 1);
+            this.button3.Name = "button3";
+            this.button3.Size = new System.Drawing.Size(75, 21);
+            this.button3.TabIndex = 4;
+            this.button3.Text = "Delete Last";
+            this.button3.UseVisualStyleBackColor = true;
+            this.button3.Click += new System.EventHandler(this.button3_Click);
+            // 
+            // button2
+            // 
+            this.button2.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.button2.Location = new System.Drawing.Point(377, 1);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(75, 21);
+            this.button2.TabIndex = 3;
+            this.button2.Text = "New Poly";
+            this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.button2_Click);
+            // 
+            // button1
+            // 
+            this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.button1.Location = new System.Drawing.Point(303, 1);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(75, 21);
+            this.button1.TabIndex = 2;
+            this.button1.Text = "Load Poly";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
             // iStorages
             // 
@@ -260,138 +353,6 @@ namespace KMZRebuilder
             this.images.ImageSize = new System.Drawing.Size(16, 16);
             this.images.TransparentColor = System.Drawing.Color.Transparent;
             // 
-            // splitContainer1
-            // 
-            this.splitContainer1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.splitContainer1.Location = new System.Drawing.Point(0, 24);
-            this.splitContainer1.Name = "splitContainer1";
-            // 
-            // splitContainer1.Panel1
-            // 
-            this.splitContainer1.Panel1.Controls.Add(this.MapViewer);
-            this.splitContainer1.Panel1MinSize = 200;
-            // 
-            // splitContainer1.Panel2
-            // 
-            this.splitContainer1.Panel2.Controls.Add(this.objects);
-            this.splitContainer1.Panel2.Controls.Add(this.panel3);
-            this.splitContainer1.Panel2.Controls.Add(this.textBox1);
-            this.splitContainer1.Panel2.Controls.Add(this.panel2);
-            this.splitContainer1.Panel2MinSize = 100;
-            this.splitContainer1.Size = new System.Drawing.Size(998, 563);
-            this.splitContainer1.SplitterDistance = 692;
-            this.splitContainer1.SplitterIncrement = 5;
-            this.splitContainer1.TabIndex = 11;
-            // 
-            // MapViewer
-            // 
-            this.MapViewer.AutoSize = true;
-            this.MapViewer.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
-            this.MapViewer.CenterDegrees = ((System.Drawing.PointF)(resources.GetObject("MapViewer.CenterDegrees")));
-            this.MapViewer.CenterDegreesLat = 52.590535060652833;
-            this.MapViewer.CenterDegreesLon = 39.549407958984375;
-            this.MapViewer.CenterDegreesX = 39.549407958984375;
-            this.MapViewer.CenterDegreesY = 52.590535060652833;
-            this.MapViewer.CenterMeters = ((System.Drawing.PointF)(resources.GetObject("MapViewer.CenterMeters")));
-            this.MapViewer.CenterMetersX = 4402620;
-            this.MapViewer.CenterMetersY = 6907614;
-            this.MapViewer.CenterPixels = new System.Drawing.Point(159871, 85887);
-            this.MapViewer.CenterPixelsX = 159871;
-            this.MapViewer.CenterPixelsY = 85887;
-            this.MapViewer.DefaultMapCursor = System.Windows.Forms.Cursors.Arrow;
-            this.MapViewer.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.MapViewer.DrawMap = false;
-            this.MapViewer.DrawMapTestVectorData = false;
-            this.MapViewer.DrawTilesBorder = false;
-            this.MapViewer.DrawTilesXYZ = false;
-            this.MapViewer.DrawVector = true;
-            this.MapViewer.ImageSourceProjection = NaviMapNet.NaviMapNetViewer.ImageSourceProjections.EPSG4326;
-            this.MapViewer.ImageSourceService = NaviMapNet.NaviMapNetViewer.MapServices.OSM_Mapnik;
-            this.MapViewer.ImageSourceType = NaviMapNet.NaviMapNetViewer.ImageSourceTypes.tiles;
-            this.MapViewer.ImageSourceUrl = "http://tile.openstreetmap.org/{z}/{x}/{y}.png";
-            this.MapViewer.Location = new System.Drawing.Point(0, 0);
-            this.MapViewer.MapBackgroundColor = System.Drawing.Color.White;
-            this.MapViewer.MapMaxZoom = ((byte)(18));
-            this.MapViewer.MapMinMovement = ((byte)(35));
-            this.MapViewer.MapMinZoom = ((byte)(2));
-            this.MapViewer.MapTool = NaviMapNet.NaviMapNetViewer.MapTools.mtShift;
-            this.MapViewer.Name = "MapViewer";
-            this.MapViewer.NotFoundTileColor = System.Drawing.Color.Transparent;
-            this.MapViewer.ShowCross = false;
-            this.MapViewer.ShowMapTypes = false;
-            this.MapViewer.ShowScale = true;
-            this.MapViewer.ShowZooms = true;
-            this.MapViewer.Size = new System.Drawing.Size(692, 563);
-            this.MapViewer.TabIndex = 8;
-            this.MapViewer.TilesMaxZoom = ((byte)(21));
-            this.MapViewer.TilesMinZoom = ((byte)(1));
-            this.MapViewer.TilesRenderingZoneSize = ((short)(0));
-            this.MapViewer.WebRequestTimeout = 3000;
-            this.MapViewer.ZoomID = ((byte)(10));
-            this.MapViewer.MouseMove += new System.Windows.Forms.MouseEventHandler(this.MapViewer_MouseMove);
-            this.MapViewer.MouseClick += new System.Windows.Forms.MouseEventHandler(this.MapViewer_MouseClick);
-            this.MapViewer.MouseDown += new System.Windows.Forms.MouseEventHandler(this.MapViewer_MouseDown);
-            // 
-            // objects
-            // 
-            this.objects.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.objects.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.columnHeader1,
-            this.columnHeader2,
-            this.columnHeader3,
-            this.columnHeader4,
-            this.columnHeader5,
-            this.columnHeader6,
-            this.columnHeader7});
-            this.objects.ContextMenuStrip = this.contextMenuStrip1;
-            this.objects.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.objects.FullRowSelect = true;
-            this.objects.GridLines = true;
-            this.objects.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
-            this.objects.LargeImageList = this.images;
-            this.objects.Location = new System.Drawing.Point(0, 27);
-            this.objects.MultiSelect = false;
-            this.objects.Name = "objects";
-            this.objects.ShowGroups = false;
-            this.objects.ShowItemToolTips = true;
-            this.objects.Size = new System.Drawing.Size(302, 299);
-            this.objects.SmallImageList = this.images;
-            this.objects.TabIndex = 12;
-            this.objects.UseCompatibleStateImageBehavior = false;
-            this.objects.View = System.Windows.Forms.View.Details;
-            this.objects.SelectedIndexChanged += new System.EventHandler(this.objects_SelectedIndexChanged);
-            this.objects.DoubleClick += new System.EventHandler(this.objects_DoubleClick);
-            this.objects.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.objects_KeyPress);
-            // 
-            // columnHeader1
-            // 
-            this.columnHeader1.Text = "Name";
-            this.columnHeader1.Width = 300;
-            // 
-            // columnHeader2
-            // 
-            this.columnHeader2.Text = "Type";
-            // 
-            // columnHeader3
-            // 
-            this.columnHeader3.Text = "Lat";
-            // 
-            // columnHeader4
-            // 
-            this.columnHeader4.Text = "Lon";
-            // 
-            // columnHeader5
-            // 
-            this.columnHeader5.Text = "SimXY";
-            // 
-            // columnHeader6
-            // 
-            this.columnHeader6.Text = "SimName";
-            // 
-            // columnHeader7
-            // 
-            this.columnHeader7.Text = "Mark2Del";
-            // 
             // contextMenuStrip1
             // 
             this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -407,7 +368,6 @@ namespace KMZRebuilder
             this.contextMenuStrip1.Name = "contextMenuStrip1";
             this.contextMenuStrip1.Size = new System.Drawing.Size(227, 170);
             this.contextMenuStrip1.Text = "Mark All Items as Deleted";
-            this.contextMenuStrip1.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuStrip1_Opening);
             // 
             // renameToolStripMenuItem
             // 
@@ -415,7 +375,6 @@ namespace KMZRebuilder
             this.renameToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F2;
             this.renameToolStripMenuItem.Size = new System.Drawing.Size(226, 22);
             this.renameToolStripMenuItem.Text = "Rename/Change...";
-            this.renameToolStripMenuItem.Click += new System.EventHandler(this.renameToolStripMenuItem_Click);
             // 
             // markAsSkipWhenSaveToolStripMenuItem
             // 
@@ -423,7 +382,6 @@ namespace KMZRebuilder
             this.markAsSkipWhenSaveToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.Delete;
             this.markAsSkipWhenSaveToolStripMenuItem.Size = new System.Drawing.Size(226, 22);
             this.markAsSkipWhenSaveToolStripMenuItem.Text = "Mark as Deleted";
-            this.markAsSkipWhenSaveToolStripMenuItem.Click += new System.EventHandler(this.markAsSkipWhenSaveToolStripMenuItem_Click);
             // 
             // toolStripMenuItem6
             // 
@@ -447,14 +405,12 @@ namespace KMZRebuilder
             this.findSimilarToolStripMenuItem.Name = "findSimilarToolStripMenuItem";
             this.findSimilarToolStripMenuItem.Size = new System.Drawing.Size(217, 22);
             this.findSimilarToolStripMenuItem.Text = "Find Copies by Coordinates";
-            this.findSimilarToolStripMenuItem.Click += new System.EventHandler(this.findSimilarToolStripMenuItem_Click);
             // 
             // findCopiesForSelectedItemByNameToolStripMenuItem
             // 
             this.findCopiesForSelectedItemByNameToolStripMenuItem.Name = "findCopiesForSelectedItemByNameToolStripMenuItem";
             this.findCopiesForSelectedItemByNameToolStripMenuItem.Size = new System.Drawing.Size(217, 22);
             this.findCopiesForSelectedItemByNameToolStripMenuItem.Text = "Find Copies by Name";
-            this.findCopiesForSelectedItemByNameToolStripMenuItem.Click += new System.EventHandler(this.findCopiesForSelectedItemByNameToolStripMenuItem_Click);
             // 
             // toolStripMenuItem8
             // 
@@ -466,14 +422,12 @@ namespace KMZRebuilder
             this.markSimilarAsDeletedToolStripMenuItem.Name = "markSimilarAsDeletedToolStripMenuItem";
             this.markSimilarAsDeletedToolStripMenuItem.Size = new System.Drawing.Size(217, 22);
             this.markSimilarAsDeletedToolStripMenuItem.Text = "Mark Copies as Deleted";
-            this.markSimilarAsDeletedToolStripMenuItem.Click += new System.EventHandler(this.markSimilarAsDeletedToolStripMenuItem_Click);
             // 
             // markCopiesAsNotDeletedToolStripMenuItem
             // 
             this.markCopiesAsNotDeletedToolStripMenuItem.Name = "markCopiesAsNotDeletedToolStripMenuItem";
             this.markCopiesAsNotDeletedToolStripMenuItem.Size = new System.Drawing.Size(217, 22);
             this.markCopiesAsNotDeletedToolStripMenuItem.Text = "Mark Copies as Not Deleted";
-            this.markCopiesAsNotDeletedToolStripMenuItem.Click += new System.EventHandler(this.markCopiesAsNotDeletedToolStripMenuItem_Click);
             // 
             // allItem
             // 
@@ -492,14 +446,12 @@ namespace KMZRebuilder
             this.findCopiesForToolStripMenuItem.Name = "findCopiesForToolStripMenuItem";
             this.findCopiesForToolStripMenuItem.Size = new System.Drawing.Size(217, 22);
             this.findCopiesForToolStripMenuItem.Text = "Find Copies by Coordinates";
-            this.findCopiesForToolStripMenuItem.Click += new System.EventHandler(this.findCopiesForToolStripMenuItem_Click);
             // 
             // findCopiesForEachItemByNameToolStripMenuItem
             // 
             this.findCopiesForEachItemByNameToolStripMenuItem.Name = "findCopiesForEachItemByNameToolStripMenuItem";
             this.findCopiesForEachItemByNameToolStripMenuItem.Size = new System.Drawing.Size(217, 22);
             this.findCopiesForEachItemByNameToolStripMenuItem.Text = "Find Copies by Name";
-            this.findCopiesForEachItemByNameToolStripMenuItem.Click += new System.EventHandler(this.findCopiesForEachItemByNameToolStripMenuItem_Click);
             // 
             // toolStripMenuItem3
             // 
@@ -511,14 +463,12 @@ namespace KMZRebuilder
             this.markAllCopiesAsDeletedToolStripMenuItem.Name = "markAllCopiesAsDeletedToolStripMenuItem";
             this.markAllCopiesAsDeletedToolStripMenuItem.Size = new System.Drawing.Size(217, 22);
             this.markAllCopiesAsDeletedToolStripMenuItem.Text = "Mark Copies as Deleted";
-            this.markAllCopiesAsDeletedToolStripMenuItem.Click += new System.EventHandler(this.markAllCopiesAsDeletedToolStripMenuItem_Click);
             // 
             // markCopiesAsNotDeletedToolStripMenuItem1
             // 
             this.markCopiesAsNotDeletedToolStripMenuItem1.Name = "markCopiesAsNotDeletedToolStripMenuItem1";
             this.markCopiesAsNotDeletedToolStripMenuItem1.Size = new System.Drawing.Size(217, 22);
             this.markCopiesAsNotDeletedToolStripMenuItem1.Text = "Mark Copies as Not Deleted";
-            this.markCopiesAsNotDeletedToolStripMenuItem1.Click += new System.EventHandler(this.markCopiesAsNotDeletedToolStripMenuItem1_Click);
             // 
             // toolStripMenuItem1
             // 
@@ -530,109 +480,102 @@ namespace KMZRebuilder
             this.markAllItemsAsDeletedToolStripMenuItem.Name = "markAllItemsAsDeletedToolStripMenuItem";
             this.markAllItemsAsDeletedToolStripMenuItem.Size = new System.Drawing.Size(226, 22);
             this.markAllItemsAsDeletedToolStripMenuItem.Text = "Mark All Items as Deleted";
-            this.markAllItemsAsDeletedToolStripMenuItem.Click += new System.EventHandler(this.markAllItemsAsDeletedToolStripMenuItem_Click);
             // 
             // markAllAsNotDeletedToolStripMenuItem
             // 
             this.markAllAsNotDeletedToolStripMenuItem.Name = "markAllAsNotDeletedToolStripMenuItem";
             this.markAllAsNotDeletedToolStripMenuItem.Size = new System.Drawing.Size(226, 22);
             this.markAllAsNotDeletedToolStripMenuItem.Text = "Mark All Items as Not Deleted";
-            this.markAllAsNotDeletedToolStripMenuItem.Click += new System.EventHandler(this.markAllAsNotDeletedToolStripMenuItem_Click);
             // 
             // invertDeletedMarksToolStripMenuItem
             // 
             this.invertDeletedMarksToolStripMenuItem.Name = "invertDeletedMarksToolStripMenuItem";
             this.invertDeletedMarksToolStripMenuItem.Size = new System.Drawing.Size(226, 22);
             this.invertDeletedMarksToolStripMenuItem.Text = "Invert Deleted and Not";
-            this.invertDeletedMarksToolStripMenuItem.Click += new System.EventHandler(this.invertDeletedMarksToolStripMenuItem_Click);
             // 
-            // panel3
+            // MView
             // 
-            this.panel3.Controls.Add(this.textBox2);
-            this.panel3.Controls.Add(this.label3);
-            this.panel3.Dock = System.Windows.Forms.DockStyle.Top;
-            this.panel3.Location = new System.Drawing.Point(0, 0);
-            this.panel3.Name = "panel3";
-            this.panel3.Size = new System.Drawing.Size(302, 27);
-            this.panel3.TabIndex = 15;
+            this.MView.AutoSize = true;
+            this.MView.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
+            this.MView.CenterDegrees = ((System.Drawing.PointF)(resources.GetObject("MView.CenterDegrees")));
+            this.MView.CenterDegreesLat = 52.590535060652833;
+            this.MView.CenterDegreesLon = 39.549407958984375;
+            this.MView.CenterDegreesX = 39.549407958984375;
+            this.MView.CenterDegreesY = 52.590535060652833;
+            this.MView.CenterMeters = ((System.Drawing.PointF)(resources.GetObject("MView.CenterMeters")));
+            this.MView.CenterMetersX = 4402620;
+            this.MView.CenterMetersY = 6907614;
+            this.MView.CenterPixels = new System.Drawing.Point(159871, 85887);
+            this.MView.CenterPixelsX = 159871;
+            this.MView.CenterPixelsY = 85887;
+            this.MView.DefaultMapCursor = System.Windows.Forms.Cursors.Arrow;
+            this.MView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.MView.DrawMap = false;
+            this.MView.DrawMapTestVectorData = false;
+            this.MView.DrawTilesBorder = false;
+            this.MView.DrawTilesXYZ = false;
+            this.MView.DrawVector = true;
+            this.MView.ImageSourceProjection = NaviMapNet.NaviMapNetViewer.ImageSourceProjections.EPSG4326;
+            this.MView.ImageSourceService = NaviMapNet.NaviMapNetViewer.MapServices.OSM_Mapnik;
+            this.MView.ImageSourceType = NaviMapNet.NaviMapNetViewer.ImageSourceTypes.tiles;
+            this.MView.ImageSourceUrl = "http://tile.openstreetmap.org/{z}/{x}/{y}.png";
+            this.MView.Location = new System.Drawing.Point(0, 24);
+            this.MView.MapBackgroundColor = System.Drawing.Color.White;
+            this.MView.MapMaxZoom = ((byte)(18));
+            this.MView.MapMinMovement = ((byte)(35));
+            this.MView.MapMinZoom = ((byte)(2));
+            this.MView.MapTool = NaviMapNet.NaviMapNetViewer.MapTools.mtShift;
+            this.MView.Name = "MView";
+            this.MView.NotFoundTileColor = System.Drawing.Color.Transparent;
+            this.MView.ShowCross = false;
+            this.MView.ShowMapTypes = false;
+            this.MView.ShowScale = true;
+            this.MView.ShowZooms = true;
+            this.MView.Size = new System.Drawing.Size(998, 563);
+            this.MView.TabIndex = 9;
+            this.MView.TilesMaxZoom = ((byte)(21));
+            this.MView.TilesMinZoom = ((byte)(1));
+            this.MView.TilesRenderingZoneSize = ((short)(0));
+            this.MView.WebRequestTimeout = 3000;
+            this.MView.ZoomID = ((byte)(10));
+            this.MView.MouseMove += new System.Windows.Forms.MouseEventHandler(this.MView_MouseMove);
+            this.MView.MouseClick += new System.Windows.Forms.MouseEventHandler(this.MapViewer_MouseClick);
+            this.MView.MouseDown += new System.Windows.Forms.MouseEventHandler(this.MView_MouseDown);
             // 
-            // textBox2
+            // toolStripStatusLabel4
             // 
-            this.textBox2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.textBox2.Location = new System.Drawing.Point(39, 3);
-            this.textBox2.Name = "textBox2";
-            this.textBox2.Size = new System.Drawing.Size(260, 20);
-            this.textBox2.TabIndex = 1;
-            this.textBox2.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBox2_KeyPress);
+            this.toolStripStatusLabel4.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
+            this.toolStripStatusLabel4.Name = "toolStripStatusLabel4";
+            this.toolStripStatusLabel4.Size = new System.Drawing.Size(109, 17);
+            this.toolStripStatusLabel4.Text = "toolStripStatusLabel4";
             // 
-            // label3
+            // toolStripStatusLabel5
             // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(4, 6);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(30, 13);
-            this.label3.TabIndex = 0;
-            this.label3.Text = "Find:";
+            this.toolStripStatusLabel5.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
+            this.toolStripStatusLabel5.Name = "toolStripStatusLabel5";
+            this.toolStripStatusLabel5.Size = new System.Drawing.Size(109, 17);
+            this.toolStripStatusLabel5.Text = "toolStripStatusLabel5";
             // 
-            // textBox1
-            // 
-            this.textBox1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.textBox1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.textBox1.Location = new System.Drawing.Point(0, 326);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.ReadOnly = true;
-            this.textBox1.Size = new System.Drawing.Size(302, 155);
-            this.textBox1.TabIndex = 13;
-            this.textBox1.Text = "";
-            // 
-            // panel2
-            // 
-            this.panel2.Controls.Add(this.status);
-            this.panel2.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panel2.Location = new System.Drawing.Point(0, 481);
-            this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(302, 82);
-            this.panel2.TabIndex = 14;
-            // 
-            // status
-            // 
-            this.status.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.status.Location = new System.Drawing.Point(0, 0);
-            this.status.Multiline = true;
-            this.status.Name = "status";
-            this.status.ReadOnly = true;
-            this.status.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.status.Size = new System.Drawing.Size(302, 82);
-            this.status.TabIndex = 0;
-            // 
-            // ContentViewer
+            // PolyCreator
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(998, 609);
-            this.Controls.Add(this.splitContainer1);
+            this.Controls.Add(this.MView);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.statusStrip2);
             this.MinimizeBox = false;
-            this.Name = "ContentViewer";
+            this.Name = "PolyCreator";
             this.ShowIcon = false;
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "KMZ Rebuilder Map Viewer";
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ContentViewer_FormClosing);
+            this.Text = "Map Polygon Creator";
             this.statusStrip2.ResumeLayout(false);
             this.statusStrip2.PerformLayout();
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
-            this.splitContainer1.Panel1.ResumeLayout(false);
-            this.splitContainer1.Panel1.PerformLayout();
-            this.splitContainer1.Panel2.ResumeLayout(false);
-            this.splitContainer1.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.cD)).EndInit();
             this.contextMenuStrip1.ResumeLayout(false);
-            this.panel3.ResumeLayout(false);
-            this.panel3.PerformLayout();
-            this.panel2.ResumeLayout(false);
-            this.panel2.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -647,27 +590,12 @@ namespace KMZRebuilder
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel2;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel3;
-        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel4;
-        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel5;
         private System.Windows.Forms.Panel panel1;
         public System.Windows.Forms.ComboBox iStorages;
         private System.Windows.Forms.Label label1;
         public System.Windows.Forms.ImageList images;
-        public System.Windows.Forms.ComboBox laySelect;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.SplitContainer splitContainer1;
-        public NaviMapNet.NaviMapNetViewer MapViewer;
-        public System.Windows.Forms.ListView objects;
-        private System.Windows.Forms.ColumnHeader columnHeader1;
-        private System.Windows.Forms.ColumnHeader columnHeader2;
-        private System.Windows.Forms.ColumnHeader columnHeader3;
-        private System.Windows.Forms.ColumnHeader columnHeader4;
-        private System.Windows.Forms.ColumnHeader columnHeader5;
-        private System.Windows.Forms.ColumnHeader columnHeader6;
-        private System.Windows.Forms.RichTextBox textBox1;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
         private System.Windows.Forms.ToolStripMenuItem findSimilarToolStripMenuItem;
-        private System.Windows.Forms.ColumnHeader columnHeader7;
         private System.Windows.Forms.ToolStripMenuItem markAsSkipWhenSaveToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem markSimilarAsDeletedToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem1;
@@ -684,15 +612,23 @@ namespace KMZRebuilder
         private System.Windows.Forms.ToolStripMenuItem markCopiesAsNotDeletedToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem8;
         private System.Windows.Forms.ToolStripMenuItem markCopiesAsNotDeletedToolStripMenuItem1;
-        private System.Windows.Forms.Panel panel2;
-        private System.Windows.Forms.TextBox status;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem6;
         private System.Windows.Forms.ToolStripMenuItem renameToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem2;
         private System.Windows.Forms.ToolStripMenuItem èçìåíèòüToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem èçìåíèòüUserDefinedUrlToolStripMenuItem;
-        private System.Windows.Forms.Panel panel3;
-        private System.Windows.Forms.TextBox textBox2;
+        public NaviMapNet.NaviMapNetViewer MView;
+        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.CheckBox cLR;
+        private System.Windows.Forms.Button button4;
+        private System.Windows.Forms.Button button3;
+        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.CheckBox cL;
+        private System.Windows.Forms.CheckBox cR;
         private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.NumericUpDown cD;
+        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel4;
+        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel5;
     }
 }

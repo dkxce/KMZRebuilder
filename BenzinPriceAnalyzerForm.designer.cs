@@ -119,10 +119,10 @@ namespace BenzinPriceAnalizer
             this.marksFilter.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.marksFilter.FormattingEnabled = true;
             this.marksFilter.Items.AddRange(new object[] {
-            "ВСЕ",
-            "Попадающие в буферную зону маршрута",
-            "Попадающие в буферную зону справа от маршрута",
-            "Попадающие в буферную зону слева от маршрута"});
+            "All Points",
+            "[LR] All Placemarks in Route Buffer (Left & Right)",
+            "[R] Placemarks by Right side only",
+            "[L] Placemarks by Left side only"});
             this.marksFilter.Location = new System.Drawing.Point(12, 176);
             this.marksFilter.Name = "marksFilter";
             this.marksFilter.Size = new System.Drawing.Size(350, 21);

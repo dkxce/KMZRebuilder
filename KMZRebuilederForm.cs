@@ -609,7 +609,7 @@ namespace KMZRebuilder
             return zdir;
         }
 
-        private void Save2Splitted(string filename, KMLayer layer)
+        private void Save2SplittedIcons(string filename, KMLayer layer)
         {
             kmzLayers.Height = 227;
             panel1.Visible = true;
@@ -889,6 +889,416 @@ namespace KMZRebuilder
             AddToLog("Done");
         }
 
+        private void Save2SplittedNames(string filename, KMLayer layer, byte mode, string[] findText)
+        {
+            kmzLayers.Height = 227;
+            panel1.Visible = true;
+            log.Text = "";
+
+            waitBox.Show("Saving", "Wait, splitting layer...");
+
+            string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+            Random random = (new Random());
+            string pref = new String(new char[] { chars[random.Next(chars.Length)], chars[random.Next(chars.Length)], chars[random.Next(chars.Length)] });
+
+            string zdir = KMZRebuilederForm.TempDirectory() + "OF" + DateTime.UtcNow.Ticks.ToString() + @"\";
+            System.IO.Directory.CreateDirectory(zdir);
+            System.IO.Directory.CreateDirectory(zdir + @"\images\");
+            AddToLog("Creating multi layer KMZ file for layer: `" + layer.name + "`...");
+            AddToLog("Create Temp Folder: " + zdir);
+            AddToLog("Creating KML File: " + zdir + "doc.kml");
+
+            System.IO.FileStream fs = new System.IO.FileStream(zdir + "doc.kml", System.IO.FileMode.Create, System.IO.FileAccess.Write);
+            System.IO.StreamWriter sw = new System.IO.StreamWriter(fs, System.Text.Encoding.UTF8);
+            sw.WriteLine("<?xml version='1.0' encoding='UTF-8'?>");
+            sw.WriteLine("<kml xmlns='http://www.opengis.net/kml/2.2'><Document>");
+            sw.WriteLine("<name>" + layer.name + "</name>");
+            sw.WriteLine("<createdby>" + this.Text + "</createdby>");
+
+            List<KMIcon> icons = new List<KMIcon>();
+            int icons_added = 0;
+            int icons_passed = 0;
+            int icons_asURL = 0;
+
+            // collect all icons in kml // no changes
+            waitBox.Text = "Collecting all icons in kml...";
+            {
+                KMLayer kml = layer;
+                XmlNodeList xns = kml.file.kmlDoc.SelectNodes("kml/Document/Style/IconStyle/Icon/href");
+                if (xns.Count > 0)
+                    for (int x = 0; x < xns.Count; x++)
+                    {
+                        XmlNode xn2 = xns[x];
+                        string style = xn2.ParentNode.ParentNode.ParentNode.Attributes["id"].Value;
+                        string href = xn2.ChildNodes[0].Value;
+
+                        bool isurl = Uri.IsWellFormedUriString(href, UriKind.Absolute);
+                        KMIcon ki = new KMIcon(href, layer.file, href, style);
+                        Image img = null;
+
+                        if (!isurl)
+                        {
+                            try
+                            {
+                                img = Image.FromFile(layer.file.tmp_file_dir + href);
+                                ki.image = (Image)new Bitmap(img);
+                            }
+                            catch { };
+                        }
+                        else
+                        {
+                            System.Net.HttpWebRequest request = (System.Net.HttpWebRequest)System.Net.HttpWebRequest.Create(ki.href);
+                            try
+                            {
+                                using (System.Net.HttpWebResponse response = (System.Net.HttpWebResponse)request.GetResponse())
+                                using (Stream stream = response.GetResponseStream())
+                                    img = Bitmap.FromStream(stream);
+                                ki.image = (Image)new Bitmap(img);
+                            }
+                            catch
+                            {
+                            };
+                        };
+                        if (img != null) img.Dispose();
+
+                        bool skip = false;
+                        foreach (KMIcon get in icons)
+                        {
+                            if (get.ToString() == ki.ToString())
+                            {
+                                skip = true;
+                                get.styles.Add(style);
+                                break;
+                            };
+
+                            if ((ki.image != null) && (get.image != null))
+                                if (CompareMemCmp((Bitmap)ki.image, (Bitmap)get.image))
+                                {
+                                    skip = true;
+                                    get.styles.Add(style);
+                                    break;
+                                };
+                        };
+                        if (!skip) icons.Add(ki);
+                    };
+            };
+
+            // collect all style maps in kml // no changes
+            waitBox.Text = "Collecting all style maps in kml...";
+            {
+                KMLayer kml = layer;
+                XmlNodeList xns = layer.file.kmlDoc.SelectNodes("kml/Document/StyleMap");
+                if (xns.Count > 0)
+                    for (int x = 0; x < xns.Count; x++)
+                    {
+                        string style = xns[x].Attributes["id"].Value;
+                        foreach (XmlNode xn2 in xns[x].SelectNodes("Pair/styleUrl"))
+                        {
+                            string su = xn2.ChildNodes[0].Value;
+                            if (su.IndexOf("#") == 0) su = su.Remove(0, 1);
+                            foreach (KMIcon ki in icons)
+                                if (ki.styles.IndexOf(su) >= 0)
+                                    ki.styles.Add(style);
+                        };
+                    };
+            };
+
+            List<string> names = new List<string>();
+
+            // collect all placemarks name and styles in layer // no changes
+            List<XmlNode> nostyle = new List<XmlNode>();
+            int ttl_objs = 0;
+            int objs_w_icons = 0;
+            waitBox.Text = "Collecting all placemarks name and styles in layer kml...";
+            {
+                KMLayer kml = layer;
+                XmlNode xn = kml.file.kmlDoc.SelectNodes("kml/Document/Folder")[kml.id];
+                XmlNodeList xns = xn.SelectNodes("Placemark");
+                if (xns.Count > 0)
+                    for (int x = 0; x < xns.Count; x++)
+                    {
+                        ttl_objs++;
+                        string nam = xns[x].SelectSingleNode("name").ChildNodes[0].Value;
+                        names.Add(nam);
+                        XmlNode nsm = xns[x].SelectSingleNode("styleUrl");
+                        if (nsm != null)
+                        {
+                            string stname = nsm.ChildNodes[0].Value;
+                            if (stname.IndexOf("#") == 0) stname = stname.Remove(0, 1);
+                            bool ex = false;
+                            foreach (KMIcon ic in icons)
+                                if (ic.styles.IndexOf(stname) >= 0)
+                                {
+                                    objs_w_icons++;
+                                    ex = true;
+                                    ic.placemarks++;
+                                    if (ic.lcs == null)
+                                        ic.lcs = nam;
+                                    else
+                                        ic.lcs = LCS(ic.lcs, nam);
+                                };
+                            if (!ex) nostyle.Add(xns[x]);
+                        }
+                        else nostyle.Add(xns[x]);
+                    };
+            };
+
+            // FIND
+            List<DictionaryEntry> result = new List<DictionaryEntry>();
+            if ((findText == null) || (findText.Length == 0))
+            {
+                if (names.Count > 0)
+                {
+                    Hashtable maxIn = new Hashtable();
+                    foreach (string wts in names)
+                    {
+                        int[] counts = new int[wts.Length + 1];
+                        for (int l = wts.Length; l > 0; l--)
+                        {
+                            string st = wts.Substring(0, l).ToLower();
+                            foreach (string nm2 in names)
+                            {
+                                if (mode == 0)
+                                {
+                                    if (nm2.ToLower().IndexOf(st) == 0)
+                                        counts[l]++;
+                                }
+                                else
+                                {
+                                    if (nm2.ToLower().Contains(st))
+                                        counts[l]++;
+                                };
+                            };
+
+                            if (counts[l] > 1)
+                            {
+                                bool skip = false;
+                                foreach (DictionaryEntry entry in maxIn)
+                                {
+                                    string en = (string)entry.Key;
+                                    if (mode == 0)
+                                    {
+                                        if ((en.ToLower().IndexOf(st) == 0) && ((int)entry.Value == counts[l]))
+                                            skip = true;
+                                    }
+                                    else
+                                    {
+                                        if ((en.ToLower().Contains(st)) && ((int)entry.Value == counts[l]))
+                                            skip = true;
+                                    };
+                                };
+                                if (!skip)
+                                {
+                                    if (maxIn[st] != null)
+                                    {
+                                        int saved = (int)maxIn[st];
+                                        if (counts[l] > saved) counts[l] = saved;
+                                    };
+                                    maxIn[st] = counts[l];
+                                };
+                            };
+                        };
+                    };
+                    foreach (DictionaryEntry entry in maxIn)
+                        result.Add(entry);
+                };
+            }
+            else
+            {
+                if (names.Count > 0)
+                    foreach (string wts in findText)
+                    {
+                        int counts = 0;
+                        foreach (string nm2 in names)
+                        {
+                            if (mode == 0)
+                            {
+                                if (nm2.ToLower().IndexOf(wts.ToLower()) == 0)
+                                    counts++;
+                            }
+                            else
+                            {
+                                if (nm2.ToLower().Contains(wts.ToLower()))
+                                    counts++;
+                            };
+                        };
+                        result.Add(new DictionaryEntry(wts, counts));
+                    };
+            };
+            result.Sort(new SMLT());  
+
+            // delete empty styles // no changes
+            waitBox.Text = "Copying layer icons...";
+            for (int i = icons.Count - 1; i >= 0; i--)
+                if (icons[i].placemarks == 0)
+                    icons.RemoveAt(i);
+                else
+                {
+                    KMIcon ki = icons[i];
+                    bool isurl = Uri.IsWellFormedUriString(ki.href, UriKind.Absolute);
+                    if (!isurl)
+                    {
+                        if (File.Exists(layer.file.tmp_file_dir + ki.href))
+                        {
+                            System.IO.File.Copy(layer.file.tmp_file_dir + ki.href, zdir + ki.href);
+                            icons_added++;
+                        }
+                        else
+                        {
+                            AddToLog("Error: File not found: " + layer.file.tmp_file_dir + ki.href);
+                            icons_passed++;
+                        };
+                    }
+                    else
+                    {
+                        icons_asURL++;
+                    };
+
+                };
+
+
+            AddToLog(String.Format("Found {5} placemarks, {0} icons for {4} placemarks, {6} placemarks with no icons, {1} icons saved, {2} passed, {3} in URLS",
+                icons.Count, icons_added, icons_passed, icons_asURL, objs_w_icons, ttl_objs, nostyle.Count));
+            Refresh();
+
+            if (nostyle.Count > 0)
+            {
+                KMIcon kmi = new KMIcon("***", layer.file, "***");
+                kmi.placemarks = nostyle.Count;
+                kmi.lcs = "No icons";
+                icons.Insert(0, kmi);
+            };
+
+            // rename layers window
+            List<string> resultNames = new List<string>();
+            LBNRenamerForm sl = new LBNRenamerForm(ttl_objs, result);
+            waitBox.Hide();
+            DialogResult dr = sl.ShowDialog();
+            resultNames = sl.entriesNames;
+            if (dr == DialogResult.OK)
+                for (int i = sl.layers.Items.Count - 1; i >= 0; i--)
+                    if (!sl.layers.CheckedIndices.Contains(i))
+                    {
+                        sl.layers.Items.RemoveAt(i);
+                        result.RemoveAt(i);
+                        resultNames.RemoveAt(i);
+                    };
+            sl.Dispose();
+            waitBox.Show("Saving", "Wait, saving file...");
+
+
+            // write layers to file
+            int splCo = 0;
+            if (result.Count > 0)
+                for (int j = 0; j < result.Count; j++)
+                {
+                    string nc = result[j].Key.ToString().ToLower();
+
+                    sw.WriteLine("<Folder><name>" + resultNames[j] + "</name>");
+                    KMLayer kml = layer;
+                    XmlNode xn = kml.file.kmlDoc.SelectNodes("kml/Document/Folder")[kml.id];
+                    XmlNodeList xns = xn.SelectNodes("Placemark");
+                    if (xns.Count > 0)
+                        for (int x = 0; x < xns.Count; x++)
+                        {
+                            string nam = xns[x].SelectSingleNode("name").ChildNodes[0].Value.ToLower();
+                            bool inside = false;
+                            if (mode == 0)
+                            {
+                                inside = nam.IndexOf(nc) == 0;
+                            }
+                            else
+                            {
+                                inside = nam.Contains(nc);
+                            };
+                            if (inside)
+                            {
+                                XmlNode nsm = xns[x].SelectSingleNode("styleUrl");
+                                if (nsm != null)
+                                {
+                                    string stname = nsm.ChildNodes[0].Value;
+                                    if (stname.IndexOf("#") == 0) stname = stname.Remove(0, 1);
+                                    if (icons.Count > 0)
+                                        for (int i = 0; i < icons.Count; i++)
+                                            if (icons[i].styles.IndexOf(stname) >= 0)
+                                            {
+                                                nsm.ChildNodes[0].Value = "#" + icons[i].styles[0].Replace("-", "A");
+                                                sw.WriteLine(xns[x].OuterXml);
+                                                splCo++;
+                                            };
+                                };
+                                xns[x].ParentNode.RemoveChild(xns[x]);
+                            };                            
+                        };
+                    sw.WriteLine("</Folder>");
+                };
+
+            // Write All other
+            if(splCo < ttl_objs)
+            {
+                sw.WriteLine("<Folder><name>All other</name>");
+                KMLayer kml = layer;
+                XmlNode xn = kml.file.kmlDoc.SelectNodes("kml/Document/Folder")[kml.id];
+                XmlNodeList xns = xn.SelectNodes("Placemark");
+                if (xns.Count > 0)
+                    for (int x = 0; x < xns.Count; x++)
+                    {
+                        string nam = xns[x].SelectSingleNode("name").ChildNodes[0].Value;                        
+                        XmlNode nsm = xns[x].SelectSingleNode("styleUrl");
+                        if (nsm != null)
+                        {
+                            string stname = nsm.ChildNodes[0].Value;
+                            if (stname.IndexOf("#") == 0) stname = stname.Remove(0, 1);
+                            if (icons.Count > 0)
+                                for (int i = 0; i < icons.Count; i++)
+                                    if (icons[i].styles.IndexOf(stname) >= 0)
+                                    {
+                                        nsm.ChildNodes[0].Value = "#" + icons[i].styles[0].Replace("-", "A");
+                                        sw.WriteLine(xns[x].OuterXml);
+                                        splCo++;
+                                    };
+                        };
+                    };
+                sw.WriteLine("</Folder>");
+            };
+
+            // write styles
+            waitBox.Text = "Writing styles to file...";
+            for (int i = (nostyle.Count > 0 ? 1 : 0); i < icons.Count; i++)
+            {
+                KMLayer kml = layer;
+                XmlNode xn = layer.file.kmlDoc.SelectSingleNode("kml/Document/Style[@id='" + icons[i].styles[0] + "']");
+                if (xn == null) xn = layer.file.kmlDoc.SelectSingleNode("kml/Document/Style[@id='" + icons[i].styles[1] + "']");
+                xn.Attributes["id"].Value = icons[i].styles[0].Replace("-", "A");
+                sw.WriteLine(xn.OuterXml);
+            };
+
+            AddToLog(String.Format("Saved {0} placemarks", splCo + nostyle.Count));
+            Refresh();
+
+            sw.WriteLine("</Document></kml>");
+            sw.Close();
+            fs.Close();
+
+            AddToLog(String.Format("Saving data to selected file: {0}", filename));
+            waitBox.Text = "Saving output file...";
+            CreateZIP(filename, zdir);
+            waitBox.Hide();
+            AddToLog("Done");
+        }
+
+        public class SMLT: IComparer<DictionaryEntry>
+        {
+            public int Compare(DictionaryEntry a, DictionaryEntry b)
+            {
+                string ta = (string)a.Key;
+                string tb = (string)b.Key;
+                int ia = ta.Length;
+                int ib = tb.Length;
+                return -1 * ia.CompareTo(ib);
+            }
+        }
+
         private void Save2GML(string zipfile, KMFile kmfile)
         {
             string proj_name = kmfile.kmldocName;
@@ -1124,6 +1534,8 @@ namespace KMZRebuilder
             }
             sw.WriteLine("\t\t</CategoryList>");
 
+            Regex rx = new Regex("&(?!amp;)");
+
             //POI
             waitBox.Text = "Saving POI...";
             int poi_added = 0;
@@ -1143,6 +1555,9 @@ namespace KMZRebuilder
                         try { desc = n2.ParentNode.ParentNode.SelectSingleNode("description").ChildNodes[0].Value; }
                         catch { };
                         string[] ll = n2.ChildNodes[0].Value.Split(new string[] { "," }, StringSplitOptions.None);
+
+                        poi = rx.Replace(poi, "&amp;");
+                        desc = rx.Replace(desc, "&amp;");
 
                         string styleUrl = "";
                         if (n2.ParentNode.ParentNode.SelectSingleNode("styleUrl") != null) styleUrl = n2.ParentNode.ParentNode.SelectSingleNode("styleUrl").ChildNodes[0].Value;
@@ -1328,7 +1743,8 @@ namespace KMZRebuilder
             editKMLFileToolStripMenuItem.Enabled = kmzFiles.SelectedIndices.Count > 0;
             reloadXMLToolStripMenuItem.Enabled = kmzFiles.SelectedIndices.Count > 0;
             reloadOriginalFileToolStripMenuItem.Enabled = kmzFiles.SelectedIndices.Count > 0;
-            saveAsKMLToolStripMenuItem.Enabled = kmzFiles.SelectedIndices.Count > 0;
+            exportHTMLMapwithIconsToolStripMenuItem.Enabled = saveAsKMLToolStripMenuItem.Enabled = kmzFiles.SelectedIndices.Count > 0;
+            viewInWebBrowserToolStripMenuItem1.Enabled = applyFilterSelectionToolStripMenuItem.Enabled = kmzFiles.SelectedIndices.Count > 0;
             saveBtnGML.Enabled = kmzFiles.SelectedIndices.Count > 0;
             setAsOutputKmzFileDocuemntNameToolStripMenuItem.Enabled = kmzFiles.SelectedIndices.Count > 0;
             openSourceFileDirectoryToolStripMenuItem.Enabled = kmzFiles.SelectedIndices.Count > 0;
@@ -1351,15 +1767,16 @@ namespace KMZRebuilder
             moveUpToolStripMenuItem.Enabled = kmzLayers.SelectedIndices.Count > 0;
             moveDownToolStripMenuItem.Enabled = kmzLayers.SelectedIndices.Count > 0;
             saveAsKMLToolStripMenuItem1.Enabled = kmzLayers.SelectedIndices.Count > 0;
+            applyFilterSelectionToolStripMenuItem.Enabled = kmzLayers.SelectedIndices.Count > 0;
             saveLayerToGPXFileToolStripMenuItem.Enabled = kmzLayers.SelectedIndices.Count > 0;
             saveLayerToWPTFileToolStripMenuItem.Enabled = kmzLayers.SelectedIndices.Count > 0;
             saveLayerToOtherFormatsToolStripMenuItem.Enabled = kmzLayers.SelectedIndices.Count > 0;
-            viewContentToolStripMenuItem.Enabled = kmzLayers.SelectedIndices.Count > 0;
+            viewInWebBrowserToolStripMenuItem.Enabled = viewContentToolStripMenuItem.Enabled = kmzLayers.SelectedIndices.Count > 0;
             selectAllToolStripMenuItem.Enabled = kmzLayers.Items.Count > 0;
             selectNoneToolStripMenuItem.Enabled = kmzLayers.Items.Count > 0;
             invertSelectionToolStripMenuItem.Enabled = kmzLayers.Items.Count > 0;
             checkOnlyWithPlacemarksToolStripMenuItem.Enabled = kmzLayers.Items.Count > 0;
-            splitLayerByIconsToolStripMenuItem.Enabled = kmzLayers.SelectedIndices.Count > 0;
+            slb3.Enabled = slb2.Enabled = slbn.Enabled = asf2.Enabled = splitLayerByIconsToolStripMenuItem.Enabled = kmzLayers.SelectedIndices.Count > 0;
         }
 
         private void RenameLayer_Click(object sender, EventArgs e)
@@ -1518,18 +1935,27 @@ namespace KMZRebuilder
             if (kmzFiles.SelectedIndex < 0) return;
             KMFile f = (KMFile)kmzFiles.SelectedItem;
             string path = f.tmp_file_dir + "doc.kml";
-            try
-            {
-                System.Diagnostics.Process.Start("notepad++", path);
-            }
-            catch
-            {
+            bool ok = false;
+            if(!ok)
+                try
+                {
+                    System.Diagnostics.Process.Start("notepad++", path);
+                    ok = true;
+                }
+                catch { };
+            if(!ok)
+                try
+                {
+                    System.Diagnostics.Process.Start(CurrentDirectory() + @"AkelPad.exe");
+                    ok = true;
+                }
+                catch{};
+            if(!ok)
                 try
                 {
                     System.Diagnostics.Process.Start("notepad", path);
                 }
                 catch { };
-            };
         }
 
         private void ReloadTempKMLFile_Click(object sender, EventArgs e)
@@ -1584,12 +2010,17 @@ namespace KMZRebuilder
             
             SaveFileDialog sfd = new SaveFileDialog();
             sfd.Filter = "KML Files (*.kml)|*.kml";
-            sfd.DefaultExt = ".kml";            
-            sfd.FileName = l.name+".kml";
+            sfd.DefaultExt = ".kml";
+            try
+            {
+                sfd.FileName = l.name + ".kml";
+            }
+            catch { };
             if (sfd.ShowDialog() == DialogResult.OK)
                 Save2KML(sfd.FileName, l);
             sfd.Dispose();
         }
+
 
         private void OpenSAS_click(object sender, LinkLabelLinkClickedEventArgs e)
         {
@@ -1736,7 +2167,11 @@ namespace KMZRebuilder
             SaveFileDialog sfd = new SaveFileDialog();
             sfd.Filter = "GPX Files (*.gpx)|*.gpx";
             sfd.DefaultExt = ".gpx";
-            sfd.FileName = l.name + ".gpx";
+            try
+            {
+                sfd.FileName = l.name + ".gpx";
+            }
+            catch { };
             if (sfd.ShowDialog() == DialogResult.OK)
                 Save2GPX(sfd.FileName, l);
             sfd.Dispose();
@@ -1750,7 +2185,11 @@ namespace KMZRebuilder
             SaveFileDialog sfd = new SaveFileDialog();
             sfd.Filter = "OziExplorer Waypoint Files (*.wpt)|*.wpt";
             sfd.DefaultExt = ".wpt";
-            sfd.FileName = l.name + ".wpt";
+            try
+            {
+                sfd.FileName = l.name + ".wpt";
+            }
+            catch { };
             if (sfd.ShowDialog() == DialogResult.OK)
                 Save2WPT(sfd.FileName, l);
             sfd.Dispose();
@@ -1794,7 +2233,7 @@ namespace KMZRebuilder
             sfd.FileName = "noname.kmz";
             if (sfd.ShowDialog() == DialogResult.OK)
             {
-                Save2Splitted(sfd.FileName, l);
+                Save2SplittedIcons(sfd.FileName, l);
                 ReloadXMLOnly_NoUpdateLayers();                
             };
             sfd.Dispose();
@@ -2108,6 +2547,349 @@ namespace KMZRebuilder
             //    LoadFiles(new string[] { file });
             //};
         }
+
+        private void applyFilterSelectionToolStripMenuItem_Click(object sender, EventArgs e)
+        {            
+            if (kmzFiles.SelectedIndices.Count == 0) return;                        
+            KMFile f = (KMFile)kmzFiles.SelectedItem;
+            Selection_Filter sfw = new Selection_Filter(this, f, null);
+            sfw.ShowDialog();
+            sfw.Dispose();
+        }
+
+        internal void ReloadAfterFilter(KMFile kmlfile, KMLayer kmllayer)
+        {
+            if (kmllayer == null)
+            {
+                // reload all layers
+
+                // variant 1 //
+                //kmlfile.SaveKML();
+                //kmlfile.LoadKML(true);
+
+                // variant 2 //
+                //foreach (KMLayer kl in kmlfile.kmLayers)
+                //{
+                //    XmlNodeList nl2 = kmlfile.kmlDoc.SelectNodes("kml/Document/Folder")[kl.id].SelectNodes("Placemark");
+                //    kl.placemarks = (nl2 == null ? 0 : nl2.Count);
+                //};
+
+                // variant 3 //
+                for (int i = 0; i < kmzLayers.Items.Count; i++)
+                {
+                    KMLayer ll = (KMLayer)kmzLayers.Items[i];
+                    XmlNodeList nl2 = ll.file.kmlDoc.SelectNodes("kml/Document/Folder")[ll.id].SelectNodes("Placemark");
+                    ll.placemarks = (nl2 == null ? 0 : nl2.Count);
+                    if (ll.placemarks == 0)
+                        kmzLayers.SetItemChecked(i, false);
+                };
+
+                ReloadListboxLayers();
+                waitBox.Hide();
+            }
+            else
+            {
+                // reload selected layer
+                XmlNodeList nl2 = kmllayer.file.kmlDoc.SelectNodes("kml/Document/Folder")[kmllayer.id].SelectNodes("Placemark");
+                kmllayer.placemarks = (nl2 == null ? 0 : nl2.Count);
+                ReloadListboxLayers();
+                waitBox.Hide();
+            };
+        }
+
+        private void mapPolygonCreatorYouCanUseItForToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            waitBox.Show("Wait", "Loading map...");                        
+            PolyCreator pc = new PolyCreator(this, waitBox);
+            waitBox.Hide();
+            pc.ShowDialog();
+            return;
+        }
+
+        private void asf2_Click(object sender, EventArgs e)
+        {
+            if (kmzLayers.SelectedIndices.Count == 0) return;
+            KMLayer l = (KMLayer)kmzLayers.SelectedItem;
+
+            Selection_Filter sfw = new Selection_Filter(this, l.file, l);
+            sfw.ShowDialog();
+            sfw.Dispose();
+        }
+
+        private void linkLabel4_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            iTNConverterToolStripMenuItem_Click(sender, e);
+        }
+
+        private void slbn_Click(object sender, EventArgs e)
+        {
+            if (kmzLayers.SelectedIndices.Count == 0) return;
+            KMLayer l = (KMLayer)kmzLayers.SelectedItem;
+
+            SaveFileDialog sfd = new SaveFileDialog();
+            sfd.Title = "Select KMZ file name";
+            sfd.Filter = "KMZ Files (*.kmz)|*.kmz";
+            sfd.DefaultExt = ".kmz";
+            sfd.FileName = "noname.kmz";
+            if (sfd.ShowDialog() == DialogResult.OK)
+            {
+                Save2SplittedNames(sfd.FileName, l, 0, null);
+                ReloadXMLOnly_NoUpdateLayers();
+            };
+            sfd.Dispose();
+        }
+
+        private void slb2_Click(object sender, EventArgs e)
+        {
+            if (kmzLayers.SelectedIndices.Count == 0) return;
+            KMLayer l = (KMLayer)kmzLayers.SelectedItem;
+
+            SaveFileDialog sfd = new SaveFileDialog();
+            sfd.Title = "Select KMZ file name";
+            sfd.Filter = "KMZ Files (*.kmz)|*.kmz";
+            sfd.DefaultExt = ".kmz";
+            sfd.FileName = "noname.kmz";
+            if (sfd.ShowDialog() == DialogResult.OK)
+            {
+                Save2SplittedNames(sfd.FileName, l, 1, null);
+                ReloadXMLOnly_NoUpdateLayers();
+            };
+            sfd.Dispose();
+        }
+
+        private void slb3_Click(object sender, EventArgs e)
+        {
+            if (kmzLayers.SelectedIndices.Count == 0) return;
+            KMLayer l = (KMLayer)kmzLayers.SelectedItem;
+
+            string ttf = "Petrol";
+            KMZRebuilederForm.InputBox("Found Text", "Enter found text with `;` as delimiter:", ref ttf, null);
+            string[] toFindT = ttf.Split(new string[] { ";" }, StringSplitOptions.RemoveEmptyEntries);
+
+            SaveFileDialog sfd = new SaveFileDialog();
+            sfd.Title = "Select KMZ file name";
+            sfd.Filter = "KMZ Files (*.kmz)|*.kmz";
+            sfd.DefaultExt = ".kmz";
+            sfd.FileName = "noname.kmz";
+            if (sfd.ShowDialog() == DialogResult.OK)
+            {
+                Save2SplittedNames(sfd.FileName, l, 1, toFindT);
+                ReloadXMLOnly_NoUpdateLayers();
+            };
+            sfd.Dispose();
+        }
+
+        private void akelPadToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            System.Diagnostics.Process.Start(CurrentDirectory() + @"AkelPad.exe");
+        }
+
+        private void saveJSON(KMLayer layer, KMFile file)
+        {
+            string path = file.tmp_file_dir + "doc.json";
+            FileStream fs = new FileStream(path, FileMode.Create, FileAccess.Write);
+            StreamWriter sw = new StreamWriter(fs, Encoding.UTF8);
+            sw.Write("[");
+            {
+                bool first = true;
+                List<KMLayer> lays = new List<KMLayer>();
+                if (layer != null)
+                    lays.Add(layer);
+                else
+                    lays.AddRange(file.kmLayers);
+                foreach (KMLayer kml in lays)
+                {
+                    XmlNode xn = kml.file.kmlDoc.SelectNodes("kml/Document/Folder")[kml.id];
+                    XmlNodeList xns = xn.SelectNodes("Placemark");
+                    if (xns.Count > 0)
+                        for (int x = 0; x < xns.Count; x++)
+                        {
+                            if (first)
+                                first = false;
+                            else
+                                sw.Write(",");
+
+                            sw.Write("{");
+                            string nam = xns[x].SelectSingleNode("name").ChildNodes[0].Value.Replace("\r", "").Replace("\n", "").Trim().Replace("'", "'");
+                            nam = System.Security.SecurityElement.Escape(nam);
+                            sw.Write("name:\'" + nam + "\'");
+                            sw.Write(",layer:\'" + System.Security.SecurityElement.Escape(kml.name) + "\'");
+                            string xy = xns[x].SelectSingleNode("Point/coordinates").ChildNodes[0].Value.Replace("\r", "").Replace("\n", "").Trim();
+                            sw.Write(",xy:\'" + xy + "\'");
+                            XmlNode nsm = xns[x].SelectSingleNode("styleUrl");
+                            if (nsm != null)
+                            {
+                                string stname = nsm.ChildNodes[0].Value;
+                                if (stname.IndexOf("#") == 0) stname = stname.Remove(0, 1);
+                                sw.Write(",icon:\'" + stname + "\'");
+                            };
+                            XmlNode desc = xns[x].SelectSingleNode("description");
+                            if ((desc != null) && (desc.ChildNodes.Count > 0))
+                            {
+                                string d = desc.ChildNodes[0].Value.Replace("\r", " ").Replace("\n", " ").Trim().Replace("'", "'");
+                                d = System.Security.SecurityElement.Escape(d);
+                                sw.Write(",desc:\'" + d + "\'");
+                            };
+                            sw.Write("}");
+                        };
+                }
+            };
+            sw.Write("]");
+            sw.Close();
+            fs.Close();
+        }
+
+        private void viewInWebBrowserToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (kmzLayers.SelectedIndices.Count == 0) return;
+            KMLayer l = (KMLayer)kmzLayers.SelectedItem;
+            string tmpf = l.file.tmp_file_dir.Substring(l.file.tmp_file_dir.LastIndexOf("\\IF")).Replace("\\", "");
+            tmpf = "file:///" + CurrentDirectory() + @"viewonmap.html#" + tmpf;
+
+            saveJSON(l, l.file);
+            
+            System.Diagnostics.Process p = null;
+            try { p = System.Diagnostics.Process.Start("firefox", "\"" + tmpf + "\""); }
+            catch { };
+            if (p == null) try { p = System.Diagnostics.Process.Start("chrome", "\"" + tmpf + "\""); }
+                catch { };
+            if (p == null) try { p = System.Diagnostics.Process.Start("iexplore", "\"" + tmpf + "\""); }
+                catch { };
+            if (p == null) try { p = System.Diagnostics.Process.Start(tmpf); }
+                catch { };
+        }
+
+        private void viewInWebBrowserToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            if (kmzFiles.SelectedIndices.Count == 0) return;
+            KMFile f = (KMFile)kmzFiles.SelectedItem;
+            string tmpf = f.tmp_file_dir.Substring(f.tmp_file_dir.LastIndexOf("\\IF")).Replace("\\", "");
+            tmpf = "file:///" + CurrentDirectory() + @"viewonmap.html#" + tmpf;
+
+            saveJSON(null, f);
+
+            System.Diagnostics.Process p = null;
+            try { p = System.Diagnostics.Process.Start("firefox", "\"" + tmpf + "\""); }
+            catch { };
+            if (p == null) try { p = System.Diagnostics.Process.Start("chrome", "\"" + tmpf + "\""); }
+                catch { };
+            if (p == null) try { p = System.Diagnostics.Process.Start("iexplore", "\"" + tmpf + "\""); }
+                catch { };
+            if (p == null) try { p = System.Diagnostics.Process.Start(tmpf); }
+                catch { };
+        }
+
+        private void exportHTMLMapwithIconsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (kmzFiles.SelectedIndices.Count == 0) return;
+            KMFile f = (KMFile)kmzFiles.SelectedItem;
+
+            SaveFileDialog sfd = new SaveFileDialog();
+            sfd.Title = "Select ZIP file name";
+            sfd.Filter = "ZIP Files (*.zip)|*.zip";
+            sfd.DefaultExt = ".zip";
+            sfd.FileName = "noname.zip";
+            if (sfd.ShowDialog() == DialogResult.OK)
+            {
+                log.Text = "";
+                Export2HTML(f, sfd.FileName);
+                ReloadXMLOnly_NoUpdateLayers();
+                AddToLog("Done");
+            };
+            sfd.Dispose();       
+            
+        }
+
+        private string Export2HTML(KMFile f, string filename)
+        {
+            kmzLayers.Height = 227;
+            panel1.Visible = true;            
+
+            waitBox.Show("Export", "Wait, exporing file...");            
+
+            string zdir = KMZRebuilederForm.TempDirectory() + "OF" + DateTime.UtcNow.Ticks.ToString() + @"\";
+            AddToLog("Create Temp Folder: " + zdir);
+            System.IO.Directory.CreateDirectory(zdir);
+            System.IO.Directory.CreateDirectory(zdir + @"\images\");
+            System.IO.Directory.CreateDirectory(zdir + @"\js\");
+            AddToLog("Creating HTML file...");
+            AddToLog("Create HTML File: " + zdir + "map.html");
+
+            string objs = "";
+            objs += ("[");
+            {
+                bool first = true;
+                List<KMLayer> lays = new List<KMLayer>();
+                lays.AddRange(f.kmLayers);
+                foreach (KMLayer kml in lays)
+                {
+                    XmlNode xn = kml.file.kmlDoc.SelectNodes("kml/Document/Folder")[kml.id];
+                    XmlNodeList xns = xn.SelectNodes("Placemark");
+                    if (xns.Count > 0)
+                        for (int x = 0; x < xns.Count; x++)
+                        {
+                            if (first)
+                                first = false;
+                            else
+                                objs += (",");
+
+                            objs += ("{");
+                            string nam = xns[x].SelectSingleNode("name").ChildNodes[0].Value.Replace("\r", "").Replace("\n", "").Trim().Replace("'", "'");
+                            nam = System.Security.SecurityElement.Escape(nam);
+                            objs += ("name:\'" + nam + "\'");
+                            objs += (",layer:\'" + System.Security.SecurityElement.Escape(kml.name) + "\'");
+                            string xy = xns[x].SelectSingleNode("Point/coordinates").ChildNodes[0].Value.Replace("\r", "").Replace("\n", "").Trim();
+                            objs += (",xy:\'" + xy + "\'");
+                            XmlNode nsm = xns[x].SelectSingleNode("styleUrl");
+                            if (nsm != null)
+                            {
+                                string stname = nsm.ChildNodes[0].Value;
+                                if (stname.IndexOf("#") == 0) stname = stname.Remove(0, 1);
+                                objs += (",icon:\'" + stname + "\'");
+                            };
+                            XmlNode desc = xns[x].SelectSingleNode("description");
+                            if ((desc != null) && (desc.ChildNodes.Count > 0))
+                            {
+                                string d = desc.ChildNodes[0].Value.Replace("\r", " ").Replace("\n", " ").Trim().Replace("'", "'");
+                                d = System.Security.SecurityElement.Escape(d);
+                                objs += (",desc:\'" + d + "\'");
+                            };
+                            objs += ("}");
+                        };
+                }
+            };
+            objs += ("]");
+
+            FileStream fs = new FileStream(CurrentDirectory() + @"\viewonmap.tml", FileMode.Open,FileAccess.Read);
+            StreamReader sr = new StreamReader(fs);
+            string data = sr.ReadToEnd();
+            sr.Close();
+            fs.Close();
+            data = data.Replace("<title>OruxPalsServer Map</title>", "<title>" + System.Security.SecurityElement.Escape(f.kmldocName) + "</title>");
+            data = data.Replace("GetObjects([]);", "GetObjects(" + objs + ");");
+            fs = new FileStream(zdir + "map.html", FileMode.Create, FileAccess.Write);
+            StreamWriter sw = new StreamWriter(fs);
+            sw.Write(data);
+            sw.Close();
+            sr.Close();
+
+            AddToLog("Copying map files...");
+            foreach (string dirPath in Directory.GetDirectories(CurrentDirectory() + @"\js", "*", SearchOption.AllDirectories))
+                Directory.CreateDirectory(dirPath.Replace(CurrentDirectory() + @"\js", zdir + @"\js"));
+            foreach (string newPath in Directory.GetFiles(CurrentDirectory() + @"\js", "*.*", SearchOption.AllDirectories))
+                File.Copy(newPath, newPath.Replace(CurrentDirectory() + @"\js", zdir + @"\js"), true);
+            AddToLog("Copying icons...");
+            foreach (string dirPath in Directory.GetDirectories(f.tmp_file_dir + @"\images", "*", SearchOption.AllDirectories))
+                Directory.CreateDirectory(dirPath.Replace(f.tmp_file_dir + @"\images", zdir + @"\images"));
+            foreach (string newPath in Directory.GetFiles(f.tmp_file_dir + @"\images", "*.*", SearchOption.AllDirectories))
+                File.Copy(newPath, newPath.Replace(f.tmp_file_dir + @"\images", zdir + @"\images"), true);
+            
+            AddToLog(String.Format("Creating file: {0}", filename));
+            CreateZIP(filename, zdir);
+            waitBox.Hide();
+
+            return zdir;
+        }
     }
 
     public class KMFile
@@ -2297,6 +3079,8 @@ namespace KMZRebuilder
             FileStream fs = new FileStream(this.tmp_file_dir + "doc.kml", FileMode.Open, FileAccess.Read);
             StreamReader sr = new StreamReader(fs, System.Text.Encoding.UTF8);
             string xml = sr.ReadToEnd();
+            Regex rx = new Regex("&(?!amp;)");
+            xml = rx.Replace(xml, "&amp;");
             sr.Close();
             fs.Close();
 

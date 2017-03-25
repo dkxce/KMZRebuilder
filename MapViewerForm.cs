@@ -48,7 +48,7 @@ namespace KMZRebuilder
 
             MapViewer.NotFoundTileColor = Color.LightYellow;
             MapViewer.ImageSourceService = NaviMapNet.NaviMapNetViewer.MapServices.OSM_Mapnik;
-            MapViewer.WebRequestTimeout = 10000;
+            MapViewer.WebRequestTimeout = 3000;
             MapViewer.ZoomID = 10;
             MapViewer.OnMapUpdate = new NaviMapNet.NaviMapNetViewer.MapEvent(MapUpdate);
             //MapViewer.UserDefinedGetTileUrl = new NaviMapNet.NaviMapNetViewer.GetTilePathCall(this.GetTilePath);
@@ -165,8 +165,10 @@ namespace KMZRebuilder
         }
 
         private Timer mmTimer = null;
+        private bool locate = false;
         private void MapViewer_MouseMove(object sender, MouseEventArgs e)
         {
+            locate = false;
             if (e.Button != MouseButtons.None) mapTootTip.Hide(this);
 
             if (mmTimer != null)
@@ -452,7 +454,7 @@ namespace KMZRebuilder
             firstboot = false;
         }
 
-        private void FindCopies(int toIndex, bool xy4, bool nm4)
+        private void FindCopies(int toIndex, bool xy4, bool nm4, Single distanceInMeters)
         {
             if (objects.Items.Count == 0) return;
 
@@ -492,8 +494,16 @@ namespace KMZRebuilder
                                 bool isSame = true;
                                 for (int n = 0; n < a.PointsCount; n++)
                                 {
-                                    if (a.Points[n].X != b.Points[n].X) { isSame = false; break; };
-                                    if (a.Points[n].Y != b.Points[n].Y) { isSame = false; break; }
+                                    if (distanceInMeters <= 0)
+                                    {
+                                        if (a.Points[n].X != b.Points[n].X) { isSame = false; break; };
+                                        if (a.Points[n].Y != b.Points[n].Y) { isSame = false; break; }
+                                    }
+                                    else
+                                    {
+                                        float dist = Utils.GetLengthMeters(a.Points[n].Y, a.Points[n].X, b.Points[n].Y, b.Points[n].X, false);
+                                        if (dist > distanceInMeters) { isSame = false; break; };
+                                    };
                                 };
                                 if (isSame)
                                 {
@@ -545,13 +555,14 @@ namespace KMZRebuilder
         }
         
         private void MapViewer_MouseClick(object sender, MouseEventArgs e)
-        {                                    
+        {
+            if (!locate) return;
             if (mapContent.ObjectsCount == 0) return;
             Point clicked = MapViewer.MousePositionPixels;
             PointF sCenter = MapViewer.PixelsToDegrees(clicked);
             PointF sFrom = MapViewer.PixelsToDegrees(new Point(clicked.X - 5, clicked.Y + 5));
             PointF sTo = MapViewer.PixelsToDegrees(new Point(clicked.X + 5, clicked.Y - 5));
-            NaviMapNet.MapObject[] objs = mapContent.Select(new RectangleF(sFrom, new SizeF(sTo.X - sFrom.X, sTo.Y - sTo.X)));
+            NaviMapNet.MapObject[] objs = mapContent.Select(new RectangleF(sFrom, new SizeF(sTo.X - sFrom.X, sTo.Y - sFrom.Y)));
             if ((objs != null) && (objs.Length > 0))
             {
                 uint len = uint.MaxValue;
@@ -656,7 +667,13 @@ namespace KMZRebuilder
         private void findSimilarToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (objects.SelectedItems.Count == 0) return;
-            FindCopies(objects.SelectedIndices[0], true, false);
+            string dist = "0";
+            if (KMZRebuilederForm.InputBox("Distance", "Max distance in meters:", ref dist) == DialogResult.OK)
+            {
+                int d = 0;
+                if(int.TryParse(dist, out d))
+                    FindCopies(objects.SelectedIndices[0], true, false, d);
+            };            
         }
 
         private void markAsSkipWhenSaveToolStripMenuItem_Click(object sender, EventArgs e)
@@ -785,7 +802,13 @@ namespace KMZRebuilder
 
         private void findCopiesForToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FindCopies(-1,true,false);
+            string dist = "0";
+            if (KMZRebuilederForm.InputBox("Distance", "Max distance in meters:", ref dist) == DialogResult.OK)
+            {
+                int d = 0;
+                if (int.TryParse(dist, out d))
+                    FindCopies(-1, true, false, d);
+            };                    
         }
 
         private void markAllItemsAsDeletedToolStripMenuItem_Click(object sender, EventArgs e)
@@ -823,12 +846,12 @@ namespace KMZRebuilder
         private void findCopiesForSelectedItemByNameToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (objects.SelectedItems.Count == 0) return;
-            FindCopies(objects.SelectedIndices[0], false, true);
+            FindCopies(objects.SelectedIndices[0], false, true, 0);
         }
 
         private void findCopiesForEachItemByNameToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FindCopies(-1, false, true);
+            FindCopies(-1, false, true, 0);
         }
 
         private void markCopiesAsNotDeletedToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1215,6 +1238,25 @@ namespace KMZRebuilder
                 if (iStorages.SelectedIndex == 20)
                     MapViewer.ImageSourceUrl = UserDefindedUrl;
             };
+        }
+
+        private void MapViewer_MouseDown(object sender, MouseEventArgs e)
+        {
+            locate = true;
+        }
+
+        private void textBox2_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar != (Char)13) return;
+            if (objects.Items.Count == 0) return;
+            string st = textBox2.Text.ToLower();
+            for (int i = 0; i < objects.Items.Count; i++)
+                if (objects.Items[i].SubItems[0].Text.ToLower().Contains(st))
+                {
+                    objects.Items[i].Selected = true;
+                    objects.Items[i].EnsureVisible();
+                    break;
+                };
         }
     }
 }

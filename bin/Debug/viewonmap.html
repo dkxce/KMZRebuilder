@@ -1,0 +1,297 @@
+﻿<html>
+	<head>
+		<meta charset="utf-8"/>
+		<meta name="robots" content="noindex, follow"/>
+		<title>OruxPalsServer Map</title>
+		<link rel="stylesheet" href="js/leaflet.css" />		
+		<!--[if lte IE 8]>
+			<link rel="stylesheet" href="v/leaflet/leaflet.ie.css" />
+			<link rel="stylesheet" href="v/leaflet/L.Control.Zoomslider/L.Control.Zoomslider.ie.css" />
+		<![endif]-->		
+		<script src="js/jquery.js"></script>		
+		<script src="js/jQueryRotate.js"></script>		
+		<script src="js/leaflet.js"></script>				
+		<link rel="stylesheet" href="js/L.Control.Zoomslider/L.Control.Zoomslider.css" />		
+		<script src="js/L.Control.Zoomslider/L.Control.Zoomslider.js"></script>
+		<link rel="stylesheet" href="js/leaflet.label.css" />
+		<script src="js/leaflet.label.js"></script>				
+	</head>
+	
+	<body style="margin:0px;padding:0px;">
+		<div id="map" style="width:100%; height:100%"></div>
+		<div id="ttf" style="position:absolute;left:45px;top:10px;">
+			Find: <input id="ttft" type="text" style="border:solid 1px gray;width:160px;" onkeypress="onfind(event);"/>
+			&nbsp; &nbsp; <a href="#" id="shl" onclick="showlist();return false;">show list</a>
+		</div>
+		<div id="plist" style="position:absolute;left:45px;top:34px;width:260px;height:500px;border:solid 1px gray;overflow:scroll;display:none;background:white;"></div>
+	</body>
+	<script>
+		var listv = false;
+		var showlist = function()
+		{
+			listv = !listv;
+			if(listv)
+			{
+				document.getElementById("plist").style.display = 'block';
+				document.getElementById("shl").innerHTML = "hide list";
+			}
+			else
+			{
+				document.getElementById("plist").style.display = 'none';
+				document.getElementById("shl").innerHTML = "show list";
+			};
+		};
+		var slid = -1;
+		var ShowID = function(id)
+		{			
+			for(i=0;i<MapObjests.length;i++) document.getElementById('ld'+i).style.background = '';			
+			document.getElementById('ld'+id).style.background = '#ADD8FF';			
+			slid = id;
+			map.setView([MapObjests[id].lat,MapObjests[id].lon]);			
+			MapObjests[id].marker.openPopup();
+		}
+		var LocateID = function(id)
+		{
+			if(slid == id) return;
+			for(i=0;i<MapObjests.length;i++) document.getElementById('ld'+i).style.background = '';
+			document.getElementById('ld'+id).style.background = '#ADD8FF';
+			var ld = document.getElementById('ld'+id);
+			ld.style.background = '#ADD8FF';
+			var top = ld.offsetTop;
+			document.getElementById('plist').scrollTop = top;
+		};
+		var SHPlay = function(id)
+		{
+			var play = document.getElementById('lobs'+id);
+			if(play.style.display == 'block')
+			  play.style.display = 'none';
+			else
+			  play.style.display = 'block';
+		};
+	
+		var hashusr = "";
+		if(window.location.hash) hashusr = window.location.hash.substr(1).toUpperCase();
+		var fn = 'TMP\\'+hashusr+'\\doc.json';
+	    var first = true;
+		
+		var client = new XMLHttpRequest();
+		client.open('GET',fn);
+		client.onreadystatechange = function() {
+			var jsontext = client.responseText;
+			if(jsontext != '')
+			{
+			    if(first)
+				{
+					first = false;
+					var jsonobjs = (new Function('','return '+jsontext+';'))()
+					GetObjects(jsonobjs);
+				};};}
+		client.send();
+			
+		var MapObjests = []; var cols = ['#FFF550','#A0FFA0','#FFC31E','#50FF50'];
+		var GetObjects = function(objects)
+		{
+			var txtdiv = '';
+			var player = '';
+			var playerNo = 0;
+			for(i=0;i<objects.length;i++)
+			{
+				var mc = objects[i];
+				if((player != mc.layer) || (i == 0))
+				{
+					if(i>0) txtdiv += '</div>';
+					txtdiv += '<div id="layer'+playerNo+'" style="border-bottom:solid 1px green;font-weight:bold;background:'+cols[playerNo%2+2]+';cursor:pointer;" onclick="SHPlay('+playerNo+')">&nbsp;'+mc.layer+'</div>';
+					txtdiv += '<div id="lobs'+playerNo+'" style="display:block;background:'+cols[playerNo%2]+';">';
+					playerNo++;
+				};
+				player = mc.layer;
+				var xyz = (new Function('','return ['+objects[i].xy+'];'))();
+				mc.lat = xyz[1];
+				mc.lon = xyz[0];
+				var icn = '<div id="usericon'+i+'" class="aprs-usericon"><img id="img'+i+'" src="TMP/'+hashusr+'/images/'+objects[i].icon+'.png" class="aprs-hdg"/></div>';
+				mc.desc = objects[i].desc;
+				if(mc.desc == undefined) mc.desc = '';
+				mc.desc = '<span style="font-size:10px;font-style:italic;color:gray;">'+mc.desc+'</span>';
+				mc.icon = new L.DivIcon({className: 'aprs-clear',html: icn });
+				mc.marker = new L.Marker([mc.lat,mc.lon], {icon: mc.icon});			
+				mc.marker.id = i;
+				mc.marker.bindPopup('<b>'+objects[i].name+'</b><br/>Lat: <span style="color:blue;">'+mc.lat+'</span><br/>Lon: <span style="color:blue;">'+mc.lon+'</span><br/>'+mc.desc);
+				mc.marker.bindLabel(objects[i].name);
+				mc.marker.addTo(map);	
+				if(i==0) map.setView([mc.lat,mc.lon]);
+				MapObjests.push(mc);
+				txtdiv += '<div id="ld'+i+'">&nbsp;<span style="font-size:8px;">'+i+'</span>&nbsp;<span><a href="#" onclick="ShowID('+i+');return false;">'+mc.name+'</a></span></div>';			
+			};
+			if(objects.length>0) txtdiv += '</div>';
+			document.getElementById("plist").innerHTML = txtdiv;
+		};
+	
+		var map = L.map('map', {center: [55.7, 37.7], zoom: 12, zoomControl: false, zoomsliderControl: true});
+		map.doubleClickZoom.disable();
+		map.on('popupopen', function (e) {
+			LocateID(e.popup._source.id);
+		});
+		
+		var project = function (map, crs, latlng) { return crs.latLngToPoint(latlng, map.getZoom()); };
+
+		L.TileLayer.prototype._update = function () {
+			var bounds = this._map.getPixelBounds(),
+				zoom = this._map.getZoom(),
+				tileSize = this.options.tileSize;
+
+			if (typeof this.options.crs !== 'undefined') {
+				bounds.min = project(this._map, this.options.crs, this._map.unproject(bounds.min));
+				bounds.max = project(this._map, this.options.crs, this._map.unproject(bounds.max));
+			}
+
+			if (zoom > this.options.maxZoom || zoom < this.options.minZoom) {
+				return;
+			}
+
+			var nwTilePoint = new L.Point(
+					Math.floor(bounds.min.x / tileSize),
+					Math.floor(bounds.min.y / tileSize)),
+				seTilePoint = new L.Point(
+					Math.floor(bounds.max.x / tileSize),
+					Math.floor(bounds.max.y / tileSize)),
+				tileBounds = new L.Bounds(nwTilePoint, seTilePoint);
+
+			this._addTilesFromCenterOut(tileBounds);
+
+			if (this.options.unloadInvisibleTiles || this.options.reuseTiles) {
+				this._removeOtherTiles(tileBounds);
+			}
+		};
+
+		L.TileLayer.prototype._getTilePos = function (tilePoint) {			
+			var origin = this._map.getPixelOrigin(),
+				tileSize = this.options.tileSize;
+
+			if (typeof this.options.crs !== 'undefined') {
+				origin = project(this._map, this.options.crs, this._map.unproject(origin));
+			}
+	
+			return tilePoint.multiplyBy(tileSize).subtract(origin);
+		};
+		
+		// MAP TILES
+		var mapnik = L.tileLayer('http://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 17, attribution: 'Maps &copy; <a href="http://openstreetmap.org">OSM</a>' });		
+		var osmOpnvkarte = L.tileLayer('http://tile.xn--pnvkarte-m4a.de/tilegen/{z}/{x}/{y}.png', { maxZoom: 17, attribution: 'Maps &copy; <a href="http://openstreetmap.org">OSM</a>' });		
+		
+		var osmWikiMapTiles = L.tileLayer('', { maxZoom: 17, attribution: 'Maps &copy; WikiMapia' });
+		osmWikiMapTiles.getTileUrl = function (tilePoint, zoom) {
+			return "http://i" + ((tilePoint.x % 4) + (tilePoint.y % 4)*4) + ".wikimapia.org/?lng=1&" + 'x=' + tilePoint.x + '&y='+tilePoint.y+'&zoom='+tilePoint.z;
+		};
+				
+		var rosreestrMapTiles = L.tileLayer('http://c.maps.rosreestr.ru/ArcGIS/rest/services/BaseMaps/BaseMapAnno/MapServer/tile/{z}/{y}/{x}', { maxZoom: 17, attribution: 'Maps &copy; РосРеестр' });
+		var rosreestrMapTiles2 = L.tileLayer('http://c.maps.rosreestr.ru/ArcGIS/rest/services/BaseMaps/BaseMap/MapServer/tile', { maxZoom: 17, attribution: 'Maps &copy; РосРеестр' });
+		var genStab = L.tileLayer('http://www.in7ane.com/topomaps/tiles/{z}/{x}/{y}.jpg', { maxZoom: 17, attribution: 'Maps &copy; ГенШтаб' });
+		var maps4free = L.tileLayer('http://www.maps-for-free.com/layer/relief/z{z}/row{y}/{z}_{x}-{y}.jpg', { maxZoom: 17, attribution: 'Maps &copy; Maps-for-Free' });
+		
+		var msMapTiles = L.tileLayer('', { maxZoom: 17, attribution: 'Maps &copy; Microsoft' });
+		msMapTiles.getTileUrl = function (tilePoint, zoom) {
+			var imageSuffix = '.png';
+			var mapTypeString = "r"; // r/a/h - png/jpeg/jpeg
+			var mapTilesVersion = 22;
+			var sTile = '000000';
+			sTile += (parseInt(tilePoint.y.toString(2) * 2) + parseInt(tilePoint.x.toString(2)));
+			sTile = sTile.substring(sTile.length - tilePoint.z, sTile.length);
+			return 'http://' + mapTypeString + sTile.substring(sTile.length-1, sTile.length) + '.ortho.tiles.virtualearth.net/tiles/' + mapTypeString + sTile + imageSuffix + '?g=' + mapTilesVersion;
+		};
+		var msMapHybTiles = L.tileLayer('', { maxZoom: 17, attribution: 'Maps &copy; Microsoft' });
+		msMapHybTiles.getTileUrl = function (tilePoint, zoom) {
+			var imageSuffix = '.jpeg';
+			var mapTypeString = "h"; // r/a/h - png/jpeg/jpeg
+			var mapTilesVersion = 22;
+			var sTile = '000000';
+			sTile += (parseInt(tilePoint.y.toString(2) * 2) + parseInt(tilePoint.x.toString(2)));
+			sTile = sTile.substring(sTile.length - tilePoint.z, sTile.length);
+			return 'http://' + mapTypeString + sTile.substring(sTile.length-1, sTile.length) + '.ortho.tiles.virtualearth.net/tiles/' + mapTypeString + sTile + imageSuffix + '?g=' + mapTilesVersion;
+		};
+		
+		var GoogleMapLayer = new L.TileLayer('http://{s}.google.com/vt/lyrs=m@177000000&hl=ru&src=app&x={x}&s=&y={y}&z={z}&s=Ga', {attribution: 'Data, imagery and map information provided by <a href="http://maps.google.com" target="_blank">Google</a>', maxZoom: 19, subdomains: ['mts0','mts1'], zIndex: 2});
+		var GoogleSatLayer = new L.TileLayer('http://{s}.google.com/kh/v=134&src=app&x={x}&s=&y={y}&z={z}&s=G', {attribution: 'Data, imagery and map information provided by <a href="http://maps.google.com" target="_blank">Google</a>', maxZoom: 19, subdomains: ['khms0','khms1'], zIndex: 3});
+		var GoogleMapOverlayLayer = new L.TileLayer('http://{s}.google.com/vt/lyrs=h@177000000&hl=ru&src=app&x={x}&s=&y={y}&z={z}&s=G', {attribution: 'Data, imagery and map information provided by <a href="http://maps.google.com" target="_blank">Google</a>', maxZoom: 19, subdomains: ['mts0','mts1'], zIndex: 4});
+
+		var GoogleHybridLayer = new L.LayerGroup();
+		GoogleHybridLayer.addLayer(GoogleSatLayer).addLayer(GoogleMapOverlayLayer);
+		GoogleHybridLayer.hybrid = true;
+
+		var YandexMapLayer = YandexMapLayer = new L.TileLayer('http://{s}.maps.yandex.net/tiles?l=map&v=2.31.1&x={x}&s=&y={y}&z={z}&lang=ru-RU',
+									  {attribution: 'Data, imagery and map information provided by <a href="http://maps.yandex.ru" target="_blank">Yandex</a>',
+									   subdomains: ['vec01','vec02','vec03','vec04'],
+									   maxZoom: 17, crs: L.CRS.EPSG3395,
+									   zIndex: 5});
+									   
+		var YandexMapOverlayLayer = new L.TileLayer('http://{s}.maps.yandex.net/tiles?l=skl&v=2.31.1&x={x}&s=&y={y}&z={z}&lang=ru-RU', {attribution: 'Data, imagery and map information provided by <a href="http://maps.yandex.ru" target="_blank">Yandex</a>', subdomains: ['vec01','vec02','vec03','vec04'], maxZoom: 17, crs: L.CRS.EPSG3395, zIndex: 6});
+		var YandexSatLayer = new L.TileLayer('http://{s}.maps.yandex.net/tiles?l=sat&v=1.35.0&x={x}&s=&y={y}&z={z}&lang=ru-RU', {attribution: 'Data, imagery and map information provided by <a href="http://maps.yandex.ru" target="_blank">Yandex</a>', subdomains: ['sat01','sat02','sat03','sat04'], maxZoom: 17, crs: L.CRS.EPSG3395, zIndex: 7});
+
+		YandexHybridLayer = new L.LayerGroup();
+		YandexHybridLayer.addLayer(YandexSatLayer).addLayer(YandexMapOverlayLayer);
+		YandexHybridLayer.hybrid = true;
+
+		var GoogleTrafficLayer = new L.TileLayer('http://{s}.google.com/vt?hl=ru&src=app&lyrs=m@177000000,traffic|seconds_into_week:-1&x={x}&s=&y={y}&z={z}&style=15', {attribution: 'Traffic data provided by <a href="http://maps.google.com" target="_blank">Google</a>', maxZoom: 19, subdomains: ['mts0','mts1'], traffic: true, zIndex: 21});
+
+		var YandexTrafficLayer = new L.TileLayer('http://jgo.maps.yandex.net/tiles?l=trf&lang=ru-RU&x={x}&s=&y={y}&z={z}', {attribution: 'Traffic data provided by <a href="http://maps.yandex.ru" target="_blank">Yandex</a>', maxZoom: 17, crs: L.CRS.EPSG3395, traffic: true, zIndex: 22});
+		var YandexExtTrafficLayer = new L.TileLayer('http://jgo.maps.yandex.net/tiles?l=trf,trfe&lang=ru-RU&x={x}&s=&y={y}&z={z}', {attribution: 'Traffic data provided by <a href="http://maps.yandex.ru" target="_blank">Yandex</a>', maxZoom: 17, crs: L.CRS.EPSG3395, traffic: true, zIndex: 23});
+		var YandexPeoplesLayer = new L.TileLayer('http://{s}.wvec.maps.yandex.net/?l=wmap&x={x}&y={y}&z={z}', {attribution: 'Traffic data provided by <a href="http://maps.yandex.ru" target="_blank">Yandex</a>', maxZoom: 17, crs: L.CRS.EPSG3395, traffic: true, subdomains: ['01','02','03','04'], zIndex: 23});
+	
+
+		var upTrafficYa = function (tilePoint, zoom) {
+			var tm = new Date();
+			var url = L.TileLayer.prototype.getTileUrl.call(this, tilePoint, zoom);
+			return url + '&tm=' + parseInt(tm.getTime()/1000, 10);
+		};
+		YandexTrafficLayer.getTileUrl = upTrafficYa;
+		YandexExtTrafficLayer.getTileUrl = upTrafficYa;
+
+		mapnik.addTo(map);
+		var basemaps = {					
+				  "OSM Mapnik": mapnik, 
+				  "OSM Opnvkarte": osmOpnvkarte, 
+				  "WikiMapia": osmWikiMapTiles,
+				  "РосРеестр": rosreestrMapTiles,
+				  "РосРеестр (2)": rosreestrMapTiles2,
+				  "ГенШтаб (Сканы)": genStab,
+				  "Maps For Free (Рельеф)": maps4free,
+				  "MS Map (Карта)": msMapTiles,
+				  "MS Map (Спутник)": msMapHybTiles,
+				  "Google (Карта)": GoogleMapLayer,
+			      "Google (Спутник)": GoogleHybridLayer,
+			      "Яндекс (Карта)": YandexMapLayer,
+			      "Яндекс (Спутник)": YandexHybridLayer,
+				  "Яндекс (Народная)": YandexPeoplesLayer
+				  };
+		var trafficLayers = {
+					"Google Пробки": GoogleTrafficLayer,
+    				 "Яндекс Пробки": YandexTrafficLayer,
+    				 "Яндекс Пробки + События": YandexExtTrafficLayer
+					 };
+		L.control.layers(basemaps, trafficLayers).addTo(map);					
+		
+		var onfind = function(e)
+		{
+			if(e.keyCode != 13) return;
+			for(i=0;i<MapObjests.length;i++) document.getElementById('ld'+i).style.background = '';
+			var tf = document.getElementById("ttft").value.trim().toLowerCase();
+			var found = false;
+			for(i=0;i<MapObjests.length;i++)
+				if(MapObjests[i].name.toLowerCase().indexOf(tf) >= 0)
+				{				
+					if(!found)
+					{
+						slid = i;
+						map.setView([MapObjests[i].lat,MapObjests[i].lon]);
+						MapObjests[i].marker.openPopup();
+						var ld = document.getElementById('ld'+i);
+						ld.style.background = '#ADD8FF';
+						var top = ld.offsetTop;
+						document.getElementById('plist').scrollTop = top;
+					}
+					else
+						document.getElementById('ld'+i).style.background = '#E6ACD7';
+					found = true;
+				};
+		};
+	</script>
+</html>

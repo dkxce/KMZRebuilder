@@ -156,7 +156,7 @@ namespace BenzinPriceAnalizer
                 string file = sr.ReadToEnd();
                 int si = file.IndexOf("<coordinates>");
                 int ei = file.IndexOf("</coordinates>");
-                string co = file.Substring(si + 13, ei - si - 13);
+                string co = file.Substring(si + 13, ei - si - 13).Trim().Replace("\r", " ").Replace("\n", " ").Replace("\t", " ");
                 string[] arr = co.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
                 if ((arr != null) && (arr.Length > 0))
                     for (int i = 0; i < arr.Length; i++)
@@ -278,7 +278,7 @@ namespace BenzinPriceAnalizer
                 {
                     if (m.skip) continue;
                     
-                    sw.WriteLine("<Placemark><name>" + m.hintContent.Replace("<p class=price>", "").Replace("<br />", "") + "</name>");
+                    sw.WriteLine("<Placemark><name>" + m.hintContent.Replace("<p class=price>", "").Replace("<br />", "").Replace("&","&amp;") + "</name>");
                     sw.WriteLine("<description><![CDATA[" + m.balloonContent.Replace("<p class=price>", "") + "]]></description>");
                     if (m.iconImageHref != String.Empty)
                     {
@@ -399,7 +399,7 @@ namespace BenzinPriceAnalizer
                             string hint = m.hintContent.Replace("<p class=price>", "").Replace("<br />", "");
                             string desc = m.balloonContent.Replace("<p class=price>", "");
 
-                            sw.WriteLine("<Placemark><name>" + hint + "</name>");
+                            sw.WriteLine("<Placemark><name>" + hint.Replace("&", "&amp;") + "</name>");
                             sw.WriteLine("<description><![CDATA[" + desc + "]]></description>");
                             if (hint != String.Empty)
                                 sw.WriteLine("<styleUrl>#" + ic + "</styleUrl>");
@@ -533,6 +533,7 @@ namespace BenzinPriceAnalizer
 
             System.IO.FileStream fs = new System.IO.FileStream(f.filename, System.IO.FileMode.Open, System.IO.FileAccess.Read);
             System.IO.StreamReader sr = new System.IO.StreamReader(fs);
+            byte fType = 0;
             while (!sr.EndOfStream)
             {
                 string ln = sr.ReadLine();
@@ -561,8 +562,39 @@ namespace BenzinPriceAnalizer
                 {
                     placemark += " ";
                 };
-                if (ln.IndexOf("geoObjects.add") > 0)
+                if ((ln.IndexOf("myCollection.add") > 0) && ((fType == 0) || (fType == 2)))
                 {
+                    fType = 2;
+                    YPlacemark jp = new YPlacemark(f.filename);
+                    int si = placemark.IndexOf("new ymaps.Placemark([");
+                    int ei = placemark.IndexOf("]", si);
+                    {
+                        string xy = placemark.Substring(si + 21, ei - si - 21);
+                        string[] xys = xy.Split(new char[] { ',' }, 2);
+                        double X = 0; double.TryParse(xys[1],System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out X);
+                        double Y = 0; double.TryParse(xys[0], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out Y);
+                        jp.x = X;
+                        jp.y = Y;
+                    };
+                    {
+                        si = placemark.IndexOf("hintContent: \"<p class=price>");
+                        ei = placemark.IndexOf("<br />", si);
+                        jp.hintContent = placemark.Substring(si + 29, ei - si - 29);
+                        si = placemark.IndexOf("balloonContentBody: \"<p class=price>");
+                        ei = placemark.IndexOf("\",\t\t\t\t\ticonContent:", si);
+                        jp.balloonContent = placemark.Substring(si + 36, ei - si - 36);
+                    };
+                    {
+                        si = placemark.IndexOf("iconImageHref: '");
+                        ei = placemark.IndexOf("',", si);
+                        jp.iconImageHref = placemark.Substring(si + 16, ei - si - 16);
+                    };
+                    placemark = "";
+                    marks.Add(jp);
+                };
+                if ((ln.IndexOf("geoObjects.add") > 0) && ((fType == 0) || (fType == 1)))
+                {
+                    fType = 1;
                     YPlacemark jp = new YPlacemark(f.filename);
                     int si = placemark.IndexOf("new ymaps.Placemark([");
                     int ei = placemark.IndexOf("]", si);
