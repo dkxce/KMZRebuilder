@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ArrayOfSegment>
+  <Segment id="1А"><has>21-62</has></Segment>
+  <Segment id="1"><has>21-93</has></Segment>
+  <Segment id="2"><has>93-211</has></Segment>
+  <Segment id="3"><has>225-260</has></Segment>
+  <Segment id="4"><has>287-321</has></Segment>
+  <Segment id="5"><has>330-414</has></Segment>
+  <Segment id="5А"><has>355-339</has></Segment>
+  <Segment id="5Б"><has>380-414</has></Segment>
+  <Segment id="5В"><has>380-339</has></Segment>
+  <Segment id="5Г"><has>401-414</has></Segment>
+  <Segment id="5Д"><has>401-339</has></Segment>
+  <Segment id="6"><has>414-464</has></Segment>
+  <Segment id="7"><has>492-517</has></Segment>
+  <Segment id="8"><has>517-544</has></Segment>
+  <Segment id="9"><has>544-589</has></Segment>
+  <Segment id="10"><has>589-633</has></Segment>
+  <Segment id="11"><has>633-715</has><has>636</has></Segment>
+  <Segment id="11А"><has>633-715</has><has>672</has></Segment>
+  <Segment id="12"><has>1091-1119</has></Segment>
+  <Segment id="13"><has>1119-1195</has></Segment>
+  <Segment id="14"><has>1195-1319</has></Segment>
+</ArrayOfSegment>

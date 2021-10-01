@@ -1,0 +1,10 @@
+public static bool MarkAsDeleted(byte ObjectType, string Name, double X, double Y, PointF[] points, object UsersData)
+{
+	// ObjectType
+	//  mPoint = 1,
+    //  mLine = 2,
+    //  mEllipse = 4,
+    //  mPolygon = 8,
+    //  mPolyline = 16,
+	return true;	
+}

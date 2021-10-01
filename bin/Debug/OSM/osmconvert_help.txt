@@ -1,0 +1,58 @@
+osmconvert 0.8.10  Parameter Overview
+(Please use  --help  to get more information.)
+
+<FILE>                    input file name
+-                         read from standard input
+-b=<x1>,<y1>,<x2>,<y2>    apply a border box
+-B=<border_polygon>       apply a border polygon
+--complete-ways           do not clip ways at the borders
+--complete-multipolygons  do not clip multipolygons at the borders
+--complete-boundaries     do not clip boundaries at the borders
+--all-to-nodes            convert ways and relations to nodes
+--add-bbox-tags           add bbox tags to ways and relations
+--add-bboxarea-tags       add tags for estimated bbox areas
+--add-bboxweight-tags     add tags for log2 of bbox areas
+--add-bboxwidth-tags      add tags for estimated bbox widths
+--add-bboxwidthweight-tags add tags for log2 of bbox widths
+--object-type-offset=<id> offset for ways/relations if --all-to-nodes
+--max-objects=<n>         space for --all-to-nodes, 1 obj. = 16 bytes
+--drop-broken-refs        delete references to excluded nodes
+--drop-author             delete changeset and user information
+--drop-version            same as before, but delete version as well
+--drop-nodes              delete all nodes
+--drop-ways               delete all ways
+--drop-relations          delete all relations
+--modify-tags=            define which tags are to be modified
+--modify-...-tags=        similar to --keep-...-tags= (see above)
+--diff                    calculate differences between two files
+--diff-contents           same as before, but compare whole contents
+--subtract                subtract objects given by following files
+--pbf-granularity=<val>   lon/lat granularity of .pbf input file
+--emulate-osmosis         emulate Osmosis XML output format
+--emulate-pbf2osm         emulate pbf2osm output format
+--fake-author             set changeset to 1 and timestamp to 1970
+--fake-version            set version number to 1
+--fake-lonlat             set lon to 0 and lat to 0
+-h                        display this parameter overview
+--help                    display a more detailed help
+--merge-versions          merge versions of each object in a file
+--out-osm                 write output in .osm format (default)
+--out-osc                 write output in .osc format (OSMChangefile)
+--out-osh                 write output in .osh format (visible-tags)
+--out-o5m                 write output in .o5m format (fast binary)
+--out-o5c                 write output in .o5c format (bin. Changef.)
+--out-pbf                 write output in .pbf format (bin. standard)
+--out-csv                 write output in .csv format (plain table)
+--out-none                no standard output (for testing purposes)
+--csv=<column names>      choose columns for csv format
+--csv-headline            start csv output with a headline
+--csv-separator=<sep>     separator character(s) for csv format
+--timestamp=<date_time>   add a timestamp to the data
+--timestamp=NOW-<seconds> add a timestamp in seconds before now
+--out-timestamp           output the file's timestamp, nothing else
+--out-statistics          write statistics, nothing else
+--statistics              write statistics to stderr
+-o=<outfile>              reroute standard output to a file
+-t=<tempfile>             define tempfile prefix
+--parameter-file=<file>   param. in file, separated by empty lines
+--verbose                 activate verbose mode

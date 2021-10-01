@@ -1,0 +1,5619 @@
+[
+  {
+    "name": "shop",
+    "parent": [],
+    "tags": {},
+    "moretags": {},
+    "poi": false,
+    "type": [],
+    "id": 0
+  },
+  {
+    "name": "shop_food",
+    "parent": ["shop"],
+    "tags": {},
+    "moretags": {},
+    "poi": false,
+    "type": [],
+    "id": 1
+  },
+  {
+    "name": "health",
+    "parent": [],
+    "tags": {},
+    "moretags": {},
+    "poi": false,
+    "type": [],
+    "id": 2
+  },
+  {
+    "name": "food",
+    "parent": [],
+    "tags": {},
+    "moretags": {},
+    "poi": false,
+    "type": [],
+    "id": 3
+  },
+  {
+    "name": "finance",
+    "parent": [],
+    "tags": {},
+    "moretags": {},
+    "poi": false,
+    "type": [],
+    "id": 4
+  },
+  {
+    "name": "service",
+    "parent": [],
+    "tags": {},
+    "moretags": {},
+    "poi": false,
+    "type": [],
+    "id": 5
+  },
+  {
+    "name": "craft",
+    "parent": [],
+    "tags": {},
+    "moretags": {},
+    "poi": false,
+    "type": [],
+    "id": 6
+  },
+  {
+    "name": "transport",
+    "parent": [],
+    "tags": {},
+    "moretags": {},
+    "poi": false,
+    "type": [],
+    "id": 7
+  },
+  {
+    "name": "education",
+    "parent": [],
+    "tags": {},
+    "moretags": {},
+    "poi": false,
+    "type": [],
+    "id": 8
+  },
+  {
+    "name": "sport_and_entertainment",
+    "parent": [],
+    "tags": {},
+    "moretags": {},
+    "poi": false,
+    "type": [],
+    "id": 9
+  },
+  {
+    "name": "religion",
+    "parent": [],
+    "tags": {},
+    "moretags": {},
+    "poi": false,
+    "type": [],
+    "id": 10
+  },
+  {
+    "name": "democracy",
+    "parent": [],
+    "tags": {},
+    "moretags": {},
+    "poi": false,
+    "type": [],
+    "id": 11
+  },
+  {
+    "name": "emergency",
+    "parent": [],
+    "tags": {},
+    "moretags": {},
+    "poi": false,
+    "type": [],
+    "id": 12
+  },
+  {
+    "name": "tourism",
+    "parent": [],
+    "tags": {},
+    "moretags": {},
+    "poi": false,
+    "type": [],
+    "id": 13
+  },
+  {
+    "name": "sights",
+    "parent": ["tourism"],
+    "tags": {},
+    "moretags": {},
+    "poi": false,
+    "type": [],
+    "id": 14
+  },
+  {
+    "name": "lodging",
+    "parent": ["tourism"],
+    "tags": {},
+    "moretags": {},
+    "poi": false,
+    "type": [],
+    "id": 15
+  },
+  {
+    "name": "culture",
+    "parent": [],
+    "tags": {},
+    "moretags": {},
+    "poi": false,
+    "type": [],
+    "id": 16
+  },
+  {
+    "name": "clubs",
+    "parent": ["culture"],
+    "tags": {},
+    "moretags": {},
+    "poi": false,
+    "type": [],
+    "id": 17
+  },
+  {
+    "name": "office",
+    "parent": [],
+    "tags": {},
+    "moretags": {},
+    "poi": false,
+    "type": [],
+    "id": 18
+  },
+  {
+    "name": "natural",
+    "parent": [],
+    "tags": {},
+    "moretags": {},
+    "poi": false,
+    "type": [],
+    "id": 19
+  },
+  {
+    "name": "road_obstacles",
+    "parent": ["transport"],
+    "tags": {},
+    "moretags": {},
+    "poi": false,
+    "type": [],
+    "id": 20
+  },
+  {
+    "name": "personal_transport",
+    "parent": ["transport"],
+    "tags": {},
+    "moretags": {},
+    "poi": false,
+    "type": [],
+    "id": 21
+  },
+  {
+    "name": "public_transport",
+    "parent": ["transport"],
+    "tags": {},
+    "moretags": {},
+    "poi": false,
+    "type": [],
+    "id": 22
+  },
+  {
+    "name": "air_transport",
+    "parent": ["transport"],
+    "tags": {},
+    "moretags": {},
+    "poi": false,
+    "type": [],
+    "id": 23
+  },
+  {
+    "name": "water_transport",
+    "parent": ["transport"],
+    "tags": {},
+    "moretags": {},
+    "poi": false,
+    "type": [],
+    "id": 24
+  },
+  {
+    "name": "ship_navigation",
+    "parent": ["water_transport"],
+    "tags": {},
+    "moretags": {},
+    "poi": false,
+    "type": [],
+    "id": 25
+  },
+  {
+    "name": "bicycle_transport",
+    "parent": ["transport"],
+    "tags": {},
+    "moretags": {},
+    "poi": false,
+    "type": [],
+    "id": 26
+  },
+  {
+    "name": "infrastructure",
+    "parent": [],
+    "tags": {},
+    "moretags": {},
+    "poi": false,
+    "type": [],
+    "id": 27
+  },
+  {
+    "name": "transport_constructions",
+    "parent": ["transport", "infrastructure"],
+    "tags": {},
+    "moretags": {},
+    "poi": false,
+    "type": [],
+    "id": 28
+  },
+  {
+    "name": "water_supply",
+    "parent": ["infrastructure"],
+    "tags": {},
+    "moretags": {},
+    "poi": false,
+    "type": [],
+    "id": 29
+  },
+  {
+    "name": "power",
+    "parent": ["infrastructure"],
+    "tags": {},
+    "moretags": {},
+    "poi": false,
+    "type": [],
+    "id": 30
+  },
+  {
+    "name": "communications",
+    "parent": ["infrastructure"],
+    "tags": {},
+    "moretags": {},
+    "poi": false,
+    "type": [],
+    "id": 31
+  },
+  {
+    "name": "trash_disposal",
+    "parent": ["infrastructure"],
+    "tags": {},
+    "moretags": {},
+    "poi": false,
+    "type": [],
+    "id": 391
+  },
+  {
+    "name": "advertising",
+    "parent": ["infrastructure"],
+    "tags": {},
+    "moretags": {},
+    "poi": false,
+    "type": [],
+    "id": 398
+  },
+  {
+    "name": "bakery",
+    "parent": ["shop_food"],
+    "tags": {"shop": "bakery"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 32
+  },
+  {
+    "name": "bookshop",
+    "parent": ["shop"],
+    "tags": {"shop": "books"},
+    "moretags": {
+      "second_hand": {
+        "class": "second_hand",
+        "tag": "second_hand",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 33
+  },
+  {
+    "name": "alcohol",
+    "parent": ["shop_food"],
+    "tags": {"shop": "alcohol"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 34
+  },
+  {
+    "name": "bicycle",
+    "parent": ["shop"],
+    "tags": {"shop":"bicycle"},
+    "moretags": {
+      "service_bicycle_retail": {
+        "class": "boolean",
+        "tag": "service:bicycle:retail",
+        "type": "translate"
+      },
+      "service_bicycle_repair": {
+        "class": "boolean",
+        "tag": "service:bicycle:repair",
+        "type": "translate"
+      },
+      "service_bicycle_rental": {
+        "class": "boolean",
+        "tag": "service:bicycle:rental",
+        "type": "translate"
+      },
+      "service_bicycle_pump": {
+        "class": "boolean",
+        "tag": "service:bicycle:pump",
+        "type": "translate"
+      },
+      "service_bicycle_diy": {
+        "class": "boolean",
+        "tag": "service:bicycle:diy",
+        "type": "translate"
+      },
+      "service_bicycle_cleaning": {
+        "class": "boolean",
+        "tag": "service:bicycle:cleaning",
+        "type": "translate"
+      },
+      "service_bicycle_second_hand": {
+        "class": "boolean",
+        "tag": "service:bicycle:second_hand",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 35
+  },
+  {
+    "name": "convenience",
+    "parent": ["shop_food"],
+    "tags": {"shop":"convenience"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 36
+  },
+  {
+    "name": "mall",
+    "parent": ["shop","shop_food"],
+    "tags": {"shop":"mall"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 37
+  },
+  {
+    "name": "anime",
+    "parent": ["shop"],
+    "tags": {"shop":"anime"},
+    "moretags":{
+      "anime_video":{
+        "class": "boolean",
+        "tag": "anime:video",
+        "type": "translate"
+      },
+      "anime_manga":{
+        "class": "boolean",
+        "tag": "anime:manga",
+        "type": "translate"
+      },
+      "anime_costume":{
+        "class": "boolean",
+        "tag": "anime:costume",
+        "type": "translate"
+      },
+      "anime_gift":{
+        "class": "boolean",
+        "tag": "anime:gift",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node","area"],
+    "id": 38
+  },
+  {
+    "name": "antiques",
+    "parent": ["shop"],
+    "tags": {"shop":"antiques"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 39
+  },
+  {
+    "name": "art",
+    "parent": ["shop"],
+    "tags": {"shop":"art"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 40
+  },
+  {
+    "name": "bag",
+    "parent": ["shop"],
+    "tags": {"shop":"bag"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 41
+  },
+  {
+    "name": "baby_goods",
+    "parent": ["shop"],
+    "tags": {"shop":"baby_goods"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 42
+  },
+  {
+    "name": "bathroom_furnishing",
+    "parent": ["shop"],
+    "tags": {"shop":"bathroom_furnishing"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 43
+  },
+  {
+    "name": "bed",
+    "parent": ["shop"],
+    "tags": {"shop":"bed"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 44
+  },
+  {
+    "name": "boutique",
+    "parent": ["shop"],
+    "tags": {"shop":"boutique"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 45
+  },
+  {
+    "name": "beverages",
+    "parent": ["shop_food"],
+    "tags": {"shop":"beverages"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 46
+  },
+  {
+    "name": "butcher",
+    "parent": ["shop_food"],
+    "tags": {"shop":"butcher"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 47
+  },
+  {
+    "name": "carpet",
+    "parent": ["shop"],
+    "tags": {"shop":"carpet"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 48
+  },
+  {
+    "name": "charity",
+    "parent": ["shop"],
+    "tags": {"shop":"charity"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 49
+  },
+  {
+    "name": "chemist",
+    "parent": ["shop"],
+    "tags": {"shop":"chemist"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 50
+  },
+  {
+    "name": "clothes",
+    "parent": ["shop"],
+    "tags": {"shop":"clothes"},
+    "moretags":{
+      "second_hand": {
+        "class": "second_hand",
+        "tag": "second_hand",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node","area"],
+    "id": 51
+  },
+  {
+    "name": "clothes_babies",
+    "parent": ["clothes"],
+    "tags": {"shop":"clothes", "clothes": "babies"},
+    "moretags":{
+      "second_hand": {
+        "class": "second_hand",
+        "tag": "second_hand",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node","area"],
+    "id": 408
+  },
+  {
+    "name": "clothes_children",
+    "parent": ["clothes"],
+    "tags": {"shop":"clothes", "clothes": "children"},
+    "moretags":{
+      "second_hand": {
+        "class": "second_hand",
+        "tag": "second_hand",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node","area"],
+    "id": 409
+  },
+  {
+    "name": "clothes_costumes",
+    "parent": ["clothes"],
+    "tags": {"shop":"clothes", "clothes": "costumes"},
+    "moretags":{
+      "second_hand": {
+        "class": "second_hand",
+        "tag": "second_hand",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node","area"],
+    "id": 410
+  },
+  {
+    "name": "clothes_denim",
+    "parent": ["clothes"],
+    "tags": {"shop":"clothes", "clothes": "denim"},
+    "moretags":{
+      "second_hand": {
+        "class": "second_hand",
+        "tag": "second_hand",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node","area"],
+    "id": 411
+  },
+  {
+    "name": "clothes_fashion",
+    "parent": ["clothes"],
+    "tags": {"shop":"clothes", "clothes": "fashion"},
+    "moretags":{
+      "second_hand": {
+        "class": "second_hand",
+        "tag": "second_hand",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node","area"],
+    "id": 412
+  },
+  {
+    "name": "clothes_fur",
+    "parent": ["clothes"],
+    "tags": {"shop":"clothes", "clothes": "fur"},
+    "moretags":{
+      "second_hand": {
+        "class": "second_hand",
+        "tag": "second_hand",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node","area"],
+    "id": 413
+  },
+  {
+    "name": "clothes_hats",
+    "parent": ["clothes"],
+    "tags": {"shop":"clothes", "clothes": "hats"},
+    "moretags":{
+      "second_hand": {
+        "class": "second_hand",
+        "tag": "second_hand",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node","area"],
+    "id": 414
+  },
+  {
+    "name": "clothes_leather",
+    "parent": ["clothes"],
+    "tags": {"shop":"clothes", "clothes": "leather"},
+    "moretags":{
+      "second_hand": {
+        "class": "second_hand",
+        "tag": "second_hand",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node","area"],
+    "id": 415
+  },
+  {
+    "name": "clothes_maternity",
+    "parent": ["clothes"],
+    "tags": {"shop":"clothes", "clothes": "maternity"},
+    "moretags":{
+      "second_hand": {
+        "class": "second_hand",
+        "tag": "second_hand",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node","area"],
+    "id": 416
+  },
+  {
+    "name": "clothes_men",
+    "parent": ["clothes"],
+    "tags": {"shop":"clothes", "clothes": "men"},
+    "moretags":{
+      "second_hand": {
+        "class": "second_hand",
+        "tag": "second_hand",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node","area"],
+    "id": 417
+  },
+  {
+    "name": "clothes_oversize",
+    "parent": ["clothes"],
+    "tags": {"shop":"clothes", "clothes": "oversize"},
+    "moretags":{
+      "second_hand": {
+        "class": "second_hand",
+        "tag": "second_hand",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node","area"],
+    "id": 418
+  },
+  {
+    "name": "clothes_schoolwear",
+    "parent": ["clothes"],
+    "tags": {"shop":"clothes", "clothes": "schoolwear"},
+    "moretags":{
+      "second_hand": {
+        "class": "second_hand",
+        "tag": "second_hand",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node","area"],
+    "id": 419
+  },
+  {
+    "name": "clothes_sports",
+    "parent": ["clothes"],
+    "tags": {"shop":"clothes", "clothes": "sports"},
+    "moretags":{
+      "second_hand": {
+        "class": "second_hand",
+        "tag": "second_hand",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node","area"],
+    "id": 420
+  },
+  {
+    "name": "clothes_suits",
+    "parent": ["clothes"],
+    "tags": {"shop":"clothes", "clothes": "suits"},
+    "moretags":{
+      "second_hand": {
+        "class": "second_hand",
+        "tag": "second_hand",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node","area"],
+    "id": 421
+  },
+  {
+    "name": "clothes_swimwear",
+    "parent": ["clothes"],
+    "tags": {"shop":"clothes", "clothes": "swimwear"},
+    "moretags":{
+      "second_hand": {
+        "class": "second_hand",
+        "tag": "second_hand",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node","area"],
+    "id": 422
+  },
+  {
+    "name": "clothes_traditional",
+    "parent": ["clothes"],
+    "tags": {"shop":"clothes", "clothes": "traditional"},
+    "moretags":{
+      "second_hand": {
+        "class": "second_hand",
+        "tag": "second_hand",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node","area"],
+    "id": 423
+  },
+  {
+    "name": "clothes_underwear",
+    "parent": ["clothes"],
+    "tags": {"shop":"clothes", "clothes": "underwear"},
+    "moretags":{
+      "second_hand": {
+        "class": "second_hand",
+        "tag": "second_hand",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node","area"],
+    "id": 424
+  },
+  {
+    "name": "clothes_wedding",
+    "parent": ["clothes"],
+    "tags": {"shop":"clothes", "clothes": "wedding"},
+    "moretags":{
+      "second_hand": {
+        "class": "second_hand",
+        "tag": "second_hand",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node","area"],
+    "id": 425
+  },
+  {
+    "name": "clothes_women",
+    "parent": ["clothes"],
+    "tags": {"shop":"clothes", "clothes": "women"},
+    "moretags":{
+      "second_hand": {
+        "class": "second_hand",
+        "tag": "second_hand",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node","area"],
+    "id": 426
+  },
+  {
+    "name": "clothes_workwear",
+    "parent": ["clothes"],
+    "tags": {"shop":"clothes", "clothes": "workwear"},
+    "moretags":{
+      "second_hand": {
+        "class": "second_hand",
+        "tag": "second_hand",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node","area"],
+    "id": 427
+  },
+  {
+    "name": "shoes",
+    "parent": ["shop"],
+    "tags": {"shop":"shoes"},
+    "moretags":{
+      "second_hand": {
+        "class": "second_hand",
+        "tag": "second_hand",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node","area"],
+    "id": 52
+  },
+  {
+    "name": "shoes_children",
+    "parent": ["shoes"],
+    "tags": {"shop":"shoes", "shoes":"children"},
+    "moretags":{
+      "second_hand": {
+        "class": "second_hand",
+        "tag": "second_hand",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node","area"],
+    "id": 428
+  },
+  {
+    "name": "shoes_dancing",
+    "parent": ["shoes"],
+    "tags": {"shop":"shoes", "shoes":"dancing"},
+    "moretags":{
+      "second_hand": {
+        "class": "second_hand",
+        "tag": "second_hand",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node","area"],
+    "id": 429
+  },
+  {
+    "name": "shoes_men",
+    "parent": ["shoes"],
+    "tags": {"shop":"shoes", "shoes":"men"},
+    "moretags":{
+      "second_hand": {
+        "class": "second_hand",
+        "tag": "second_hand",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node","area"],
+    "id": 430
+  },
+  {
+    "name": "shoes_orthopaedic",
+    "parent": ["shoes"],
+    "tags": {"shop":"shoes", "shoes":"orthopaedic"},
+    "moretags":{
+      "second_hand": {
+        "class": "second_hand",
+        "tag": "second_hand",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node","area"],
+    "id": 431
+  },
+  {
+    "name": "shoes_oversize",
+    "parent": ["shoes"],
+    "tags": {"shop":"shoes", "shoes":"oversize"},
+    "moretags":{
+      "second_hand": {
+        "class": "second_hand",
+        "tag": "second_hand",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node","area"],
+    "id": 432
+  },
+  {
+    "name": "shoes_sport",
+    "parent": ["shoes"],
+    "tags": {"shop":"shoes", "shoes":"sport"},
+    "moretags":{
+      "second_hand": {
+        "class": "second_hand",
+        "tag": "second_hand",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node","area"],
+    "id": 433
+  },
+  {
+    "name": "shoes_women",
+    "parent": ["shoes"],
+    "tags": {"shop":"shoes", "shoes":"women"},
+    "moretags":{
+      "second_hand": {
+        "class": "second_hand",
+        "tag": "second_hand",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node","area"],
+    "id": 434
+  },
+  {
+    "name": "computer",
+    "parent": ["shop"],
+    "tags": {"shop":"computer"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 53
+  },
+  {
+    "name": "copyshop",
+    "parent": ["shop"],
+    "tags": {"shop":"copyshop"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 54
+  },
+  {
+    "name": "curtain",
+    "parent": ["shop"],
+    "tags": {"shop":"curtain"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 55
+  },
+  {
+    "name": "fabric",
+    "parent": ["shop"],
+    "tags": {"shop":"fabric"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 56
+  },
+  {
+    "name": "bedding",
+    "parent": ["shop"],
+    "tags": {"shop":"bedding"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 57
+  },
+  {
+    "name": "deli",
+    "parent": ["shop_food"],
+    "tags": {"shop":"deli"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 58
+  },
+  {
+    "name": "dive",
+    "parent": ["shop"],
+    "tags": {"shop":"dive"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 59
+  },
+  {
+    "name": "doityourself",
+    "parent": ["shop"],
+    "tags": {"shop":"doityourself"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 60
+  },
+  {
+    "name": "erotic",
+    "parent": ["shop"],
+    "tags": {"shop":"erotic"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 61
+  },
+  {
+    "name": "farm",
+    "parent": ["shop_food"],
+    "tags": {"shop":"farm"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 62
+  },
+  {
+    "name": "fishing_shop",
+    "parent": ["shop"],
+    "tags": {"shop":"fishing"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 63
+  },
+  {
+    "name": "florist",
+    "parent": ["shop"],
+    "tags": {"shop":"florist"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 64
+  },
+  {
+    "name": "frame",
+    "parent": ["shop"],
+    "tags": {"shop":"frame"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 65
+  },
+  {
+    "name": "funeral_directors",
+    "parent": ["service"],
+    "tags": {"shop":"funeral_directors"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 66
+  },
+  {
+    "name": "furniture",
+    "parent": ["shop"],
+    "tags": {"shop":"furniture"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 67
+  },
+  {
+    "name": "garden_centre",
+    "parent": ["shop"],
+    "tags": {"shop":"garden_centre"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 68
+  },
+  {
+    "name": "gas",
+    "parent": ["shop"],
+    "tags": {"shop":"gas"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 69
+  },
+  {
+    "name": "gift",
+    "parent": ["shop"],
+    "tags": {"shop":"gift"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 70
+  },
+  {
+    "name": "glaziery_shop",
+    "parent": ["shop"],
+    "tags": {"shop":"glaziery"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 71
+  },
+  {
+    "name": "greengrocer",
+    "parent": ["shop_food"],
+    "tags": {"shop":"greengrocer"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 72
+  },
+  {
+    "name": "hardware",
+    "parent": ["shop"],
+    "tags": {"shop":"hardware"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 73
+  },
+  {
+    "name": "hearing_aids",
+    "parent": ["shop"],
+    "tags": {"shop":"hearing_aids"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 74
+  },
+  {
+    "name": "herbalist",
+    "parent": ["shop"],
+    "tags": {"shop":"herbalist"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 75
+  },
+  {
+    "name": "hifi",
+    "parent": ["shop"],
+    "tags": {"shop":"hifi"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 76
+  },
+  {
+    "name": "houseware",
+    "parent": ["shop"],
+    "tags": {"shop":"houseware"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 77
+  },
+  {
+    "name": "hunting",
+    "parent": ["shop"],
+    "tags": {"shop":"hunting"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 78
+  },
+  {
+    "name": "interior_decoration",
+    "parent": ["shop"],
+    "tags": {"shop":"interior_decoration"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 79
+  },
+  {
+    "name": "jewelry",
+    "parent": ["shop"],
+    "tags": {"shop":"jewelry"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 80
+  },
+  {
+    "name": "kiosk",
+    "parent": ["shop"],
+    "tags": {"shop":"kiosk"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 81
+  },
+  {
+    "name": "kitchen",
+    "parent": ["shop"],
+    "tags": {"shop":"kitchen"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 82
+  },
+  {
+    "name": "mobile_phone",
+    "parent": ["shop"],
+    "tags": {"shop":"mobile_phone"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 83
+  },
+  {
+    "name": "motorcycle",
+    "parent": ["shop"],
+    "tags": {"shop":"motorcycle"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 84
+  },
+  {
+    "name": "musical_instrument",
+    "parent": ["shop"],
+    "tags": {"shop":"musical_instrument"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 85
+  },
+  {
+    "name": "newsagent",
+    "parent": ["shop"],
+    "tags": {"shop":"newsagent"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 86
+  },
+  {
+    "name": "optician_shop",
+    "parent": ["shop"],
+    "tags": {"shop":"optician"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 87
+  },
+  {
+    "name": "organic",
+    "parent": ["shop"],
+    "tags": {"shop":"organic"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 88
+  },
+  {
+    "name": "outdoor",
+    "parent": ["shop"],
+    "tags": {"shop":"outdoor"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 89
+  },
+  {
+    "name": "paint",
+    "parent": ["shop"],
+    "tags": {"shop":"paint"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 90
+  },
+  {
+    "name": "pet",
+    "parent": ["shop"],
+    "tags": {"shop":"pet"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 91
+  },
+  {
+    "name": "radiotechnics",
+    "parent": ["shop"],
+    "tags": {"shop":"radiotechnics"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 92
+  },
+  {
+    "name": "seafood",
+    "parent": ["shop_food"],
+    "tags": {"shop":"seafood"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 93
+  },
+  {
+    "name": "second_hand",
+    "parent": ["shop"],
+    "tags": {"shop":"second_hand"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 94
+  },
+  {
+    "name": "ship_chandler",
+    "parent": ["shop"],
+    "tags": {"shop":"ship_chandler"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 95
+  },
+  {
+    "name": "sports",
+    "parent": ["shop"],
+    "tags": {"shop":"sports"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 96
+  },
+  {
+    "name": "stationery",
+    "parent": ["shop"],
+    "tags": {"shop":"stationery"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 97
+  },
+  {
+    "name": "tableware",
+    "parent": ["shop"],
+    "tags": {"shop":"tableware"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 98
+  },
+  {
+    "name": "ticket",
+    "parent": ["shop"],
+    "tags": {"shop":"ticket"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 99
+  },
+  {
+    "name": "tobacco",
+    "parent": ["shop"],
+    "tags": {"shop":"tobacco"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 100
+  },
+  {
+    "name": "toys",
+    "parent": ["shop"],
+    "tags": {"shop":"toys"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 101
+  },
+  {
+    "name": "trade",
+    "parent": ["shop"],
+    "tags": {"shop":"trade"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 102
+  },
+  {
+    "name": "vacuum_cleaner",
+    "parent": ["shop"],
+    "tags": {"shop":"vacuum_cleaner"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 103
+  },
+  {
+    "name": "variety_store",
+    "parent": ["shop"],
+    "tags": {"shop":"variety_store"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 104
+  },
+  {
+    "name": "video",
+    "parent": ["shop"],
+    "tags": {"shop":"video"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 105
+  },
+  {
+    "name": "window_blind",
+    "parent": ["shop"],
+    "tags": {"shop":"window_blind"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 106
+  },
+  {
+    "name": "confectionery",
+    "parent": ["shop_food"],
+    "tags": {"shop": "confectionery"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 107
+  },
+  {
+    "name": "ice_cream",
+    "parent": ["shop_food"],
+    "tags": {"shop": "ice_cream"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 108
+  },
+  {
+    "name": "supermarket",
+    "parent": ["shop","shop_food"],
+    "tags": {"shop": "supermarket"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 109
+  },
+  {
+    "name": "department_store",
+    "parent": ["shop"],
+    "tags": {"shop": "department_store"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 110
+  },
+  {
+    "name": "electronics",
+    "parent": ["shop"],
+    "tags": {"shop": "electronics"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 111
+  },
+  {
+    "name": "car",
+    "parent": ["shop"],
+    "tags": {"shop": "car"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 112
+  },
+  {
+    "name": "car_parts",
+    "parent": ["shop"],
+    "tags": {"shop": "car_parts"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 113
+  },
+  {
+    "name": "atv",
+    "parent": ["shop"],
+    "tags": {"shop": "atv"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 114
+  },
+  {
+    "name": "pharmacy",
+    "parent": ["health"],
+    "tags": {"amenity": "pharmacy"},
+    "moretags": {
+      "dispensing": {
+        "class": "boolean",
+        "tag": "dispensing",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 115
+  },
+  {
+    "name": "hospital",
+    "parent": ["health"],
+    "tags": {"amenity": "hospital"},
+    "moretags": {
+      "emergency": {
+        "class": "boolean",
+        "tag": "emergency",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 116
+  },
+  {
+    "name": "doctors",
+    "parent": ["health"],
+    "tags": { "amenity": "doctors"},
+    "moretags": {
+      "emergency": {
+        "class": "boolean",
+        "tag": "emergency",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 117
+  },
+  {
+    "name": "clinic",
+    "parent": ["health"],
+    "tags": { "amenity": "clinic"},
+    "moretags": {
+      "emergency": {
+        "class": "boolean",
+        "tag": "emergency",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 118
+  },
+  {
+    "name": "dentist",
+    "parent": ["health"],
+    "tags": {"amenity": "dentist"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 119
+  },
+  {
+    "name": "nursing_home",
+    "parent": ["health"],
+    "tags": {"amenity": "nursing_home"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 120
+  },
+  {
+    "name": "social_facility",
+    "parent": ["democracy"],
+    "tags": {"amenity": "social_facility"},
+    "moretags": {
+      "social_facility_type": {
+        "class": "social_facility_type",
+        "tag": "social_facility",
+        "type": "translate"
+      },
+      "social_facility_for": {
+        "class": "social_facility_for",
+        "tag": "social_facility:for",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 121
+  },
+  {
+    "name": "veterinary",
+    "parent": ["health"],
+    "tags": {"amenity": "veterinary"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 122
+  },
+  {
+    "name": "mortuary",
+    "parent": ["health"],
+    "tags": {"amenity": "mortuary"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 123
+  },
+  {
+    "name": "cafe",
+    "parent": ["food"],
+    "tags": {"amenity": "cafe"},
+    "moretags": {
+      "smoking": {
+        "class": "smoking",
+        "tag": "smoking",
+        "type": "translate"
+      },
+      "cuisine": {
+        "class": "cuisine",
+        "tag": "cuisine",
+        "type": "translate",
+        "multivalue": "yes"
+      },
+      "internet_access": {
+        "class": "internet_access",
+        "tag": "internet_access",
+        "type": "translate"
+      },
+      "internet_access_operator": {
+        "tag": "internet_access:operator",
+        "type": "number"
+      },
+      "internet_access_fee": {
+        "class": "boolean",
+        "tag": "internet_access:fee",
+        "type": "translate"
+      },
+      "drive_in": {
+        "class": "boolean",
+        "tag": "drive_in",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 124
+  },
+  {
+    "name": "biergarten",
+    "parent": ["food"],
+    "tags": {"amenity": "biergarten"},
+    "moretags": {
+      "smoking": {
+        "class": "smoking",
+        "tag": "smoking",
+        "type": "translate"
+      },
+      "cuisine": {
+        "class": "cuisine",
+        "tag": "cuisine",
+        "type": "translate",
+        "multivalue": "yes"
+      },
+      "internet_access": {
+        "class": "internet_access",
+        "tag": "internet_access",
+        "type": "translate"
+      },
+      "internet_access_operator": {
+        "tag": "internet_access:operator",
+        "type": "number"
+      },
+      "internet_access_fee": {
+        "class": "boolean",
+        "tag": "internet_access:fee",
+        "type": "translate"
+      },
+      "drive_in": {
+        "class": "boolean",
+        "tag": "drive_in",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 125
+  },
+  {
+    "name": "restaurant",
+    "parent": ["food"],
+    "tags": {"amenity": "restaurant"},
+    "moretags": {
+      "smoking": {
+        "class": "smoking",
+        "tag": "smoking",
+        "type": "translate"
+      },
+      "stars": {
+        "class": "stars",
+        "tag": "stars",
+        "type": "translate"
+      },
+      "cuisine": {
+        "class": "cuisine",
+        "tag": "cuisine",
+        "type": "translate",
+        "multivalue": "yes"
+      },
+      "internet_access": {
+        "class": "internet_access",
+        "tag": "internet_access",
+        "type": "translate"
+      },
+      "internet_access_operator": {
+        "tag": "internet_access:operator",
+        "type": "number"
+      },
+      "internet_access_fee": {
+        "class": "boolean",
+        "tag": "internet_access:fee",
+        "type": "translate"
+      },
+      "drive_in": {
+        "class": "boolean",
+        "tag": "drive_in",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 126
+  },
+  {
+    "name": "fast_food",
+    "parent": ["food"],
+    "tags": {"amenity": "fast_food"},
+    "moretags": {
+      "smoking": {
+        "class": "smoking",
+        "tag": "smoking",
+        "type": "translate"
+      },
+      "cuisine": {
+        "class": "cuisine",
+        "tag": "cuisine",
+        "type": "translate",
+        "multivalue": "yes"
+      },
+      "internet_access": {
+        "class": "internet_access",
+        "tag": "internet_access",
+        "type": "translate"
+      },
+      "internet_access_operator": {
+        "tag": "internet_access:operator",
+        "type": "number"
+      },
+      "internet_access_fee": {
+        "class": "boolean",
+        "tag": "internet_access:fee",
+        "type": "translate"
+      },
+      "drive_in": {
+        "class": "boolean",
+        "tag": "drive_in",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 127
+  },
+  {
+    "name": "bar",
+    "parent": ["food"],
+    "tags": {"amenity": "bar"},
+    "moretags": {
+      "smoking": {
+        "class": "smoking",
+        "tag": "smoking",
+        "type": "translate"
+      },
+      "cuisine": {
+        "class": "cuisine",
+        "tag": "cuisine",
+        "type": "translate",
+        "multivalue": "yes"
+      },
+      "internet_access": {
+        "class": "internet_access",
+        "tag": "internet_access",
+        "type": "translate"
+      },
+      "internet_access_operator": {
+        "tag": "internet_access:operator",
+        "type": "number"
+      },
+      "internet_access_fee": {
+        "class": "boolean",
+        "tag": "internet_access:fee",
+        "type": "translate"
+      },
+      "drive_in": {
+        "class": "boolean",
+        "tag": "drive_in",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 128
+  },
+  {
+    "name": "pub",
+    "parent": ["food"],
+    "tags": {"amenity": "pub"},
+    "moretags": {
+      "smoking": {
+        "class": "smoking",
+        "tag": "smoking",
+        "type": "translate"
+      },
+      "cuisine": {
+        "class": "cuisine",
+        "tag": "cuisine",
+        "type": "translate",
+        "multivalue": "yes"
+      },
+      "internet_access": {
+        "class": "internet_access",
+        "tag": "internet_access",
+        "type": "translate"
+      },
+      "internet_access_operator": {
+        "tag": "internet_access:operator",
+        "type": "number"
+      },
+      "internet_access_fee": {
+        "class": "boolean",
+        "tag": "internet_access:fee",
+        "type": "translate"
+      },
+      "drive_in": {
+        "class": "boolean",
+        "tag": "drive_in",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 129
+  },
+  {
+    "name": "food_court",
+    "parent": ["food"],
+    "tags": {"amenity": "food_court"},
+    "moretags": {
+      "smoking": {
+        "class": "smoking",
+        "tag": "smoking",
+        "type": "translate"
+      },
+      "cuisine": {
+        "class": "cuisine",
+        "tag": "cuisine",
+        "type": "translate",
+        "multivalue": "yes"
+      },
+      "internet_access": {
+        "class": "internet_access",
+        "tag": "internet_access",
+        "type": "translate"
+      },
+      "internet_access_operator": {
+        "tag": "internet_access:operator",
+        "type": "number"
+      },
+      "internet_access_fee": {
+        "class": "boolean",
+        "tag": "internet_access:fee",
+        "type": "translate"
+      },
+      "drive_in": {
+        "class": "boolean",
+        "tag": "drive_in",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 130
+  },
+  {
+    "name": "bank",
+    "parent": ["finance"],
+    "tags": {"amenity": "bank"},
+    "moretags": {
+      "atm": {
+        "class": "boolean",
+        "tag": "atm",
+        "type": "translate"
+      },
+      "bank_ref": {
+        "tag": "ref",
+        "type": "number"
+      },
+      "bank_branch": {
+        "tag": "branch",
+        "type": "number"
+      },
+      "bank_department": {
+        "tag": "department",
+        "type": "number"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 131
+  },
+  {
+    "name": "atm",
+    "parent": ["finance"],
+    "tags": {"amenity": "atm"},
+    "moretags": {
+      "comission":{
+        "class": "comission",
+        "tag": "fee",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node"],
+    "id": 132
+  },
+  {
+    "name": "money_lender",
+    "parent": ["finance"],
+    "tags": {"shop":"money_lender"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 133
+  },
+  {
+    "name": "pawnbroker",
+    "parent": ["finance", "shop"],
+    "tags": {"shop":"pawnbroker"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 134
+  },
+  {
+    "name": "currencyexchange",
+    "parent": ["finance","service"],
+    "tags": {"amenity": "bureau_de_change"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 135
+  },
+  {
+    "name": "driving_school",
+    "parent": ["service","education"],
+    "tags": {"amenity": "driving_school"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 136
+  },
+  {
+    "name": "craft_computer",
+    "parent": ["craft","service"],
+    "tags": {"craft": "computer"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 137
+  },
+  {
+    "name": "post_office",
+    "parent": ["service", "communications"],
+    "tags": {"amenity": "post_office"},
+    "moretags": {
+      "postal_ref":{
+        "tag": "ref",
+        "type": "number"
+      },
+      "internet_access": {
+        "class": "internet_access",
+        "tag": "internet_access",
+        "type": "translate"
+      },
+      "internet_access_operator": {
+        "tag": "internet_access:operator",
+        "type": "number"
+      },
+      "internet_access_fee": {
+        "class": "boolean",
+        "tag": "internet_access:fee",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 138
+  },
+  {
+    "name": "post_box",
+    "parent": ["service", "communications"],
+    "tags": {"amenity": "post_box"},
+    "moretags": {
+      "general_ref":{
+        "tag": "ref",
+        "type": "number"
+      },
+      "collection_times_post":{
+        "tag": "collection_times",
+        "type": "period"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 139
+  },
+  {
+    "name": "beauty_salon",
+    "parent": ["service"],
+    "tags": {"shop": "beauty"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 140
+  },
+  {
+    "name": "nails",
+    "parent": ["service"],
+    "tags": {"shop": "beauty", "beauty": "nails"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 141
+  },
+  {
+    "name": "hairdresser",
+    "parent": ["service"],
+    "tags": {"shop": "hairdresser"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 142
+  },
+  {
+    "name": "massage",
+    "parent": ["service"],
+    "tags": {"shop":"massage"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 143
+  },
+  {
+    "name": "tattoo",
+    "parent": ["service"],
+    "tags": {"shop":"tattoo"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 144
+  },
+  {
+    "name": "dry_cleaning",
+    "parent": ["service"],
+    "tags": {"shop":"dry_cleaning"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 145
+  },
+  {
+    "name": "laundry",
+    "parent": ["service"],
+    "tags": {"shop":"laundry"},
+    "moretags":{},
+    "poi": true,
+    "type": ["node","area"],
+    "id": 146
+  },
+  {
+    "name": "car_rental",
+    "parent": ["service"],
+    "tags": {"amenity": "car_rental"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 147
+  },
+  {
+    "name": "bicycle_rental",
+    "parent": ["service", "sport_and_entertainment", "bicycle_transport"],
+    "tags": {"amenity": "bicycle_rental"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 148
+  },
+  {
+    "name": "agricultural_engines",
+    "parent": ["craft"],
+    "tags": {"craft": "agricultural_engines"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 149
+  },
+  {
+    "name": "basket_maker",
+    "parent": ["craft"],
+    "tags": {"craft": "basket_maker"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 150
+  },
+  {
+    "name": "beekeeper",
+    "parent": ["craft"],
+    "tags": {"craft": "beekeeper"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 151
+  },
+  {
+    "name": "blacksmith",
+    "parent": ["craft"],
+    "tags": {"craft": "blacksmith"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 152
+  },
+  {
+    "name": "brewery",
+    "parent": ["craft"],
+    "tags": {"craft": "brewery"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 153
+  },
+  {
+    "name": "boatbuilder",
+    "parent": ["craft"],
+    "tags": {"craft": "boatbuilder"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 154
+  },
+  {
+    "name": "bookbinder",
+    "parent": ["craft"],
+    "tags": {"craft": "bookbinder"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 155
+  },
+  {
+    "name": "carpenter",
+    "parent": ["craft"],
+    "tags": {"craft": "carpenter"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 156
+  },
+  {
+    "name": "carpet_layer",
+    "parent": ["craft"],
+    "tags": {"craft": "carpet_layer"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 157
+  },
+  {
+    "name": "caterer",
+    "parent": ["craft"],
+    "tags": {"craft": "caterer"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 158
+  },
+  {
+    "name": "clockmaker",
+    "parent": ["craft"],
+    "tags": {"craft": "clockmaker"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 159
+  },
+  {
+    "name": "dressmaker",
+    "parent": ["craft"],
+    "tags": {"craft": "dressmaker"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 160
+  },
+  {
+    "name": "electrician",
+    "parent": ["craft"],
+    "tags": {"craft": "electrician"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 161
+  },
+  {
+    "name": "gardener",
+    "parent": ["craft"],
+    "tags": {"craft": "gardener"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 162
+  },
+  {
+    "name": "glaziery_craft",
+    "parent": ["craft"],
+    "tags": {"craft": "glaziery"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 163
+  },
+  {
+    "name": "handicraft",
+    "parent": ["craft"],
+    "tags": {"craft": "handicraft"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 164
+  },
+  {
+    "name": "hvac",
+    "parent": ["craft"],
+    "tags": {"craft": "hvac"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 165
+  },
+  {
+    "name": "insulation",
+    "parent": ["craft"],
+    "tags": {"craft": "insulation"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 166
+  },
+  {
+    "name": "jeweller",
+    "parent": ["craft"],
+    "tags": {"craft": "jeweller"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 167
+  },
+  {
+    "name": "locksmith",
+    "parent": ["craft"],
+    "tags": {"craft": "locksmith"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 168
+  },
+  {
+    "name": "key_cutter",
+    "parent": ["craft"],
+    "tags": {"craft": "key_cutter"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 169
+  },
+  {
+    "name": "metal_construction",
+    "parent": ["craft"],
+    "tags": {"craft": "metal_construction"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 170
+  },
+  {
+    "name": "optician_craft",
+    "parent": ["craft"],
+    "tags": {"craft": "optician"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 171
+  },
+  {
+    "name": "painter",
+    "parent": ["craft"],
+    "tags": {"craft": "painter"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 172
+  },
+  {
+    "name": "parquet_layer",
+    "parent": ["craft"],
+    "tags": {"craft": "parquet_layer"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 173
+  },
+  {
+    "name": "photographer",
+    "parent": ["craft"],
+    "tags": {"craft": "photographer"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 174
+  },
+  {
+    "name": "photographic_laboratory",
+    "parent": ["craft"],
+    "tags": {"craft": "photographic_laboratory"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 175
+  },
+  {
+    "name": "plasterer",
+    "parent": ["craft"],
+    "tags": {"craft": "plasterer"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 176
+  },
+  {
+    "name": "plumber",
+    "parent": ["craft"],
+    "tags": {"craft": "plumber"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 177
+  },
+  {
+    "name": "pottery",
+    "parent": ["craft"],
+    "tags": {"craft": "pottery"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 178
+  },
+  {
+    "name": "rigger",
+    "parent": ["craft"],
+    "tags": {"craft": "rigger"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 179
+  },
+  {
+    "name": "roofer",
+    "parent": ["craft"],
+    "tags": {"craft": "roofer"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 180
+  },
+  {
+    "name": "saddler",
+    "parent": ["craft"],
+    "tags": {"craft": "saddler"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 181
+  },
+  {
+    "name": "sailmaker",
+    "parent": ["craft"],
+    "tags": {"craft": "sailmaker"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 182
+  },
+  {
+    "name": "sawmill",
+    "parent": ["craft"],
+    "tags": {"craft": "sawmill"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 183
+  },
+  {
+    "name": "scaffolder",
+    "parent": ["craft"],
+    "tags": {"craft": "scaffolder"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 184
+  },
+  {
+    "name": "sculptor",
+    "parent": ["craft"],
+    "tags": {"craft": "sculptor"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 185
+  },
+  {
+    "name": "shoemaker",
+    "parent": ["craft"],
+    "tags": {"craft": "shoemaker"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 186
+  },
+  {
+    "name": "stand_builder",
+    "parent": ["craft"],
+    "tags": {"craft": "stand_builder"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 187
+  },
+  {
+    "name": "stonemason",
+    "parent": ["craft"],
+    "tags": {"craft": "stonemason"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 188
+  },
+  {
+    "name": "sun_protection",
+    "parent": ["craft"],
+    "tags": {"craft": "sun_protection"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 189
+  },
+  {
+    "name": "sweep",
+    "parent": ["craft"],
+    "tags": {"craft": "sweep"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 190
+  },
+  {
+    "name": "tailor",
+    "parent": ["craft","service"],
+    "tags": {"craft": "tailor"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 191
+  },
+  {
+    "name": "tiler",
+    "parent": ["craft"],
+    "tags": {"craft": "tiler"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 192
+  },
+  {
+    "name": "tinsmith",
+    "parent": ["craft"],
+    "tags": {"craft": "tinsmith"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 193
+  },
+  {
+    "name": "upholsterer",
+    "parent": ["craft"],
+    "tags": {"craft": "upholsterer"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 194
+  },
+  {
+    "name": "watchmaker",
+    "parent": ["craft"],
+    "tags": {"craft": "watchmaker"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 195
+  },
+  {
+    "name": "window_construction",
+    "parent": ["craft"],
+    "tags": {"craft": "window_construction"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 196
+  },
+  {
+    "name": "bus_station",
+    "parent": ["public_transport"],
+    "tags": {"amenity": "bus_station"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 197
+  },
+  {
+    "name": "subway_entrance",
+    "parent": ["public_transport"],
+    "tags": {"railway": "subway_entrance"},
+    "moretags": {
+      "bicycle": {
+        "class": "bicycle",
+        "tag": "bicycle",
+        "type": "translate"
+      },
+      "wheelchair": {
+        "class": "wheelchair",
+        "tag": "wheelchair",
+        "type": "translate"
+      },
+      "open_date": {
+        "tag": "start_date",
+        "type": "number"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 198
+  },
+  {
+    "name": "railway_station",
+    "parent": ["public_transport"],
+    "tags": {"railway": "station", "train": "yes"},
+    "moretags": {
+      "ticket_office": {
+        "class": "boolean",
+        "tag": "ticket_office",
+        "type": "translate"
+      },
+      "disused": {
+        "class": "boolean",
+        "tag": "disused",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 199
+  },
+  {
+    "name": "railway_halt",
+    "parent": ["public_transport"],
+    "tags": {"railway": "halt"},
+    "moretags": {
+      "ticket_office": {
+        "class": "boolean",
+        "tag": "ticket_office",
+        "type": "translate"
+      },
+      "disused": {
+        "class": "boolean",
+        "tag": "disused",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 200
+  },
+  {
+    "name": "subway_station",
+    "parent": ["public_transport"],
+    "tags": {"railway": "station", "station": "subway"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 201
+  },
+  {
+    "name": "bus_stop",
+    "parent": ["public_transport"],
+    "tags": {"highway": "bus_stop", "bus": "yes"},
+    "moretags": {
+      "bench": {
+        "class": "boolean",
+        "tag": "bench",
+        "type": "translate"
+      },
+      "shelter": {
+        "class": "boolean",
+        "tag": "shelter",
+        "type": "translate"
+      },
+      "bin": {
+        "class": "boolean",
+        "tag": "bin",
+        "type": "translate"
+      },
+      "route_ref": {
+        "tag": "route_ref",
+        "type": "number",
+        "multivalue": "yes"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 202
+  },
+  {
+    "name": "tram_stop",
+    "parent": ["public_transport"],
+    "tags": {"railway": "tram_stop"},
+    "moretags": {
+      "bench": {
+        "class": "boolean",
+        "tag": "bench",
+        "type": "translate"
+      },
+      "shelter": {
+        "class": "boolean",
+        "tag": "shelter",
+        "type": "translate"
+      },
+      "bin": {
+        "class": "boolean",
+        "tag": "bin",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 203
+  },
+  {
+    "name": "taxi",
+    "parent": ["public_transport"],
+    "tags": {"amenity": "taxi"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 204
+  },
+  {
+    "name": "car_repair",
+    "parent": ["personal_transport"],
+    "tags": {"shop": "car_repair"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 205
+  },
+  {
+    "name": "car_repair_tyres",
+    "parent": ["car_repair"],
+    "tags": {"shop": "car_repair", "service": "tyres"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 206
+  },
+  {
+    "name": "vehicle_inspection",
+    "parent": ["personal_transport"],
+    "tags": {"amenity": "vehicle_inspection"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 392
+  },
+  {
+    "name": "car_wash",
+    "parent": ["personal_transport"],
+    "tags": {"amenity": "car_wash"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 207
+  },
+  {
+    "name": "fuel",
+    "parent": ["personal_transport"],
+    "tags": {"amenity": "fuel"},
+    "moretags": {
+      "fuel_diesel":{
+        "class": "boolean",
+        "tag": "fuel:diesel",
+        "type": "translate"
+      },
+      "fuel_HGVdiesel":{
+        "class": "boolean",
+        "tag": "fuel:HGV_diesel",
+        "type": "translate"
+      },
+      "fuel_biodiesel":{
+        "class": "boolean",
+        "tag": "fuel:biodiesel",
+        "type": "translate"
+      },
+      "fuel_octane76":{
+        "class": "boolean",
+        "tag": "fuel:octane_76",
+        "type": "translate"
+      },
+      "fuel_octane91":{
+        "class": "boolean",
+        "tag": "fuel:octane_91",
+        "type": "translate"
+      },
+      "fuel_octane92":{
+        "class": "boolean",
+        "tag": "fuel:octane_92",
+        "type": "translate"
+      },
+      "fuel_octane95":{
+        "class": "boolean",
+        "tag": "fuel:octane_95",
+        "type": "translate"
+      },
+      "fuel_octane98":{
+        "class": "boolean",
+        "tag": "fuel:octane_98",
+        "type": "translate"
+      },
+      "fuel_octane100":{
+        "class": "boolean",
+        "tag": "fuel:octane_100",
+        "type": "translate"
+      },
+      "fuel_1_25":{
+        "class": "boolean",
+        "tag": "fuel:1_25",
+        "type": "translate"
+      },
+      "fuel_1_50":{
+        "class": "boolean",
+        "tag": "fuel:1_50",
+        "type": "translate"
+      },
+      "fuel_ethanol":{
+        "class": "boolean",
+        "tag": "fuel:ethanol",
+        "type": "translate"
+      },
+      "fuel_methanol":{
+        "class": "boolean",
+        "tag": "fuel:methanol",
+        "type": "translate"
+      },
+      "fuel_svo":{
+        "class": "boolean",
+        "tag": "fuel:svo",
+        "type": "translate"
+      },
+      "fuel_e85":{
+        "class": "boolean",
+        "tag": "fuel:e85",
+        "type": "translate"
+      },
+      "fuel_biogas":{
+        "class": "boolean",
+        "tag": "fuel:biogas",
+        "type": "translate"
+      },
+      "fuel_lpg":{
+        "class": "boolean",
+        "tag": "fuel:lpg",
+        "type": "translate"
+      },
+      "fuel_cng":{
+        "class": "boolean",
+        "tag": "fuel:cng",
+        "type": "translate"
+      },
+      "fuel_LH2":{
+        "class": "boolean",
+        "tag": "fuel:LH2",
+        "type": "translate"
+      },
+      "fuel_electricity":{
+        "class": "boolean",
+        "tag": "fuel:electricity",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 208
+  },
+  {
+    "name": "charging_station",
+    "parent": ["personal_transport", "service"],
+    "tags": {"amenity": "charging_station"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 209
+  },
+  {
+    "name": "vehicle_ramp",
+    "parent": ["personal_transport"],
+    "tags": {"amenity": "vehicle_ramp"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node"],
+    "id": 210
+  },
+  {
+    "name": "school",
+    "parent": ["education"],
+    "tags": {"amenity": "school"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 211
+  },
+  {
+    "name": "kindergarten",
+    "parent": ["education"],
+    "tags": {"amenity": "kindergarten"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 212
+  },
+  {
+    "name": "library",
+    "parent": ["education", "culture"],
+    "tags": {"amenity": "library"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 213
+  },
+  {
+    "name": "college",
+    "parent": ["education"],
+    "tags": {"amenity": "college"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 214
+  },
+  {
+    "name": "university",
+    "parent": ["education"],
+    "tags": {"amenity": "university"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 215
+  },
+  {
+    "name": "arts_centre",
+    "parent": ["culture"],
+    "tags": {"amenity": "arts_centre"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 216
+  },
+  {
+    "name": "cinema",
+    "parent": ["culture"],
+    "tags": {"amenity": "cinema"},
+    "moretags": {
+      "drive_in":{
+        "class": "boolean",
+        "tag": "drive_in",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 217
+  },
+  {
+    "name": "nightclub",
+    "parent": ["sport_and_entertainment"],
+    "tags": {"amenity": "nightclub"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 218
+  },
+  {
+    "name": "community_centre",
+    "parent": ["culture"],
+    "tags": {"amenity": "community_centre"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 219
+  },
+  {
+    "name": "theatre",
+    "parent": ["culture"],
+    "tags": {"amenity": "theatre"},
+    "moretags": {
+      "theatre_genre":{
+        "class": "theatre_genre",
+        "tag": "theatre:genre",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 220
+  },
+  {
+    "name": "circus",
+    "parent": ["theatre"],
+    "tags": {"amenity": "theatre", "theatre:genre": "circus"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 221
+  },
+  {
+    "name": "place_of_worship",
+    "parent": ["religion"],
+    "tags": {"amenity": "place_of_worship"},
+    "moretags": {
+      "religion": {
+        "class": "religion",
+        "tag": "religion",
+        "type": "translate"
+      },
+      "denomination": {
+        "class": "denomination",
+        "tag": "denomination",
+        "type": "translate"
+      },
+      "service_times": {
+        "tag": "service_times",
+        "type": "period"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 222
+  },
+  {
+    "name": "place_of_worship_christian",
+    "parent": ["place_of_worship"],
+    "tags": {"amenity": "place_of_worship", "religion": "christian"},
+    "moretags": {
+      "religion": {
+        "class": "religion",
+        "tag": "religion",
+        "type": "translate"
+      },
+      "denomination": {
+        "class": "denomination",
+        "tag": "denomination",
+        "type": "translate"
+      },
+      "service_times": {
+        "tag": "service_times",
+        "type": "period"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 223
+  },
+  {
+    "name": "place_of_worship_jewish",
+    "parent": ["place_of_worship"],
+    "tags": {"amenity": "place_of_worship", "religion": "jewish"},
+    "moretags": {
+      "religion": {
+        "class": "religion",
+        "tag": "religion",
+        "type": "translate"
+      },
+      "denomination": {
+        "class": "denomination",
+        "tag": "denomination",
+        "type": "translate"
+      },
+      "service_times": {
+        "tag": "service_times",
+        "type": "period"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 224
+  },
+  {
+    "name": "place_of_worship_muslim",
+    "parent": ["place_of_worship"],
+    "tags": {"amenity": "place_of_worship", "religion": "muslim"},
+    "moretags": {
+      "religion": {
+        "class": "religion",
+        "tag": "religion",
+        "type": "translate"
+      },
+      "denomination": {
+        "class": "denomination",
+        "tag": "denomination",
+        "type": "translate"
+      },
+      "service_times": {
+        "tag": "service_times",
+        "type": "period"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 225
+  },
+  {
+    "name": "monastery",
+    "parent": ["religion"],
+    "tags": {"amenity": "monastery"},
+    "moretags": {
+      "religion": {
+        "class": "religion",
+        "tag": "religion",
+        "type": "translate"
+      },
+      "denomination": {
+        "class": "denomination",
+        "tag": "denomination",
+        "type": "translate"
+      },
+      "community_gender": {
+        "class": "community_gender",
+        "tag": "community:gender",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 407
+  },
+  {
+    "name": "police",
+    "parent": ["democracy", "emergency"],
+    "tags": {"amenity": "police"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 226
+  },
+  {
+    "name": "courthouse",
+    "parent": ["democracy"],
+    "tags": {"amenity": "courthouse"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 227
+  },
+  {
+    "name": "prison",
+    "parent": ["democracy"],
+    "tags": {"amenity": "prison"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 228
+  },
+  {
+    "name": "register_office",
+    "parent": ["democracy"],
+    "tags": {"amenity": "register_office"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 229
+  },
+  {
+    "name": "embassy",
+    "parent": ["democracy"],
+    "tags": {"amenity": "embassy"},
+    "moretags": {
+      "country": {
+        "class": "country",
+        "tag": "country",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 230
+  },
+  {
+    "name": "stadium",
+    "parent": ["sport_and_entertainment"],
+    "tags": {"leisure": "stadium"},
+    "moretags": {
+      "sport": {
+        "class": "sport",
+        "tag": "sport",
+        "type": "translate",
+        "multivalue": "yes"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 231
+  },
+  {
+    "name": "sports_centre",
+    "parent": ["sport_and_entertainment"],
+    "tags": {"leisure": "sports_centre"},
+    "moretags": {
+      "sport": {
+        "class": "sport",
+        "tag": "sport",
+        "type": "translate",
+        "multivalue": "yes"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 232
+  },
+  {
+    "name": "museum",
+    "parent": ["culture", "sights"],
+    "tags": {"tourism": "museum"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 233
+  },
+  {
+    "name": "attraction",
+    "parent": ["sights"],
+    "tags": {"tourism": "attraction"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 234
+  },
+  {
+    "name": "information",
+    "parent": ["tourism"],
+    "tags": {"tourism": "information"},
+    "moretags": {
+      "information_type": {
+        "class": "information_type",
+        "tag": "information",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 235
+  },
+  {
+    "name": "memorial",
+    "parent": ["sights"],
+    "tags": {"historic": "memorial"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 236
+  },
+  {
+    "name": "artwork",
+    "parent": ["sights"],
+    "tags": {"tourism": "artwork"},
+    "moretags": {
+      "artwork_type": {
+        "class": "artwork_type",
+        "tag": "artwork_type",
+        "type": "translate"
+      },
+      "artist_name": {
+        "tag": "artist_name",
+        "type": "number"
+      },
+      "setup_date": {
+        "tag": "start_date",
+        "type": "number"
+      }
+    },
+    "poi": true,
+    "type": ["node", "way", "area"],
+    "id": 237
+  },
+  {
+    "name": "archaeological_site",
+    "parent": ["sights"],
+    "tags": {"historic": "archaeological_site"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 238
+  },
+  {
+    "name": "battlefield",
+    "parent": ["sights"],
+    "tags": {"historic": "battlefield"},
+    "moretags": {
+      "date": {
+        "tag": "date",
+        "type": "number"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 239
+  },
+  {
+    "name": "boundary_stone",
+    "parent": ["sights"],
+    "tags": {"historic": "boundary_stone"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 240
+  },
+  {
+    "name": "castle",
+    "parent": ["sights"],
+    "tags": {"historic": "castle"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 241
+  },
+  {
+    "name": "city_gate",
+    "parent": ["sights"],
+    "tags": {"historic": "city_gate"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 242
+  },
+  {
+    "name": "fort",
+    "parent": ["sights"],
+    "tags": {"historic": "fort"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 243
+  },
+  {
+    "name": "fountain",
+    "parent": ["sights"],
+    "tags": {"amenity": "fountain"},
+    "moretags": {
+      "drinkable": {
+        "class": "drinkable",
+        "tag": "drinkable",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 244
+  },
+  {
+    "name": "clock",
+    "parent": ["tourism"],
+    "tags": {"amenity": "clock"},
+    "moretags": {
+      "clock_support": {
+        "class": "clock_support",
+        "tag": "support",
+        "type": "translate"
+      },
+      "clock_display": {
+        "class": "clock_display",
+        "tag": "display",
+        "type": "translate"
+      },
+      "clock_visibility": {
+        "class": "clock_visibility",
+        "tag": "visibility",
+        "type": "translate"
+      },
+      "clock_date": {
+        "class": "boolean",
+        "tag": "date",
+        "type": "translate"
+      },
+      "clock_thermometer": {
+        "class": "boolean",
+        "tag": "thermometer",
+        "type": "translate"
+      },
+      "clock_barometer": {
+        "class": "boolean",
+        "tag": "barometer",
+        "type": "translate"
+      },
+      "clock_hygrometer": {
+        "class": "boolean",
+        "tag": "hygrometer",
+        "type": "translate"
+      },
+      "clock_faces": {
+        "tag": "faces",
+        "type": "number"
+      }
+    },
+    "poi": true,
+    "type": ["node", "way", "area"],
+    "id": 245
+  },
+  {
+    "name": "ruins",
+    "parent": ["sights"],
+    "tags": {"historic": "ruins"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 246
+  },
+  {
+    "name": "rune_stone",
+    "parent": ["sights"],
+    "tags": {"historic": "rune_stone"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 247
+  },
+  {
+    "name": "wreck",
+    "parent": ["sights"],
+    "tags": {"historic": "wreck"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 248
+  },
+  {
+    "name": "ship",
+    "parent": ["sights"],
+    "tags": {"historic": "ship"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 249
+  },
+  {
+    "name": "monument",
+    "parent": ["sights"],
+    "tags": {"historic": "monument"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 250
+  },
+  {
+    "name": "hotel",
+    "parent": ["lodging"],
+    "tags": {"tourism": "hotel"},
+    "moretags": {
+      "smoking": {
+        "class": "smoking",
+        "tag": "smoking",
+        "type": "translate"
+      },
+      "stars": {
+        "class": "stars",
+        "tag": "stars",
+        "type": "translate"
+      },
+      "internet_access": {
+        "class": "internet_access",
+        "tag": "internet_access",
+        "type": "translate"
+      },
+      "internet_access_operator": {
+        "tag": "internet_access:operator",
+        "type": "number"
+      },
+      "internet_access_fee": {
+        "class": "boolean",
+        "tag": "internet_access:fee",
+        "type": "translate"
+      },
+      "rooms": {
+        "tag": "rooms",
+        "type": "number"
+      },
+      "beds": {
+        "tag": "beds",
+        "type": "number"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 251
+  },
+  {
+    "name": "guest_house",
+    "parent": ["lodging"],
+    "tags": {"tourism": "guest_house"},
+    "moretags": {
+      "smoking": {
+        "class": "smoking",
+        "tag": "smoking",
+        "type": "translate"
+      },
+      "internet_access": {
+        "class": "internet_access",
+        "tag": "internet_access",
+        "type": "translate"
+      },
+      "internet_access_operator": {
+        "tag": "internet_access:operator",
+        "type": "number"
+      },
+      "internet_access_fee": {
+        "class": "boolean",
+        "tag": "internet_access:fee",
+        "type": "translate"
+      },
+      "beds": {
+        "tag": "beds",
+        "type": "number"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 252
+  },
+  {
+    "name": "hostel",
+    "parent": ["lodging"],
+    "tags": {"tourism": "hostel"},
+    "moretags": {
+      "smoking": {
+        "class": "smoking",
+        "tag": "smoking",
+        "type": "translate"
+      },
+      "internet_access": {
+        "class": "internet_access",
+        "tag": "internet_access",
+        "type": "translate"
+      },
+      "internet_access_operator": {
+        "tag": "internet_access:operator",
+        "type": "number"
+      },
+      "internet_access_fee": {
+        "class": "boolean",
+        "tag": "internet_access:fee",
+        "type": "translate"
+      },
+      "rooms": {
+        "tag": "rooms",
+        "type": "number"
+      },
+      "beds": {
+        "tag": "beds",
+        "type": "number"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 253
+  },
+  {
+    "name": "motel",
+    "parent": ["lodging"],
+    "tags": {"tourism": "motel"},
+    "moretags": {
+      "smoking": {
+        "class": "smoking",
+        "tag": "smoking",
+        "type": "translate"
+      },
+      "internet_access": {
+        "class": "internet_access",
+        "tag": "internet_access",
+        "type": "translate"
+      },
+      "internet_access_operator": {
+        "tag": "internet_access:operator",
+        "type": "number"
+      },
+      "internet_access_fee": {
+        "class": "boolean",
+        "tag": "internet_access:fee",
+        "type": "translate"
+      },
+      "rooms": {
+        "tag": "rooms",
+        "type": "number"
+      },
+      "beds": {
+        "tag": "beds",
+        "type": "number"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 254
+  },
+  {
+    "name": "company",
+    "parent": ["office"],
+    "tags": {"office": "company"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 255
+  },
+  {
+    "name": "government",
+    "parent": ["democracy"],
+    "tags": {"office":"government"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 256
+  },
+  {
+    "name": "bailiff",
+    "parent": ["democracy"],
+    "tags": {"office":"government", "government":"bailiff"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 257
+  },
+  {
+    "name": "prosecutor",
+    "parent": ["democracy"],
+    "tags": {"office":"government", "government":"prosecutor"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 258
+  },
+  {
+    "name": "pension_fund",
+    "parent": ["democracy"],
+    "tags": {"office":"government", "government":"pension_fund"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 259
+  },
+  {
+    "name": "migration",
+    "parent": ["democracy"],
+    "tags": {"office":"government", "government":"migration"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 260
+  },
+  {
+    "name": "tax_inspection",
+    "parent": ["democracy"],
+    "tags": {"office":"government", "government":"taxes"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 261
+  },
+  {
+    "name": "insurance",
+    "parent": ["office"],
+    "tags": {"office": "insurance"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 262
+  },
+  {
+    "name": "estate_agent",
+    "parent": ["office"],
+    "tags": {"office": "estate_agent"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 263
+  },
+  {
+    "name": "lawyer",
+    "parent": ["office"],
+    "tags": {"office": "lawyer"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 264
+  },
+  {
+    "name": "notary",
+    "parent": ["lawyer"],
+    "tags": {"office": "lawyer", "lawyer": "notary" },
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 265
+  },
+  {
+    "name": "telecommunication",
+    "parent": ["office"],
+    "tags": {"office": "telecommunication"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 266
+  },
+  {
+    "name": "travel_agent",
+    "parent": ["office", "tourism"],
+    "tags": {"office": "travel_agent"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 267
+  },
+  {
+    "name": "ngo",
+    "parent": ["office"],
+    "tags": {"office": "ngo"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 268
+  },
+  {
+    "name": "administrative",
+    "parent": ["office", "democracy"],
+    "tags": {"office": "administrative"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 269
+  },
+  {
+    "name": "town_hall",
+    "parent": ["democracy", "office"],
+    "tags": {"amenity": "townhall"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 270
+  },
+  {
+    "name": "accountant",
+    "parent": ["office", "finance"],
+    "tags": {"office": "accountant"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 271
+  },
+  {
+    "name": "employment_agency",
+    "parent": ["office"],
+    "tags": {"office": "employment_agency"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 272
+  },
+  {
+    "name": "research",
+    "parent": ["office"],
+    "tags": {"office": "research"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 273
+  },
+  {
+    "name": "it",
+    "parent": ["office"],
+    "tags": {"office": "it"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 274
+  },
+  {
+    "name": "newspaper",
+    "parent": ["office"],
+    "tags": {"office": "newspaper"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 275
+  },
+  {
+    "name": "architect",
+    "parent": ["office"],
+    "tags": {"office": "architect"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 276
+  },
+  {
+    "name": "advertising_agency",
+    "parent": ["office"],
+    "tags": {"office": "advertising_agency"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 277
+  },
+  {
+    "name": "educational_institution",
+    "parent": ["office"],
+    "tags": {"office": "educational_institution"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 278
+  },
+  {
+    "name": "studio",
+    "parent": ["office"],
+    "tags": {"amenity": "studio"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 279
+  },
+  {
+    "name": "bookmaker",
+    "parent": ["office"],
+    "tags": {"shop": "bookmaker"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 280
+  },
+  {
+    "name": "toilets",
+    "parent": ["service"],
+    "tags": {"amenity": "toilets"},
+    "moretags": {
+      "fee":{
+        "class": "fee",
+        "tag": "fee",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 281
+  },
+  {
+    "name": "viewpoint",
+    "parent": ["tourism", "sights"],
+    "tags": {"tourism": "viewpoint"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 282
+  },
+  {
+    "name": "camp_site",
+    "parent": ["tourism"],
+    "tags": {"tourism": "camp_site"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 283
+  },
+  {
+    "name": "picnic_site",
+    "parent": ["tourism"],
+    "tags": {"tourism": "picnic_site"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 284
+  },
+  {
+    "name": "cave_entrance",
+    "parent": ["natural"],
+    "tags": {"natural": "cave_entrance"},
+    "moretags": {
+      "fee": {
+        "class": "fee",
+        "tag": "fee",
+        "type": "translate"
+      },
+      "ele": {
+        "tag": "ele",
+        "type": "number"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 285
+  },
+  {
+    "name": "peak",
+    "parent": ["natural"],
+    "tags": {"natural": "peak"},
+    "moretags": {
+      "ele": {
+        "tag": "ele",
+        "type": "number"
+      }
+    },
+    "poi": true,
+    "type": ["node"],
+    "id": 286
+  },
+  {
+    "name": "saddle",
+    "parent": ["natural"],
+    "tags": {"natural": "saddle"},
+    "moretags": {
+      "ele": {
+        "tag": "ele",
+        "type": "number"
+      }
+    },
+    "poi": true,
+    "type": ["node"],
+    "id": 287
+  },
+  {
+    "name": "volcano",
+    "parent": ["natural"],
+    "tags": {"natural": "volcano"},
+    "moretags": {
+      "ele": {
+        "tag": "ele",
+        "type": "number"
+      }
+    },
+    "poi": true,
+    "type": ["node"],
+    "id": 288
+  },
+  {
+    "name": "waterfall",
+    "parent": ["natural"],
+    "tags": {"natural": "waterfall"},
+    "moretags": {
+      "height": {
+        "tag": "height",
+        "type": "number"
+      }
+    },
+    "poi": true,
+    "type": ["node"],
+    "id": 289
+  },
+  {
+    "name": "spring",
+    "parent": ["natural", "tourism"],
+    "tags": {"natural": "spring"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node"],
+    "id": 290
+  },
+  {
+    "name": "cape",
+    "parent": ["natural"],
+    "tags": {"natural": "cape"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 291
+  },
+  {
+    "name": "bay",
+    "parent": ["natural"],
+    "tags": {"natural": "bay"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 292
+  },
+  {
+    "name": "strait",
+    "parent": ["natural"],
+    "tags": {"natural": "strait"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "way", "area"],
+    "id": 293
+  },
+  {
+    "name": "island",
+    "parent": ["natural"],
+    "tags": {"place": "island"},
+    "moretags": {},
+    "poi": true,
+    "type": ["area"],
+    "id": 294
+  },
+  {
+    "name": "beach",
+    "parent": ["natural"],
+    "tags": {"natural": "beach"},
+    "moretags": {
+      "surface": {
+        "class": "surface",
+        "tag": "surface",
+        "type": "translate"
+      },
+      "nudism": {
+        "class": "nudism",
+        "tag": "nudism",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["area"],
+    "id": 295
+  },
+  {
+    "name": "islet",
+    "parent": ["island"],
+    "tags": {"place": "islet"},
+    "moretags": {},
+    "poi": true,
+    "type": ["area"],
+    "id": 296
+  },
+  {
+    "name": "beach_resort",
+    "parent": ["sport_and_entertainment"],
+    "tags": {"leisure": "beach_resort"},
+    "moretags": {
+      "fee": {
+        "class": "fee",
+        "tag": "fee",
+        "type": "translate"
+      },
+      "nudism": {
+        "class": "nudism",
+        "tag": "nudism",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 297
+  },
+  {
+    "name": "dance",
+    "parent": ["sport_and_entertainment", "culture"],
+    "tags": {"leisure": "dance"},
+    "moretags": {
+      "fee": {
+        "class": "fee",
+        "tag": "fee",
+        "type": "translate"
+      },
+      "covered": {
+        "class": "boolean",
+        "tag": "covered",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 298
+  },
+  {
+    "name": "dog_park",
+    "parent": ["sport_and_entertainment"],
+    "tags": {"leisure": "dog_park"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 299
+  },
+  {
+    "name": "fishing",
+    "parent": ["sport_and_entertainment"],
+    "tags": {"leisure": "fishing"},
+    "moretags": {
+      "fee": {
+        "class": "fee",
+        "tag": "fee",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 300
+  },
+  {
+    "name": "golf_course",
+    "parent": ["sport_and_entertainment"],
+    "tags": {"leisure": "golf_course"},
+    "moretags": {
+      "fee": {
+        "class": "fee",
+        "tag": "fee",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 301
+  },
+  {
+    "name": "ice_rink",
+    "parent": ["sport_and_entertainment"],
+    "tags": {"leisure": "ice_rink"},
+    "moretags": {
+      "fee": {
+        "class": "fee",
+        "tag": "fee",
+        "type": "translate"
+      },
+      "covered": {
+        "class": "boolean",
+        "tag": "covered",
+        "type": "translate"
+      },
+      "seasonal": {
+        "class": "boolean",
+        "tag": "seasonal",
+        "type": "translate"
+      },
+      "sport": {
+        "class": "sport",
+        "tag": "sport",
+        "type": "translate",
+        "multivalue": "yes"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 302
+  },
+  {
+    "name": "marina",
+    "parent": ["sport_and_entertainment"],
+    "tags": {"leisure": "marina"},
+    "moretags": {
+      "ship_capacity": {
+        "tag": "capacity",
+        "type": "number"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 303
+  },
+  {
+    "name": "slipway",
+    "parent": ["sport_and_entertainment", "water_transport"],
+    "tags": {"leisure": "slipway"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 304
+  },
+  {
+    "name": "miniature_golf",
+    "parent": ["sport_and_entertainment"],
+    "tags": {"leisure": "miniature_golf"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 305
+  },
+  {
+    "name": "pitch",
+    "parent": ["sport_and_entertainment"],
+    "tags": {"leisure": "pitch"},
+    "moretags": {
+      "fee": {
+        "class": "fee",
+        "tag": "fee",
+        "type": "translate"
+      },
+      "covered": {
+        "class": "boolean",
+        "tag": "covered",
+        "type": "translate"
+      },
+      "seasonal": {
+        "class": "boolean",
+        "tag": "seasonal",
+        "type": "translate"
+      },
+      "sport": {
+        "class": "sport",
+        "tag": "sport",
+        "type": "translate",
+        "multivalue": "yes"
+      },
+      "surface": {
+        "class": "surface",
+        "tag": "surface",
+        "type": "translate"
+      },
+      "hoops": {
+        "tag": "hoops",
+        "type": "number"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 306
+  },
+  {
+    "name": "running_track",
+    "parent": ["sport_and_entertainment"],
+    "tags": {"leisure": "track", "sport": "running"},
+    "moretags": {
+      "fee": {
+        "class": "fee",
+        "tag": "fee",
+        "type": "translate"
+      },
+      "covered": {
+        "class": "boolean",
+        "tag": "covered",
+        "type": "translate"
+      },
+      "seasonal": {
+        "class": "boolean",
+        "tag": "seasonal",
+        "type": "translate"
+      },
+      "sport": {
+        "class": "sport",
+        "tag": "sport",
+        "type": "translate",
+        "multivalue": "yes"
+      },
+      "surface": {
+        "class": "surface",
+        "tag": "surface",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node", "way", "area"],
+    "id": 307
+  },
+  {
+    "name": "bicycle_track",
+    "parent": ["sport_and_entertainment"],
+    "tags": {"leisure": "track", "sport": "cycling"},
+    "moretags": {
+      "fee": {
+        "class": "fee",
+        "tag": "fee",
+        "type": "translate"
+      },
+      "covered": {
+        "class": "boolean",
+        "tag": "covered",
+        "type": "translate"
+      },
+      "seasonal": {
+        "class": "boolean",
+        "tag": "seasonal",
+        "type": "translate"
+      },
+      "sport": {
+        "class": "sport",
+        "tag": "sport",
+        "type": "translate",
+        "multivalue": "yes"
+      },
+      "surface": {
+        "class": "surface",
+        "tag": "surface",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node", "way", "area"],
+    "id": 308
+  },
+  {
+    "name": "horse_track",
+    "parent": ["sport_and_entertainment"],
+    "tags": {"leisure": "track", "sport": "horse_racing"},
+    "moretags": {
+      "fee": {
+        "class": "fee",
+        "tag": "fee",
+        "type": "translate"
+      },
+      "covered": {
+        "class": "boolean",
+        "tag": "covered",
+        "type": "translate"
+      },
+      "seasonal": {
+        "class": "boolean",
+        "tag": "seasonal",
+        "type": "translate"
+      },
+      "sport": {
+        "class": "sport",
+        "tag": "sport",
+        "type": "translate",
+        "multivalue": "yes"
+      },
+      "surface": {
+        "class": "surface",
+        "tag": "surface",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node", "way", "area"],
+    "id": 309
+  },
+  {
+    "name": "raceway",
+    "parent": ["sport_and_entertainment"],
+    "tags": {"highway": "raceway"},
+    "moretags": {
+      "fee": {
+        "class": "fee",
+        "tag": "fee",
+        "type": "translate"
+      },
+      "covered": {
+        "class": "boolean",
+        "tag": "covered",
+        "type": "translate"
+      },
+      "seasonal": {
+        "class": "boolean",
+        "tag": "seasonal",
+        "type": "translate"
+      },
+      "sport": {
+        "class": "sport",
+        "tag": "sport",
+        "type": "translate",
+        "multivalue": "yes"
+      },
+      "surface": {
+        "class": "surface",
+        "tag": "surface",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["way"],
+    "id": 310
+  },
+  {
+    "name": "playground",
+    "parent": ["sport_and_entertainment"],
+    "tags": {"leisure": "playground"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 311
+  },
+  {
+    "name": "swimming_pool",
+    "parent": ["sport_and_entertainment"],
+    "tags": {"leisure": "swimming_pool"},
+    "moretags": {
+      "covered": {
+        "class": "boolean",
+        "tag": "covered",
+        "type": "translate"
+      },
+      "seasonal": {
+        "class": "boolean",
+        "tag": "seasonal",
+        "type": "translate"
+      },
+      "sport": {
+        "class": "sport",
+        "tag": "sport",
+        "type": "translate",
+        "multivalue": "yes"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 312
+  },
+  {
+    "name": "water_park",
+    "parent": ["sport_and_entertainment"],
+    "tags": {"leisure": "water_park"},
+    "moretags": {
+      "covered": {
+        "class": "boolean",
+        "tag": "covered",
+        "type": "translate"
+      },
+      "seasonal": {
+        "class": "boolean",
+        "tag": "seasonal",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 313
+  },
+  {
+    "name": "cosmetics",
+    "parent": ["shop"],
+    "tags": {"shop": "cosmetics"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 314
+  },
+  {
+    "name": "marketplace",
+    "parent": ["shop"],
+    "tags": {"amenity": "marketplace"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 315
+  },
+  {
+    "name": "telephone",
+    "parent": ["service", "communications"],
+    "tags": {"amenity": "telephone"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 316
+  },
+  {
+    "name": "ferry_terminal",
+    "parent": ["water_transport"],
+    "tags": {"amenity": "ferry_terminal"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 317
+  },
+  {
+    "name": "cemetery",
+    "parent": ["religion"],
+    "tags": {"landuse": "cemetery"},
+    "moretags": {
+      "religion": {
+        "class": "religion",
+        "tag": "religion",
+        "type": "translate"
+      },
+      "denomination": {
+        "class": "denomination",
+        "tag": "denomination",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 318
+  },
+  {
+    "name": "fire_station",
+    "parent": ["emergency"],
+    "tags": {"amenity": "fire_station"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 319
+  },
+  {
+    "name": "emergency_phone",
+    "parent": ["emergency", "communications"],
+    "tags": {"emergency": "phone"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 320
+  },
+  {
+    "name": "fire_hydrant",
+    "parent": ["emergency"],
+    "tags": {"emergency": "fire_hydrant"},
+    "moretags": {
+      "fire_hydrant_type" : {
+        "class": "fire_hydrant_type",
+        "tag": "fire_hydrant:type",
+        "type": "translate"
+      },
+      "fire_hydrant_diameter": {
+        "tag": "fire_hydrant:diameter",
+        "type": "number"
+      },
+      "fire_hydrant_pressure": {
+        "tag": "fire_hydrant:pressure",
+        "type": "number"
+      },
+      "fire_hydrant_count": {
+        "tag": "fire_hydrant:count",
+        "type": "number"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 321
+  },
+  {
+    "name": "fire_water_pond",
+    "parent": ["emergency"],
+    "tags": {"emergency": "fire_water_pond"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 393
+  },
+  {
+    "name": "ambulance_station",
+    "parent": ["emergency", "health"],
+    "tags": {"emergency": "ambulance_station"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 322
+  },
+  {
+    "name": "park",
+    "parent": ["sport_and_entertainment"],
+    "tags": {"leisure": "park"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 323
+  },
+  {
+    "name": "airport",
+    "parent": ["air_transport"],
+    "tags": {"aeroway": "aerodrome"},
+    "moretags": {
+      "ele": {
+        "tag": "ele",
+        "type": "number"
+      },
+      "iata": {
+        "tag": "iata",
+        "type": "number"
+      },
+      "icao": {
+        "tag": "icao",
+        "type": "number"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 324
+  },
+  {
+    "name": "helipad",
+    "parent": ["air_transport"],
+    "tags": {"aeroway": "helipad"},
+    "moretags": {
+      "ele": {
+        "tag": "ele",
+        "type": "number"
+      },
+      "iata": {
+        "tag": "iata",
+        "type": "number"
+      },
+      "icao": {
+        "tag": "icao",
+        "type": "number"
+      },
+      "surface": {
+        "class": "surface",
+        "tag": "surface",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 325
+  },
+  {
+    "name": "shelter",
+    "parent": ["tourism"],
+    "tags": {"amenity": "shelter"},
+    "moretags": {
+      "bench": {
+        "class": "boolean",
+        "tag": "bench",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 326
+  },
+  {
+    "name": "drinking_water",
+    "parent": ["tourism"],
+    "tags": {"amenity": "drinking_water"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node"],
+    "id": 327
+  },
+  {
+    "name": "sauna",
+    "parent": ["service", "sport_and_entertainment"],
+    "tags": {"amenity": "sauna"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 328
+  },
+  {
+    "name": "zoo",
+    "parent": ["sights", "culture"],
+    "tags": {"tourism": "zoo"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 329
+  },
+  {
+    "name": "parking",
+    "parent": ["personal_transport"],
+    "tags": {"amenity": "parking"},
+    "moretags": {
+      "fee":{
+        "class": "fee",
+        "tag": "fee",
+        "type": "translate"
+      },
+      "covered": {
+        "class": "boolean",
+        "tag": "covered",
+        "type": "translate"
+      },
+      "car_capacity": {
+        "tag": "capacity",
+        "type": "number"
+      },
+      "parking": {
+        "class": "parking",
+        "tag": "parking",
+        "type": "translate"
+      },
+      "park_ride": {
+        "class": "park_ride",
+        "tag": "park_ride",
+        "type": "translate",
+        "multivalue": "yes"
+      },
+      "maxstay": {
+        "tag": "maystay",
+        "type": "number"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 330
+  },
+  {
+    "name": "parking_entrance",
+    "parent": ["personal_transport"],
+    "tags": {"amenity": "parking_entrance"},
+    "moretags": {
+    },
+    "poi": true,
+    "type": ["node"],
+    "id": 331
+  },
+  {
+    "name": "bicycle_parking",
+    "parent": ["bicycle_transport"],
+    "tags": {"amenity": "bicycle_parking"},
+    "moretags": {
+      "fee":{
+        "class": "fee",
+        "tag": "fee",
+        "type": "translate"
+      },
+      "covered": {
+        "class": "boolean",
+        "tag": "covered",
+        "type": "translate"
+      },
+      "bicycle_capacity": {
+        "tag": "capacity",
+        "type": "number"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 332
+  },
+  {
+    "name": "theme_park",
+    "parent": ["sights", "sport_and_entertainment"],
+    "tags": {"tourism": "theme_park"},
+    "moretags": {
+      "sport": {
+        "class": "sport",
+        "tag": "sport",
+        "type": "translate",
+        "multivalue": "yes"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 333
+  },
+  {
+    "name": "customs",
+    "parent": ["democracy"],
+    "tags": {"amenity": "customs"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 334
+  },
+  {
+    "name": "recycling",
+    "parent": ["service", "trash_disposal"],
+    "tags": {"amenity": "recycling"},
+    "moretags": {
+      "recycling_type": {
+        "class": "recycling_type",
+        "tag": "recycling_type",
+        "type": "translate"
+      },
+      "collection_times_waste":{
+        "tag": "collection_times",
+        "type": "period"
+      },
+      "recycling_animal_waste": { "class": "boolean", "tag": "recycling:animal_waste", "type": "translate" },
+      "recycling_aluminium": { "class": "boolean", "tag": "recycling:aluminium", "type": "translate" },
+      "recycling_batteries": { "class": "boolean", "tag": "recycling:batteries", "type": "translate" },
+      "recycling_bicycles": { "class": "boolean", "tag": "recycling:bicycles", "type": "translate" },
+      "recycling_books": { "class": "boolean", "tag": "recycling:books", "type": "translate" },
+      "recycling_cans": { "class": "boolean", "tag": "recycling:cans", "type": "translate" },
+      "recycling_cardboard": { "class": "boolean", "tag": "recycling:cardboard", "type": "translate" },
+      "recycling_cartons": { "class": "boolean", "tag": "recycling:cartons", "type": "translate" },
+      "recycling_cds": { "class": "boolean", "tag": "recycling:cds", "type": "translate" },
+      "recycling_chipboard": { "class": "boolean", "tag": "recycling:chipboard", "type": "translate" },
+      "recycling_christmas_trees": { "class": "boolean", "tag": "recycling:christmas_trees", "type": "translate" },
+      "recycling_clothes": { "class": "boolean", "tag": "recycling:clothes", "type": "translate" },
+      "recycling_computers": { "class": "boolean", "tag": "recycling:computers", "type": "translate" },
+      "recycling_cooking_oil": { "class": "boolean", "tag": "recycling:cooking_oil", "type": "translate" },
+      "recycling_cork": { "class": "boolean", "tag": "recycling:cork", "type": "translate" },
+      "recycling_electrical_items": { "class": "boolean", "tag": "recycling:electrical_items", "type": "translate" },
+      "recycling_engine_oil": { "class": "boolean", "tag": "recycling:engine_oil", "type": "translate" },
+      "recycling_excrement": { "class": "boolean", "tag": "recycling:excrement", "type": "translate" },
+      "recycling_fluorescent_tubes": { "class": "boolean", "tag": "recycling:fluorescent_tubes", "type": "translate" },
+      "recycling_foil": { "class": "boolean", "tag": "recycling:foil", "type": "translate" },
+      "recycling_gas_bottles": { "class": "boolean", "tag": "recycling:gas_bottles", "type": "translate" },
+      "recycling_glass": { "class": "boolean", "tag": "recycling:glass", "type": "translate" },
+      "recycling_glass_bottles": { "class": "boolean", "tag": "recycling:glass_bottles", "type": "translate" },
+      "recycling_green_waste": { "class": "boolean", "tag": "recycling:green_waste", "type": "translate" },
+      "recycling_garden_waste": { "class": "boolean", "tag": "recycling:garden_waste", "type": "translate" },
+      "recycling_hardcore": { "class": "boolean", "tag": "recycling:hardcore", "type": "translate" },
+      "recycling_low_energy_bulbs": { "class": "boolean", "tag": "recycling:low_energy_bulbs", "type": "translate" },
+      "recycling_magazines": { "class": "boolean", "tag": "recycling:magazines", "type": "translate" },
+      "recycling_mobile_phones": { "class": "boolean", "tag": "recycling:mobile_phones", "type": "translate" },
+      "recycling_newspaper": { "class": "boolean", "tag": "recycling:newspaper", "type": "translate" },
+      "recycling_organic": { "class": "boolean", "tag": "recycling:organic", "type": "translate" },
+      "recycling_paint": { "class": "boolean", "tag": "recycling:paint", "type": "translate" },
+      "recycling_paper": { "class": "boolean", "tag": "recycling:paper", "type": "translate" },
+      "recycling_paper_packaging": { "class": "boolean", "tag": "recycling:paper_packaging", "type": "translate" },
+      "recycling_plasterboard": { "class": "boolean", "tag": "recycling:plasterboard", "type": "translate" },
+      "recycling_plastic": { "class": "boolean", "tag": "recycling:plastic", "type": "translate" },
+      "recycling_plastic_bags": { "class": "boolean", "tag": "recycling:plastic_bags", "type": "translate" },
+      "recycling_plastic_bottles": { "class": "boolean", "tag": "recycling:plastic_bottles", "type": "translate" },
+      "recycling_plastic_packaging": { "class": "boolean", "tag": "recycling:plastic_packaging", "type": "translate" },
+      "recycling_polyester": { "class": "boolean", "tag": "recycling:polyester", "type": "translate" },
+      "recycling_printer_cartridges": { "class": "boolean", "tag": "recycling:printer_cartridges", "type": "translate" },
+      "recycling_rubble": { "class": "boolean", "tag": "recycling:rubble", "type": "translate" },
+      "recycling_scrap_metal": { "class": "boolean", "tag": "recycling:scrap_metal", "type": "translate" },
+      "recycling_sheet_metal": { "class": "boolean", "tag": "recycling:sheet_metal", "type": "translate" },
+      "recycling_small_appliances": { "class": "boolean", "tag": "recycling:small_appliances", "type": "translate" },
+      "recycling_styrofoam": { "class": "boolean", "tag": "recycling:styrofoam", "type": "translate" },
+      "recycling_thermometers": { "class": "boolean", "tag": "recycling:thermometers", "type": "translate" },
+      "recycling_tyres": { "class": "boolean", "tag": "recycling:tyres", "type": "translate" },
+      "recycling_tv_monitor": { "class": "boolean", "tag": "recycling:tv_monitor", "type": "translate" },
+      "recycling_waste": { "class": "boolean", "tag": "recycling:waste", "type": "translate" },
+      "recycling_white_goods": { "class": "boolean", "tag": "recycling:white_goods", "type": "translate" },
+      "recycling_wood": { "class": "boolean", "tag": "recycling:wood", "type": "translate" }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 335
+  },
+  {
+    "name": "ford",
+    "parent": ["road_obstacles"],
+    "tags": {"ford": "yes"},
+    "moretags": {
+      "surface": {
+        "class": "surface",
+        "tag": "surface",
+        "type": "translate"
+      },
+      "depth": {
+        "tag": "depth",
+        "type": "number"
+      }
+    },
+    "poi": true,
+    "type": ["node", "way"],
+    "id": 336
+  },
+  {
+    "name": "mountain_pass",
+    "parent": ["road_obstacles"],
+    "tags": {"mountain_pass": "yes"},
+    "moretags": {
+      "ele": {
+        "tag": "ele",
+        "type": "number"
+      }
+    },
+    "poi": true,
+    "type": ["node", "way"],
+    "id": 337
+  },
+  {
+    "name": "gate",
+    "parent": ["road_obstacles"],
+    "tags": {"barrier": "gate"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node"],
+    "id": 338
+  },
+  {
+    "name": "lift_gate",
+    "parent": ["road_obstacles"],
+    "tags": {"barrier": "lift_gate"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node"],
+    "id": 339
+  },
+  {
+    "name": "toll_booth",
+    "parent": ["road_obstacles"],
+    "tags": {"barrier": "toll_booth"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node"],
+    "id": 340
+  },
+  {
+    "name": "bump",
+    "parent": ["road_obstacles"],
+    "tags": {"traffic_calming": "bump"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node"],
+    "id": 341
+  },
+  {
+    "name": "hump",
+    "parent": ["bump"],
+    "tags": {"traffic_calming": "hump"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node"],
+    "id": 342
+  },
+  {
+    "name": "cushion",
+    "parent": ["bump"],
+    "tags": {"traffic_calming": "cushion"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node"],
+    "id": 343
+  },
+  {
+    "name": "traffic_signals",
+    "parent": ["road_obstacles"],
+    "tags": {"highway": "traffic_signals"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node"],
+    "id": 394
+  },
+  {
+    "name": "surveillance",
+    "parent": ["infrastructure"],
+    "tags": {"man_made": "surveillance"},
+    "moretags": {
+      "surveillance": {
+        "class": "surveillance",
+        "tag": "surveillance",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node"],
+    "id": 344
+  },
+  {
+    "name": "communication_tower",
+    "parent": ["communications"],
+    "tags": {"man_made": "tower", "tower:type": "communication"},
+    "moretags": {
+      "height": {
+        "tag": "height",
+        "type": "number"
+      },
+      "ele": {
+        "tag": "ele",
+        "type": "number"
+      },
+      "general_ref": {
+        "tag": "ref",
+        "type": "number"
+      },
+      "communication_mobile_phone": {
+        "class": "communication_mobile_phone",
+        "tag": "communication:mobile_phone",
+        "type": "translate"
+      },
+      "communication_radio": {
+        "class": "communication_radio",
+        "tag": "communication:radio",
+        "type": "translate"
+      },
+      "communication_television": {
+        "class": "communication_television",
+        "tag": "communication:television",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node"],
+    "id": 345
+  },
+  {
+    "name": "telephone_exchange",
+    "parent": ["communications"],
+    "tags": {"man_made": "telephone_exchange"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 346
+  },
+  {
+    "name": "water_well",
+    "parent": ["water_supply"],
+    "tags": {"man_made": "water_well"},
+    "moretags": {
+      "pump": {
+        "class": "pump",
+        "tag": "pump",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 347
+  },
+  {
+    "name": "standpipe",
+    "parent": ["water_supply"],
+    "tags": {"man_made": "standpipe"},
+    "moretags": {
+      "pump": {
+        "class": "pump",
+        "tag": "pump",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 406
+  },
+  {
+    "name": "water_works",
+    "parent": ["water_supply"],
+    "tags": {"man_made": "water_works"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 348
+  },
+  {
+    "name": "wastewater_plant",
+    "parent": ["water_supply"],
+    "tags": {"man_made": "wastewater_plant"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 349
+  },
+  {
+    "name": "water_tower",
+    "parent": ["water_supply"],
+    "tags": {"man_made": "water_tower"},
+    "moretags": {
+      "water_capacity": {
+        "tag": "capacity",
+        "type": "number"
+      },
+      "height": {
+        "tag": "height",
+        "type": "number"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 350
+  },
+  {
+    "name": "substation",
+    "parent": ["power"],
+    "tags": {"power": "substation"},
+    "moretags": {
+      "voltages": {
+        "type": "number",
+        "tag": "voltage"
+      },
+      "gas_insulated": {
+        "type": "translate",
+        "class": "boolean",
+        "tag": "gas_insulated"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 351
+  },
+  {
+    "name": "transformer",
+    "parent": ["power"],
+    "tags": {"power": "transformer"},
+    "moretags": {
+      "voltages": {
+        "type": "number",
+        "tag": "voltage"
+      },
+      "frequency": {
+        "type": "number",
+        "tag": "frequency"
+      },
+      "phases": {
+        "type": "number",
+        "tag": "phases"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 352
+  },
+  {
+    "name": "power_plant",
+    "parent": ["power"],
+    "tags": {"power": "plant", "plant:output:electricity": "*" },
+    "moretags": {
+      "power_generation_source": {
+        "class": "power_generation_source",
+        "tag": "generator:source",
+        "type": "translate"
+      },
+      "power_generation_method": {
+        "class": "power_generation_method",
+        "tag": "generator:method",
+        "type": "translate"
+      },
+      "power_output_electricity": {
+        "tag": "plant:output:electricity",
+        "type": "number"
+      },
+      "power_output_hot_water": {
+        "tag": "plant:output:hot_water",
+        "type": "number"
+      },
+      "power_output_hot_air": {
+        "tag": "plant:output:hot_air",
+        "type": "number"
+      },
+      "power_output_cold_water": {
+        "tag": "plant:output:cold_water",
+        "type": "number"
+      },
+      "power_output_cold_air": {
+        "tag": "plant:output:cold_air",
+        "type": "number"
+      },
+      "power_output_compressed_air": {
+        "tag": "plant:output:compressed_air",
+        "type": "number"
+      },
+      "power_output_steam": {
+        "tag": "plant:output:steam",
+        "type": "number"
+      },
+      "power_output_vacuum": {
+        "tag": "plant:output:vacuum",
+        "type": "number"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 353
+  },
+  {
+    "name": "power_generator",
+    "parent": ["power"],
+    "tags": {"power": "generator", "generator:output:electricity": "*" },
+    "moretags": {
+      "power_generation_source": {
+        "class": "power_generation_source",
+        "tag": "generator:source",
+        "type": "translate"
+      },
+      "power_generation_method": {
+        "class": "power_generation_method",
+        "tag": "generator:method",
+        "type": "translate"
+      },
+      "generator_type": {
+        "class": "generator_type",
+        "tag": "generator:type",
+        "type": "translate"
+      },
+      "power_output_electricity": {
+        "tag": "generator:output:electricity",
+        "type": "number"
+      },
+      "power_output_hot_water": {
+        "tag": "generator:output:hot_water",
+        "type": "number"
+      },
+      "power_output_hot_air": {
+        "tag": "generator:output:hot_air",
+        "type": "number"
+      },
+      "power_output_cold_water": {
+        "tag": "generator:output:cold_water",
+        "type": "number"
+      },
+      "power_output_cold_air": {
+        "tag": "generator:output:cold_air",
+        "type": "number"
+      },
+      "power_output_compressed_air": {
+        "tag": "generator:output:compressed_air",
+        "type": "number"
+      },
+      "power_output_steam": {
+        "tag": "generator:output:steam",
+        "type": "number"
+      },
+      "power_output_vacuum": {
+        "tag": "generator:output:vacuum",
+        "type": "number"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 354
+  },
+  {
+    "name": "sewing",
+    "parent": ["shop"],
+    "tags": {"shop": "sewing"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 355
+  },
+  {
+    "name": "leading_beacon",
+    "parent": ["ship_navigation"],
+    "tags": {"seamark:type": "beacon_special_purpose", "seamark:beacon_special_purpose:category": "leading"},
+    "moretags": {
+    },
+    "poi": true,
+    "type": ["node"],
+    "id": 356
+  },
+  {
+    "name": "lateral_buoy",
+    "parent": ["ship_navigation"],
+    "tags": {"seamark:type": "buoy_lateral"},
+    "moretags": {
+      "lateral_buoy_category": {
+        "class": "lateral_buoy_category",
+        "tag": "seamark:buoy_lateral:category",
+        "type": "translate"
+      },
+      "color": {
+        "class": "color",
+        "tag": "seamark:buoy_lateral:colour",
+        "type": "translate"
+      },
+      "buoy_shape": {
+        "class": "buoy_shape",
+        "tag": "seamark:buoy_lateral:shape",
+        "type": "translate"
+      },
+      "seamark_name": {
+        "tag": "seamark:name",
+        "type": "number"
+      }
+    },
+    "poi": true,
+    "type": ["node"],
+    "id": 357
+  },
+  {
+    "name": "internet_cafe",
+    "parent": ["service"],
+    "tags": {"amenity": "internet_cafe"},
+    "moretags": {
+      "smoking": {
+        "class": "smoking",
+        "tag": "smoking",
+        "type": "translate"
+      },
+      "internet_access": {
+        "class": "internet_access",
+        "tag": "internet_access",
+        "type": "translate"
+      },
+      "internet_access_operator": {
+        "tag": "internet_access:operator",
+        "type": "number"
+      },
+      "internet_access_fee": {
+        "class": "boolean",
+        "tag": "internet_access:fee",
+        "type": "translate"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 358
+  },
+  {
+    "name": "club_art",
+    "parent": ["clubs"],
+    "tags": {"club": "art"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 359
+  },
+  {
+    "name": "club_astronomy",
+    "parent": ["clubs"],
+    "tags": {"club": "astronomy"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 360
+  },
+  {
+    "name": "club_computer",
+    "parent": ["clubs"],
+    "tags": {"club": "computer"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 361
+  },
+  {
+    "name": "club_board_games",
+    "parent": ["clubs"],
+    "tags": {"club": "board_games"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 362
+  },
+  {
+    "name": "club_motorcycle",
+    "parent": ["clubs"],
+    "tags": {"club": "motorcycle"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 363
+  },
+  {
+    "name": "club_sport",
+    "parent": ["clubs", "sport_and_entertainment"],
+    "tags": {"club": "sport"},
+    "moretags": {
+      "sport": {
+        "class": "sport",
+        "tag": "sport",
+        "type": "translate",
+        "multivalue": "yes"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 364
+  },
+  {
+    "name": "club_game",
+    "parent": ["clubs"],
+    "tags": {"club": "game"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 365
+  },
+  {
+    "name": "club_automobile",
+    "parent": ["clubs"],
+    "tags": {"club": "automobile"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 366
+  },
+  {
+    "name": "club_chess",
+    "parent": ["clubs"],
+    "tags": {"club": "chess"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 367
+  },
+  {
+    "name": "club_cinema",
+    "parent": ["clubs"],
+    "tags": {"club": "cinema"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 368
+  },
+  {
+    "name": "club_fan",
+    "parent": ["clubs"],
+    "tags": {"club": "fan"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 369
+  },
+  {
+    "name": "club_fishing",
+    "parent": ["clubs"],
+    "tags": {"club": "fishing"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 370
+  },
+  {
+    "name": "club_veterans",
+    "parent": ["clubs"],
+    "tags": {"club": "veterans"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 371
+  },
+  {
+    "name": "club_linux",
+    "parent": ["clubs"],
+    "tags": {"club": "linux"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 372
+  },
+  {
+    "name": "club_theatre",
+    "parent": ["clubs"],
+    "tags": {"club": "theatre"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 373
+  },
+  {
+    "name": "club_history",
+    "parent": ["clubs"],
+    "tags": {"club": "history"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 374
+  },
+  {
+    "name": "club_music",
+    "parent": ["clubs"],
+    "tags": {"club": "music"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 375
+  },
+  {
+    "name": "club_ethnic",
+    "parent": ["clubs"],
+    "tags": {"club": "ethnic"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 376
+  },
+  {
+    "name": "club_nature",
+    "parent": ["clubs"],
+    "tags": {"club": "nature"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 377
+  },
+  {
+    "name": "club_photography",
+    "parent": ["clubs"],
+    "tags": {"club": "photography"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 378
+  },
+  {
+    "name": "club_hunting",
+    "parent": ["clubs"],
+    "tags": {"club": "hunting"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 379
+  },
+  {
+    "name": "club_shooting",
+    "parent": ["clubs"],
+    "tags": {"club": "shooting"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 380
+  },
+  {
+    "name": "club_tourism",
+    "parent": ["clubs", "tourism"],
+    "tags": {"club": "tourism"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 381
+  },
+  {
+    "name": "club_charity",
+    "parent": ["clubs"],
+    "tags": {"club": "charity"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 382
+  },
+  {
+    "name": "tunnel",
+    "parent": ["transport_constructions"],
+    "tags": {"man_made": "tunnel"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 383
+  },
+  {
+    "name": "bridge",
+    "parent": ["transport_constructions"],
+    "tags": {"man_made": "bridge"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 384
+  },
+  {
+    "name": "construction",
+    "parent": ["infrastructure"],
+    "tags": {"landuse": "construction"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 385
+  },
+  {
+    "name": "landfill",
+    "parent": ["trash_disposal"],
+    "tags": {"landuse": "landfill"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 386
+  },
+  {
+    "name": "waste_disposal",
+    "parent": ["trash_disposal"],
+    "tags": {"amenity": "waste_disposal"},
+    "moretags": {
+      "collection_times_waste":{
+        "tag": "collection_times",
+        "type": "period"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 395
+  },
+  {
+    "name": "garages",
+    "parent": ["personal_transport"],
+    "tags": {"landuse": "garages"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 397
+  },
+  {
+    "name": "lighthouse",
+    "parent": ["ship_navigation", "sights"],
+    "tags": {"man_made": "lighthouse"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 387
+  },
+  {
+    "name": "speed_camera",
+    "parent": ["personal_transport", "road_obstacles"],
+    "tags": {"highway": "speed_camera"},
+    "moretags": {
+      "maxspeed": {
+        "tag": "maxspeed",
+        "type": "number"
+      }
+    },
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 388
+  },
+  {
+    "name": "funicular",
+    "parent": ["public_transport", "tourism"],
+    "tags": {"railway": "funicular"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "way", "area"],
+    "id": 389
+  },
+  {
+    "name": "tea",
+    "parent": ["shop_food"],
+    "tags": {"shop": "tea"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "way", "area"],
+    "id": 396
+  },
+  {
+    "name": "advertising_billboard",
+    "parent": ["advertising"],
+    "tags": {"advertising": "billboard"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "way", "area"],
+    "id": 399
+  },
+  {
+    "name": "advertising_column",
+    "parent": ["advertising"],
+    "tags": {"advertising": "column"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 400
+  },
+  {
+    "name": "advertising_flag",
+    "parent": ["advertising"],
+    "tags": {"advertising": "flag"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "area"],
+    "id": 401
+  },
+  {
+    "name": "advertising_sign",
+    "parent": ["advertising"],
+    "tags": {"advertising": "sign"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "way", "area"],
+    "id": 402
+  },
+  {
+    "name": "advertising_screen",
+    "parent": ["advertising"],
+    "tags": {"advertising": "screen"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "way"],
+    "id": 403
+  },
+  {
+    "name": "advertising_sculpture",
+    "parent": ["advertising"],
+    "tags": {"advertising": "culpture"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "way"],
+    "id": 404
+  },
+  {
+    "name": "advertising_wall_painting",
+    "parent": ["advertising"],
+    "tags": {"advertising": "wall_painting"},
+    "moretags": {},
+    "poi": true,
+    "type": ["node", "way"],
+    "id": 405
+  }
+]

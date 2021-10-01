@@ -1,0 +1,13 @@
+public static bool MarkAsDeleted(byte ObjectType, string Name, double X, double Y, PointF[] points, object UsersData)
+{
+    // ObjectType
+	//  mPoint = 1,
+    //  mLine = 2,
+    //  mEllipse = 4,
+    //  mPolygon = 8,
+    //  mPolyline = 16,
+	if((Y < 54.30616) && (X >= 0))
+		return true;
+	else
+		return false;
+}

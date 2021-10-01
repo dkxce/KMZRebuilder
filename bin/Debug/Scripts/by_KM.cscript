@@ -1,0 +1,23 @@
+public static bool MarkAsDeleted(byte ObjectType, string Name, double X, double Y, PointF[] points, object UsersData)
+        {
+            // ObjectType
+            //  mPoint = 1,
+            //  mLine = 2,
+            //  mEllipse = 4,
+            //  mPolygon = 8,
+            //  mPolyline = 16,
+
+            int tri = 0;
+            int km = 0;
+            int len = 1;
+            if (string.IsNullOrEmpty(Name)) return false;
+            while (int.TryParse(Name.Substring(0, len), out tri))
+            {
+                len++;
+                km = tri;
+                if (len == Name.Length) break;
+            };
+            if (km == 0) return false;
+            if (km > 255) return true;
+            return false;
+}

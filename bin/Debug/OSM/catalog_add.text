@@ -1,0 +1,9 @@
+// ADDITIONAL //
+
+	"name": "bus_stop",
+    "parent": ["public_transport"],
+    "tags": {"highway": "bus_stop", "bus": "yes"},
+	
+	"name": "railway_station",
+    "parent": ["public_transport"],
+    "tags": {"railway": "station", "train": "yes"},
