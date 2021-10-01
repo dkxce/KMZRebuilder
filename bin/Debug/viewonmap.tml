@@ -2,7 +2,7 @@
 	<head>
 		<meta charset="utf-8"/>
 		<meta name="robots" content="noindex, follow"/>
-		<title>OruxPalsServer Map</title>
+		<title>KMZ Map</title>
 		<link rel="stylesheet" href="js/leaflet.css" />
 		<!--[if lte IE 8]>
 			<link rel="stylesheet" href="v/leaflet/leaflet.ie.css" />
@@ -87,21 +87,42 @@
 				};
 				player = mc.layer;
 				var xyz = (new Function('','return ['+objects[i].xy+'];'))();
-				mc.lat = xyz[1];
-				mc.lon = xyz[0];
-				var icn = '<div id="usericon'+i+'" class="aprs-usericon"><img id="img'+i+'" src="images/'+objects[i].icon+'.png" class="aprs-hdg"/></div>';
-				mc.desc = objects[i].desc;
-				if(mc.desc == undefined) mc.desc = '';
-				mc.desc = '<span style="font-size:10px;font-style:italic;color:gray;">'+mc.desc+'</span>';
-				mc.icon = new L.DivIcon({className: 'aprs-clear',html: icn });
-				mc.marker = new L.Marker([mc.lat,mc.lon], {icon: mc.icon});			
-				mc.marker.id = i;
-				mc.marker.bindPopup('<b>'+objects[i].name+'</b><br/>Lat: <span style="color:blue;">'+mc.lat+'</span><br/>Lon: <span style="color:blue;">'+mc.lon+'</span><br/>'+mc.desc);
-				mc.marker.bindLabel(objects[i].name);
-				mc.marker.addTo(map);	
-				if(i==0) map.setView([mc.lat,mc.lon]);
-				MapObjests.push(mc);
-				txtdiv += '<div id="ld'+i+'">&nbsp;<span style="font-size:8px;">'+i+'</span>&nbsp;<span><a href="#" onclick="ShowID('+i+');return false;">'+mc.name+'</a></span></div>';			
+				if(xyz.length <= 3)
+				{
+					mc.lat = xyz[1];
+					mc.lon = xyz[0];
+					var icn = '<div id="usericon'+i+'" class="aprs-usericon"><img id="img'+i+'" src="'+objects[i].icon+'" class="aprs-hdg"/></div>';
+					mc.desc = objects[i].desc;
+					if(mc.desc == undefined) mc.desc = '';
+					mc.desc = '<span style="font-size:10px;font-style:italic;color:gray;">'+mc.desc+'</span>';
+					mc.icon = new L.DivIcon({className: 'aprs-clear',html: icn });
+					mc.marker = new L.Marker([mc.lat,mc.lon], {icon: mc.icon});			
+					mc.marker.id = i;
+					mc.marker.bindPopup('<b>'+objects[i].name+'</b><br/>Lat: <span style="color:blue;">'+mc.lat+'</span><br/>Lon: <span style="color:blue;">'+mc.lon+'</span><br/>'+mc.desc);
+					mc.marker.bindLabel(objects[i].name);
+					mc.marker.addTo(map);	
+					if(i==0) map.setView([mc.lat,mc.lon]);
+					MapObjests.push(mc);
+					txtdiv += '<div id="ld'+i+'">&nbsp;<span style="font-size:8px;">'+i+'</span>&nbsp;<span><a href="#" onclick="ShowID('+i+');return false;">'+mc.name+'</a></span></div>';			
+				}
+				else
+				{
+					var pCo = xyz.length / 3;
+					mc.lat = xyz[1];
+					mc.lon = xyz[0];
+					mc.ll = [];
+					for(var ai=0;ai<pCo;ai++)
+						mc.ll.push([xyz[ai*3+1],xyz[ai*3]]);
+					mc.desc = objects[i].desc;
+					mc.icon = null;
+					mc.marker = new L.Polyline(mc.ll, {color: objects[i].color, weight: objects[i].width, opacity: 0.5})
+					mc.marker.id = i;
+					mc.marker.bindLabel(objects[i].name);
+					mc.marker.addTo(map);	
+					if(i==0) map.setView([mc.lat,mc.lon]);
+					MapObjests.push(mc);
+					txtdiv += '<div id="ld'+i+'">&nbsp;<span style="font-size:8px;">'+i+'</span>&nbsp;<span><a href="#" onclick="ShowID('+i+');return false;">'+mc.name+'</a></span></div>';								
+				};
 			};
 			if(objects.length>0) txtdiv += '</div>';
 			document.getElementById("plist").innerHTML = txtdiv;
@@ -157,7 +178,39 @@
 		
 		// MAP TILES
 		var mapnik = L.tileLayer('http://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 17, attribution: 'Maps &copy; <a href="http://openstreetmap.org">OSM</a>' });		
+		var cyclemap = L.tileLayer('http://{s}.tile.opencyclemap.org/cycle/{z}/{x}/{y}.png', { maxZoom: 17, attribution: 'Maps &copy; <a href="http://openstreetmap.org">OSM</a>', subdomains: ['a','b','c'] });		
+		var mapserfer = L.tileLayer('http://129.206.74.245:8001/tms_r.ashx?x={x}&y={y}&z={z}', { maxZoom: 17, attribution: 'Maps &copy; <a href="http://openstreetmap.org">OSM</a>' });		
+		var mapquest = L.tileLayer('http://otile{s}.mqcdn.com/tiles/1.0.0/map/{z}/{x}/{y}.jpg', { maxZoom: 17, attribution: 'Maps &copy; <a href="http://openstreetmap.org">OSM</a>', subdomains: ['a','b','c'] });		
 		var osmOpnvkarte = L.tileLayer('http://tile.xn--pnvkarte-m4a.de/tilegen/{z}/{x}/{y}.png', { maxZoom: 17, attribution: 'Maps &copy; <a href="http://openstreetmap.org">OSM</a>' });		
+		var osmgerman = L.tileLayer('http://{s}.tile.openstreetmap.de/tiles/osmde/{z}/{x}/{y}.png', { maxZoom: 17, attribution: 'Maps &copy; <a href="http://openstreetmap.org">OSM</a>', subdomains: ['a','b','c'] });		
+		var osmgray = L.tileLayer('http://{s}.www.toolserver.org/tiles/bw-mapnik/{z}/{x}/{y}.png', { maxZoom: 17, attribution: 'Maps &copy; <a href="http://openstreetmap.org">OSM</a>', subdomains: ['a','b','c'] });		
+		var osmaqua = L.tileLayer('http://{s}.tile.stamen.com/watercolor/{z}/{x}/{y}.png', { maxZoom: 17, attribution: 'Maps &copy; <a href="http://openstreetmap.org">OSM</a>', subdomains: ['a','b','c'] });
+		var osmhot = L.tileLayer('http://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', { maxZoom: 17, attribution: 'Maps &copy; <a href="http://openstreetmap.org">OSM</a>', subdomains: ['a','b','c'] });
+		var OpenTopoMaps = L.tileLayer('http://a.tile.opentopomap.org/{z}/{x}/{y}.png', { maxZoom: 17, attribution: 'OpenTopoMaps' });		
+		
+		var here = L.tileLayer('http://4.aerial.maps.api.here.com/maptile/2.1/maptile/newest/hybrid.day/{z}/{x}/{y}/256/png8?app_id=SqE1xcSngCd3m4a1zEGb&token=r0sR1DzqDkS6sDnh902FWQ', { maxZoom: 18 });		
+		var herend = L.tileLayer('http://{s}.base.maps.api.here.com/maptile/2.1/maptile/newest/normal.day/{z}/{x}/{y}/256/png8?app_id=xWVIueSv6JL0aJ5xqTxb&app_code=djPZyynKsbTjIUDOBcHZ2g&lg=rus&ppi=72', { maxZoom: 18, subdomains: ['1','2','3','4'] });		
+		var herenn = L.tileLayer('http://{s}.base.maps.api.here.com/maptile/2.1/maptile/newest/normal.night/{z}/{x}/{y}/256/png8?app_id=xWVIueSv6JL0aJ5xqTxb&app_code=djPZyynKsbTjIUDOBcHZ2g&lg=rus&ppi=72', { maxZoom: 18, subdomains: ['1','2','3','4'] });		
+		var herepd = L.tileLayer('http://{s}.base.maps.api.here.com/maptile/2.1/maptile/newest/pedestrian.day/{z}/{x}/{y}/256/png8?app_id=xWVIueSv6JL0aJ5xqTxb&app_code=djPZyynKsbTjIUDOBcHZ2g&lg=rus&ppi=72', { maxZoom: 18, subdomains: ['1','2','3','4'] });
+		var heretd = L.tileLayer('http://{s}.aerial.maps.api.here.com/maptile/2.1/maptile/newest/terrain.day/{z}/{x}/{y}/256/png8?app_id=xWVIueSv6JL0aJ5xqTxb&app_code=djPZyynKsbTjIUDOBcHZ2g&lg=rus&ppi=72', { maxZoom: 18, subdomains: ['1','2','3','4'] });
+		var heresd = L.tileLayer('http://{s}.aerial.maps.api.here.com/maptile/2.1/maptile/newest/satellite.day/{z}/{x}/{y}/256/jpg?app_id=xWVIueSv6JL0aJ5xqTxb&app_code=djPZyynKsbTjIUDOBcHZ2g', { maxZoom: 18, subdomains: ['1','2','3','4'] });
+		var herehd = L.tileLayer('http://{s}.aerial.maps.api.here.com/maptile/2.1/maptile/newest/hybrid.day/{z}/{x}/{y}/256/jpg?app_id=xWVIueSv6JL0aJ5xqTxb&app_code=djPZyynKsbTjIUDOBcHZ2g&lg=rus&ppi=72', { maxZoom: 18, subdomains: ['1','2','3','4'] });
+		
+		var dvagis = L.tileLayer('https://tile{s}.maps.2gis.com/tiles?x={x}&y={y}&z={z}&v=1.1', { maxZoom: 18, subdomains: ['0','1','2','3'] });	
+		var scanex = L.tileLayer('http://maps.kosmosnimki.ru/TileService.ashx?Request=gettile&LayerName=04C9E7CE82C34172910ACDBF8F1DF49A&apikey=7BDJ6RRTHH&crs=epsg:3857&z={z}&x={x}&y={y}', { maxZoom: 20, subdomains: ['0','1','2','3'] });	
+		var scanex2 = L.tileLayer('http://maps.kosmosnimki.ru/TileService.ashx?Request=gettile&LayerName=04C9E7CE82C34172910ACDBF8F1DF49A&apikey=7BDJ6RRTHH&crs=epsg:3857&z={z}&x={x}&y={y}', { maxZoom: 20, subdomains: ['0','1','2','3'] });	
+		var irs = L.tileLayer('http://irs.gis-lab.info/?layers=irs&request=GetTile&z={z}&x={x}&y={y}', { maxZoom: 20, subdomains: ['0','1','2','3'] });	
+		
+		var tomtom = L.tileLayer('http://{s}.api.internal.tomtom.com/lbs/map/3/basic/1/{z}/{x}/{y}.png?key=dvbfcb88hkrje9ur2fs84uxn', { maxZoom: 20, subdomains: ['a','b','c','d'] });	
+		
+		var nokia = L.tileLayer('http://{s}.maps.nlp.nokia.com/maptile/2.1/maptile/cf7f6539c6/normal.day/{z}/{x}/{y}/256/png8?lg=RUS&token=r0sR1DzqDkS6sDnh902FWQ', { maxZoom: 20, subdomains: ['4','1','2','3'] });	
+		var ovimap = L.tileLayer('http://{s}.maptile.lbs.ovi.com/maptiler/v2/maptile/newest/normal.day/{z}/{x}/{y}/256/png8?lg=RUS&token=fee2f2a877fd4a429f17207a57658582&appId=nokiaMaps', { maxZoom: 20, subdomains: ['4','1','2','3'] });	
+		
+		var rumap = L.tileLayer('http://tile.digimap.ru/rumap/{z}/{x}/{y}.png', { maxZoom: 18, subdomains: ['0','1','2','3'] });	
+		var shturman = L.tileLayer('http://map.shturmann.com/{z}/{x}/{y}.png', { maxZoom: 18, subdomains: ['0','1','2','3'] });	
+		var sputnik = L.tileLayer('http://tiles.maps.sputnik.ru/{z}/{x}/{y}.png', { maxZoom: 18, subdomains: ['0','1','2','3'] });	
+		
+		var thunderforest = L.tileLayer('https://a.tile.thunderforest.com/outdoors/{z}/{x}/{y}.png', { maxZoom: 18, subdomains: ['a','b','c'] });	
 		
 		var osmWikiMapTiles = L.tileLayer('', { maxZoom: 17, attribution: 'Maps &copy; WikiMapia' });
 		osmWikiMapTiles.getTileUrl = function (tilePoint, zoom) {
@@ -229,7 +282,33 @@
 		mapnik.addTo(map);
 		var basemaps = {					
 				  "OSM Mapnik": mapnik, 
+				  "OSM German Style": osmgerman, 
+				  "OSM Gray Style": osmgray, 
+				  "OSM Aquarel Style": osmaqua, 
+				  "OSM Hot Style": osmhot, 
+				  "OSM CycleMap": cyclemap, 
+				  "OSM MapSerfer": mapserfer, 
+				  "OSM MapQuest": mapquest, 
 				  "OSM Opnvkarte": osmOpnvkarte, 
+				  "OpenTopoMaps": OpenTopoMaps,
+				  "Here": here,
+				  "Here normal.day": herend,
+				  "Here normal.night": herenn,
+				  "Here pedestrian.day": herepd,
+				  "Here terrain.day": heretd,
+				  "Here sattelite.day": heresd,
+				  "Here hybrid.day": herehd,
+				  "2GIS": dvagis,
+				  "ScanEx 1": scanex,
+				  "ScanEx 2": scanex2,
+				  "IRS Satellite": irs,
+				  "TomTom": tomtom,
+				  "Nokia": nokia,
+				  "Nokia OVI": ovimap,
+				  "RU Map": rumap,
+				  "Sputnik.ru": sputnik,
+				  "Shturman": shturman,
+				  "ThunderForest": thunderforest,
 				  "WikiMapia": osmWikiMapTiles,
 				  "РосРеестр": rosreestrMapTiles,
 				  "РосРеестр (2)": rosreestrMapTiles2,
@@ -248,7 +327,7 @@
     				 "Яндекс Пробки": YandexTrafficLayer,
     				 "Яндекс Пробки + События": YandexExtTrafficLayer
 					 };
-		L.control.layers(basemaps, trafficLayers).addTo(map);					
+		L.control.layers(basemaps, trafficLayers).addTo(map);
 		
 		var onfind = function(e)
 		{

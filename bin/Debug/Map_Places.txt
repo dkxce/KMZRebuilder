@@ -1,0 +1,15 @@
+#
+# KMZViewer Map Plases File
+# File Encoding: Windows-1251
+#
+# Format:
+#   LAT LON NAME
+#
+# One record per line
+#
+55.55 37.55 Южное Бутово
+53.90981 38.45709 Ушаковские Карьеры
+43.57846 39.72184 Сочи
+13.71029 100.7533 BKK, Suvarnabhumi
+7.888081 98.3672 Thailand, Phuket
+24.466667 54.366669 Abu Dhabi, United Arab Emirates

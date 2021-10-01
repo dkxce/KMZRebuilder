@@ -1,0 +1,1 @@
+KMZRebuilder.exe /bpa

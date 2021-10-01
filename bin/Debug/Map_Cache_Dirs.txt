@@ -1,0 +1,27 @@
+#
+# KMZViewer Map Cache Direcories File
+# File Encoding: Windows-1251
+#
+# One path per line
+# You can use %CD% for Current Directory
+# 
+# USAGE_NAME_B=C:\MAPS
+# USAGE_NAME_A=C:\MAP_A
+
+#
+# Phuket
+#
+Phuket = D:\PROJECTS\Планирование\2020 Phuket\SASPlanet Cache\GoogleCache
+Phuket = D:\PROJECTS\Планирование\2020 Phuket\SASPlanet Cache\HerePedDay
+Phuket = D:\PROJECTS\Планирование\2020 Phuket\SASPlanet Cache\OpenTopoMaps
+Phuket = D:\PROJECTS\Планирование\2020 Phuket\SASPlanet Cache\OSMCache
+Phuket = D:\PROJECTS\Планирование\2020 Phuket\SASPlanet Cache\OSMGerman
+#
+# Kemer
+#
+Kemer = D:\PROJECTS\Планирование\2019 Turkey\SASPlanet Cache\Beldibi_Google
+Kemer = D:\PROJECTS\Планирование\2019 Turkey\SASPlanet Cache\Beldibi_GoogleLand
+Kemer = D:\PROJECTS\Планирование\2019 Turkey\SASPlanet Cache\Beldibi_HerePedestrial
+Kemer = D:\PROJECTS\Планирование\2019 Turkey\SASPlanet Cache\Beldibi_OSM
+Kemer = D:\PROJECTS\Планирование\2019 Turkey\SASPlanet Cache\Beldibi_SkyVector
+Kemer = D:\PROJECTS\Планирование\2019 Turkey\SASPlanet Cache\Beldibi_SkyVectorVFR

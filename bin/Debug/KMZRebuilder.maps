@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ArrayOfMapStore>
+  <MapStore>
+    <Name>OSM: Mapnik</Name>
+    <Url>http://tile.openstreetmap.org/{z}/{x}/{y}.png</Url>
+    <CacheDir>OSMMapnik</CacheDir>
+    <Service>Custom_UserDefined</Service>
+    <Source>tiles</Source>
+    <Projection>EPSG3857</Projection>
+  </MapStore>  
+  <MapStore>
+    <Name>OSM: Toner</Name>
+    <Url>http://tile.stamen.com/toner/{z}/{x}/{y}.png</Url>
+    <CacheDir>OSMToner</CacheDir>
+    <Service>Custom_UserDefined</Service>
+    <Source>tiles</Source>
+    <Projection>EPSG3857</Projection>
+  </MapStore>
+  <MapStore>
+    <Name>OSM: Toner Retina</Name>
+    <Url>http://a.tile.stamen.com/toner/{z}/{x}/{y}@2x.png</Url>
+    <CacheDir>OSMToner</CacheDir>
+    <Service>Custom_UserDefined</Service>
+    <Source>tiles</Source>
+    <Projection>EPSG3857</Projection>
+  </MapStore>
+  <MapStore>
+    <Name>OSM: Stamen Terrain</Name>
+    <Url>http://tile.stamen.com/terrain/{z}/{x}/{y}.jpg</Url>
+    <CacheDir>OSMStamenTerrain</CacheDir>
+    <Service>Custom_UserDefined</Service>
+    <Source>tiles</Source>
+    <Projection>EPSG3857</Projection>
+  </MapStore>
+  <MapStore>
+    <Name>OSM: OpenVkarte</Name>
+    <Url>http://tile.memomaps.de/tilegen/{z}/{x}/{y}.png</Url>
+    <CacheDir>OSMOpenVkarte</CacheDir>
+    <Service>Custom_UserDefined</Service>
+    <Source>tiles</Source>
+    <Projection>EPSG3857</Projection>
+  </MapStore>
+  <MapStore>
+    <Name>OSM: Hot Style</Name>
+    <Url>http://a.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png</Url>
+    <CacheDir>OSMHot</CacheDir>
+    <Service>Custom_UserDefined</Service>
+    <Source>tiles</Source>
+    <Projection>EPSG3857</Projection>
+  </MapStore>
+  <MapStore>
+    <Name>OSM: German Style</Name>
+    <Url>http://a.tile.openstreetmap.de/tiles/osmde/{z}/{x}/{y}.png</Url>
+    <CacheDir>OSMGerman</CacheDir>
+    <Service>Custom_UserDefined</Service>
+    <Source>tiles</Source>
+    <Projection>EPSG3857</Projection>
+  </MapStore>
+  <MapStore>
+    <Name>Google: Map</Name>
+    <Url>http://mts0.google.com/vt/lyrs=m@177000000&amp;hl=ru&amp;src=app&amp;x={x}&amp;s=&amp;y={y}&amp;z={z}&amp;s=Ga</Url>
+    <CacheDir>GoogleMap</CacheDir>
+    <Service>Custom_UserDefined</Service>
+    <Source>tiles</Source>
+    <Projection>EPSG3857</Projection>
+  </MapStore>
+  <MapStore>
+    <Name>Google: Sat</Name>
+    <Url>http://mts0.google.com/vt/lyrs=h@177000000&amp;hl=ru&amp;src=app&amp;x={x}&amp;s=&amp;y={y}&amp;z={z}&amp;s=G</Url>
+    <CacheDir>GoogleSat</CacheDir>
+    <Service>Custom_UserDefined</Service>
+    <Source>tiles</Source>
+    <Projection>EPSG3857</Projection>
+  </MapStore>
+  <MapStore>
+    <Name>Here: Normal Transit Day</Name>
+    <Url>http://1.base.maps.api.here.com/maptile/2.1/maptile/newest/normal.day.transit/{z}/{x}/{y}/256/png8?app_id=xWVIueSv6JL0aJ5xqTxb&amp;app_code=djPZyynKsbTjIUDOBcHZ2g&amp;lg=rus&amp;ppi=72</Url>
+    <CacheDir>HereNTD</CacheDir>
+    <Service>Custom_UserDefined</Service>
+    <Source>tiles</Source>
+    <Projection>EPSG3857</Projection>
+  </MapStore>
+  <MapStore>
+    <Name>Here: Normal Day</Name>
+    <Url>http://1.base.maps.api.here.com/maptile/2.1/maptile/newest/normal.day/{z}/{x}/{y}/256/png8?app_id=xWVIueSv6JL0aJ5xqTxb&amp;app_code=djPZyynKsbTjIUDOBcHZ2g&amp;lg=rus&amp;ppi=72</Url>
+    <CacheDir>HereND</CacheDir>
+    <Service>Custom_UserDefined</Service>
+    <Source>tiles</Source>
+    <Projection>EPSG3857</Projection>
+  </MapStore>
+  <MapStore>
+    <Name>Here: Normal Night</Name>
+    <Url>http://1.base.maps.api.here.com/maptile/2.1/maptile/newest/normal.night/{z}/{x}/{y}/256/png8?app_id=xWVIueSv6JL0aJ5xqTxb&amp;app_code=djPZyynKsbTjIUDOBcHZ2g&amp;lg=rus&amp;ppi=72</Url>
+    <CacheDir>HereNN</CacheDir>
+    <Service>Custom_UserDefined</Service>
+    <Source>tiles</Source>
+    <Projection>EPSG3857</Projection>
+  </MapStore>
+  <MapStore>
+    <Name>Here: Satellite Day</Name>
+    <Url>http://1.aerial.maps.api.here.com/maptile/2.1/maptile/newest/satellite.day/{z}/{x}/{y}/256/png8?app_id=xWVIueSv6JL0aJ5xqTxb&amp;app_code=djPZyynKsbTjIUDOBcHZ2g&amp;lg=rus&amp;ppi=72</Url>
+    <CacheDir>HereSD</CacheDir>
+    <Service>Custom_UserDefined</Service>
+    <Source>tiles</Source>
+    <Projection>EPSG3857</Projection>
+  </MapStore>
+  <MapStore>
+    <Name>Here: Pedestrian Day</Name>
+    <Url>http://1.base.maps.api.here.com/maptile/2.1/maptile/newest/pedestrian.day/{z}/{x}/{y}/256/png8?app_id=xWVIueSv6JL0aJ5xqTxb&amp;app_code=djPZyynKsbTjIUDOBcHZ2g&amp;lg=rus&amp;ppi=72</Url>
+    <CacheDir>HerePD</CacheDir>
+    <Service>Custom_UserDefined</Service>
+    <Source>tiles</Source>
+    <Projection>EPSG3857</Projection>
+  </MapStore>
+  <MapStore>
+    <Name>OpenTopoMaps</Name>
+    <Url>http://a.tile.opentopomap.org/{z}/{x}/{y}.png</Url>
+    <CacheDir>OpenTopoMaps</CacheDir>
+    <Service>Custom_UserDefined</Service>
+    <Source>tiles</Source>
+    <Projection>EPSG3857</Projection>
+  </MapStore>
+  <MapStore>
+    <Name>Sputnik.ru</Name>
+    <Url>http://tiles.maps.sputnik.ru/{z}/{x}/{y}.png</Url>
+    <CacheDir>Sputnik</CacheDir>
+    <Service>Custom_UserDefined</Service>
+    <Source>tiles</Source>
+    <Projection>EPSG3857</Projection>
+  </MapStore>
+  <MapStore>
+    <Name>RUMAP</Name>
+    <Url>http://tile.digimap.ru/rumap/{z}/{x}/{y}.png</Url>
+    <CacheDir>RUMAP</CacheDir>
+    <Service>Custom_UserDefined</Service>
+    <Source>tiles</Source>
+    <Projection>EPSG3857</Projection>
+  </MapStore>
+  <MapStore>
+    <Name>2GIS</Name>
+    <Url>https://tile1.maps.2gis.com/tiles?x={x}&amp;y={y}&amp;z={z}&amp;v=1.1</Url>
+    <CacheDir>2GIS</CacheDir>
+    <Service>Custom_UserDefined</Service>
+    <Source>tiles</Source>
+    <Projection>EPSG3857</Projection>
+  </MapStore>
+  <MapStore>
+    <Name>ArcGIS ESRI</Name>
+    <Url>http://services.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}.png</Url>
+    <CacheDir>ArcGIS</CacheDir>
+    <Service>Custom_UserDefined</Service>
+    <Source>tiles</Source>
+    <Projection>EPSG3857</Projection>
+  </MapStore>
+  <MapStore>
+    <Name>OviMap: Nokia</Name>
+    <Url>http://maptile.mapplayer1.maps.svc.ovi.com/maptiler/maptile/newest/normal.day/{z}/{x}/{y}/256/png8</Url>
+    <CacheDir>OviNokia</CacheDir>
+    <Service>Custom_UserDefined</Service>
+    <Source>tiles</Source>
+    <Projection>EPSG3857</Projection>
+  </MapStore>
+  <MapStore>
+    <Name>OviMap: Default</Name>
+    <Url>http://1.maptile.lbs.ovi.com/maptiler/v2/maptile/newest/normal.day/{z}/{x}/{y}/256/png8?lg=RUS&amp;token=fee2f2a877fd4a429f17207a57658582&amp;appId=nokiaMaps</Url>
+    <CacheDir>OviDefault</CacheDir>
+    <Service>Custom_UserDefined</Service>
+    <Source>tiles</Source>
+    <Projection>EPSG3857</Projection>
+  </MapStore>
+  <MapStore>
+    <Name>OviMap: Sputnik</Name>
+    <Url>http://1.maptile.lbs.ovi.com/maptiler/v2/maptile/newest/satellite.day/{z}/{x}/{y}/256/png8?lg=RUS&amp;token=fee2f2a877fd4a429f17207a57658582&amp;appId=nokiaMaps</Url>
+    <CacheDir>OviSputnik</CacheDir>
+    <Service>Custom_UserDefined</Service>
+    <Source>tiles</Source>
+    <Projection>EPSG3857</Projection>
+  </MapStore>
+  <MapStore>
+    <Name>OviMap: Relief</Name>
+    <Url>http://1.maptile.lbs.ovi.com/maptiler/v2/maptile/newest/hybrid.day/{z}/{x}/{y}/256/png8?lg=RUS&amp;token=fee2f2a877fd4a429f17207a57658582&amp;appId=nokiaMaps</Url>
+    <CacheDir>OviRelief</CacheDir>
+    <Service>Custom_UserDefined</Service>
+    <Source>tiles</Source>
+    <Projection>EPSG3857</Projection>
+  </MapStore>
+  <MapStore>
+    <Name>OviMap: Hybrid</Name>
+    <Url>http://1.maptile.lbs.ovi.com/maptiler/v2/maptile/newest/terrain.day/{z}/{x}/{y}/256/png8?lg=RUS&amp;token=fee2f2a877fd4a429f17207a57658582&amp;appId=nokiaMaps</Url>
+    <CacheDir>OviHybrid</CacheDir>
+    <Service>Custom_UserDefined</Service>
+    <Source>tiles</Source>
+    <Projection>EPSG3857</Projection>
+  </MapStore>
+  <MapStore>
+    <Name>Kosmosnimki.ru: ScanEx 1</Name>
+    <Url>http://maps.kosmosnimki.ru/TileService.ashx?Request=gettile&amp;LayerName=04C9E7CE82C34172910ACDBF8F1DF49A&amp;apikey=7BDJ6RRTHH&amp;crs=epsg:3857&amp;z={z}&amp;x={x}&amp;y={y}</Url>
+    <CacheDir>ScanEx1</CacheDir>
+    <Service>Custom_UserDefined</Service>
+    <Source>tiles</Source>
+    <Projection>EPSG3857</Projection>
+  </MapStore>
+  <MapStore>
+    <Name>Kosmosnimki.ru: ScanEx 2</Name>
+    <Url>http://maps.kosmosnimki.ru/TileService.ashx?Request=gettile&amp;LayerName=04C9E7CE82C34172910ACDBF8F1DF49A&amp;apikey=7BDJ6RRTHH&amp;crs=epsg:3857&amp;z={z}&amp;x={x}&amp;y={y}</Url>
+    <CacheDir>ScanEx2</CacheDir>
+    <Service>Custom_UserDefined</Service>
+    <Source>tiles</Source>
+    <Projection>EPSG3857</Projection>
+  </MapStore>
+  <MapStore>
+    <Name>Kosmosnimki.ru: IRS Sat</Name>
+    <Url>http://irs.gis-lab.info/?layers=irs&amp;request=GetTile&amp;z={z}&amp;x={x}&amp;y={y}</Url>
+    <CacheDir>IRSSat</CacheDir>
+    <Service>Custom_UserDefined</Service>
+    <Source>tiles</Source>
+    <Projection>EPSG3857</Projection>
+  </MapStore>
+  <MapStore>
+    <Name>Navicom</Name>
+    <Url>http://maps.navicom.ru/nms/tile/?73C5443244754A99AC646F8BFBD6784E;{x};{y};{z}</Url>
+    <CacheDir>Navicom</CacheDir>
+    <Service>Custom_UserDefined</Service>
+    <Source>tiles</Source>
+    <Projection>EPSG3857</Projection>
+  </MapStore>
+</ArrayOfMapStore>
