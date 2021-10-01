@@ -275,7 +275,8 @@ namespace KMZRebuilder
         {
             this.formCaption = Caption;
             this.formText = Text;
-            this.Show();
+            if(!this.Activated)
+                this.Show();
         }
 
         public void Show(string Caption, string Text, Form parent)

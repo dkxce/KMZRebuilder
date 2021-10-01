@@ -56,7 +56,7 @@ namespace KMZRebuilder
         private void LoadFiles()
         {
             string filemru = this.MRUListSavedFileName;
-            if (!File.Exists(filemru)) return;
+            if (!File.Exists(filemru)) return; 
 
             FileStream fs = new FileStream(filemru, FileMode.Open, FileAccess.Read);
             StreamReader sr = new StreamReader(fs, System.Text.Encoding.GetEncoding(1251));
@@ -65,6 +65,9 @@ namespace KMZRebuilder
                 string filename = sr.ReadLine();
                 if (File.Exists(filename))
                     MRUFilesInfos.Add(new FileInfo(filename));
+                else if (Directory.Exists(filename))
+                        MRUFilesInfos.Add(new FileInfo(filename));
+                        
             };
             sr.Close();
             fs.Close();
@@ -72,8 +75,9 @@ namespace KMZRebuilder
 
         // Save the current items in the Registry.
         private void SaveFiles()
-        {
+        {            
             string filemru = this.MRUListSavedFileName;
+            if (filemru == null) return;
             FileStream fs = new FileStream(filemru, FileMode.Create, FileAccess.Write);
             StreamWriter sw = new StreamWriter(fs, System.Text.Encoding.GetEncoding(1251));
             foreach (FileInfo file_info in MRUFilesInfos)
@@ -130,7 +134,9 @@ namespace KMZRebuilder
             Separator.Visible = (MRUFilesInfos.Count > 0);
             for (int i = 0; i < MRUFilesInfos.Count; i++)
             {
-                MenuItems[i].Text = string.Format("&{0} {1}", i + 1, MRUFilesInfos[i].Name);
+                string name = "`"+MRUFilesInfos[i].Name + "` at .. " + MRUFilesInfos[i].FullName.Remove(MRUFilesInfos[i].FullName.Length-MRUFilesInfos[i].Name.Length);
+                while (name.Length > 90) name = name.Remove(name.IndexOf("` at .. ") + 8, 1);
+                MenuItems[i].Text = string.Format("&{0} {1}", i + 1, name);
                 MenuItems[i].Visible = true;
                 MenuItems[i].Tag = MRUFilesInfos[i];
                 MenuItems[i].Click -= File_Click;

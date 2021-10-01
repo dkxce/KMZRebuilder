@@ -28,9 +28,11 @@ namespace KMZRebuilder
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.label1 = new System.Windows.Forms.Label();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.linkLabel2 = new System.Windows.Forms.LinkLabel();
             this.linkLabel1 = new System.Windows.Forms.LinkLabel();
             this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.button2 = new System.Windows.Forms.Button();
@@ -60,11 +62,23 @@ namespace KMZRebuilder
             this.button6 = new System.Windows.Forms.Button();
             this.button9 = new System.Windows.Forms.Button();
             this.button11 = new System.Windows.Forms.Button();
+            this.APPD = new System.Windows.Forms.RadioButton();
+            this.APPS = new System.Windows.Forms.RadioButton();
+            this.label11 = new System.Windows.Forms.Label();
+            this.ApplyTo = new System.Windows.Forms.ComboBox();
+            this.button12 = new System.Windows.Forms.Button();
+            this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.defaultRegexForNameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.descriptionWebSiteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.descriptionEmailToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.descriptionPhoneToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.inrad)).BeginInit();
             this.tabPage3.SuspendLayout();
+            this.contextMenuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // label1
@@ -82,7 +96,7 @@ namespace KMZRebuilder
             this.tabControl1.Controls.Add(this.tabPage1);
             this.tabControl1.Controls.Add(this.tabPage2);
             this.tabControl1.Controls.Add(this.tabPage3);
-            this.tabControl1.Location = new System.Drawing.Point(3, 40);
+            this.tabControl1.Location = new System.Drawing.Point(3, 43);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
             this.tabControl1.Size = new System.Drawing.Size(469, 118);
@@ -90,6 +104,10 @@ namespace KMZRebuilder
             // 
             // tabPage1
             // 
+            this.tabPage1.Controls.Add(this.button12);
+            this.tabPage1.Controls.Add(this.ApplyTo);
+            this.tabPage1.Controls.Add(this.label11);
+            this.tabPage1.Controls.Add(this.linkLabel2);
             this.tabPage1.Controls.Add(this.linkLabel1);
             this.tabPage1.Controls.Add(this.checkBox1);
             this.tabPage1.Controls.Add(this.button2);
@@ -101,13 +119,23 @@ namespace KMZRebuilder
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
             this.tabPage1.Size = new System.Drawing.Size(461, 92);
             this.tabPage1.TabIndex = 0;
-            this.tabPage1.Text = "Name Text Filter";
+            this.tabPage1.Text = "Text Filter";
             this.tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // linkLabel2
+            // 
+            this.linkLabel2.AutoSize = true;
+            this.linkLabel2.Location = new System.Drawing.Point(5, 55);
+            this.linkLabel2.Name = "linkLabel2";
+            this.linkLabel2.Size = new System.Drawing.Size(112, 13);
+            this.linkLabel2.TabIndex = 6;
+            this.linkLabel2.TabStop = true;
+            this.linkLabel2.Text = "http://regexstorm.net/";
             // 
             // linkLabel1
             // 
             this.linkLabel1.AutoSize = true;
-            this.linkLabel1.Location = new System.Drawing.Point(5, 63);
+            this.linkLabel1.Location = new System.Drawing.Point(5, 70);
             this.linkLabel1.Name = "linkLabel1";
             this.linkLabel1.Size = new System.Drawing.Size(236, 13);
             this.linkLabel1.TabIndex = 5;
@@ -155,7 +183,7 @@ namespace KMZRebuilder
             this.textBox1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.textBox1.Location = new System.Drawing.Point(88, 6);
             this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(359, 20);
+            this.textBox1.Size = new System.Drawing.Size(323, 20);
             this.textBox1.TabIndex = 1;
             this.textBox1.Text = "^([_\\w\\s\\.\\,\\-\\¹\\#\\:\\/\\\\\\!\\?\"\'`\\*\\^\\(\\)\\[\\]\\@\\$\\%\\+]*)$";
             // 
@@ -435,11 +463,119 @@ namespace KMZRebuilder
             this.button11.UseVisualStyleBackColor = true;
             this.button11.Click += new System.EventHandler(this.button11_Click);
             // 
+            // APPD
+            // 
+            this.APPD.AutoSize = true;
+            this.APPD.Checked = true;
+            this.APPD.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.APPD.Location = new System.Drawing.Point(25, 167);
+            this.APPD.Name = "APPD";
+            this.APPD.Size = new System.Drawing.Size(102, 17);
+            this.APPD.TabIndex = 25;
+            this.APPD.TabStop = true;
+            this.APPD.Text = "Mark as Deleted";
+            this.APPD.UseVisualStyleBackColor = true;
+            this.APPD.Visible = false;
+            // 
+            // APPS
+            // 
+            this.APPS.AutoSize = true;
+            this.APPS.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.APPS.Location = new System.Drawing.Point(25, 181);
+            this.APPS.Name = "APPS";
+            this.APPS.Size = new System.Drawing.Size(138, 17);
+            this.APPS.TabIndex = 26;
+            this.APPS.Text = "Check Multiselect Mode";
+            this.APPS.UseVisualStyleBackColor = true;
+            this.APPS.Visible = false;
+            // 
+            // label11
+            // 
+            this.label11.AutoSize = true;
+            this.label11.Location = new System.Drawing.Point(6, 29);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(48, 13);
+            this.label11.TabIndex = 29;
+            this.label11.Text = "Apply to:";
+            // 
+            // ApplyTo
+            // 
+            this.ApplyTo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.ApplyTo.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.ApplyTo.FormattingEnabled = true;
+            this.ApplyTo.Items.AddRange(new object[] {
+            "Name Only",
+            "Description Only",
+            "Name or Description",
+            "Name and Description",
+            "Name xor Description"});
+            this.ApplyTo.Location = new System.Drawing.Point(87, 27);
+            this.ApplyTo.Name = "ApplyTo";
+            this.ApplyTo.Size = new System.Drawing.Size(269, 21);
+            this.ApplyTo.TabIndex = 30;
+            // 
+            // button12
+            // 
+            this.button12.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.button12.Location = new System.Drawing.Point(417, 5);
+            this.button12.Name = "button12";
+            this.button12.Size = new System.Drawing.Size(29, 23);
+            this.button12.TabIndex = 31;
+            this.button12.Text = "Ex";
+            this.button12.UseVisualStyleBackColor = true;
+            this.button12.Click += new System.EventHandler(this.button12_Click);
+            // 
+            // contextMenuStrip1
+            // 
+            this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.defaultRegexForNameToolStripMenuItem,
+            this.toolStripMenuItem1,
+            this.descriptionWebSiteToolStripMenuItem,
+            this.descriptionEmailToolStripMenuItem,
+            this.descriptionPhoneToolStripMenuItem});
+            this.contextMenuStrip1.Name = "contextMenuStrip1";
+            this.contextMenuStrip1.Size = new System.Drawing.Size(202, 120);
+            // 
+            // defaultRegexForNameToolStripMenuItem
+            // 
+            this.defaultRegexForNameToolStripMenuItem.Name = "defaultRegexForNameToolStripMenuItem";
+            this.defaultRegexForNameToolStripMenuItem.Size = new System.Drawing.Size(201, 22);
+            this.defaultRegexForNameToolStripMenuItem.Text = "Default Regex for Name";
+            this.defaultRegexForNameToolStripMenuItem.Click += new System.EventHandler(this.defaultRegexForNameToolStripMenuItem_Click);
+            // 
+            // descriptionWebSiteToolStripMenuItem
+            // 
+            this.descriptionWebSiteToolStripMenuItem.Name = "descriptionWebSiteToolStripMenuItem";
+            this.descriptionWebSiteToolStripMenuItem.Size = new System.Drawing.Size(201, 22);
+            this.descriptionWebSiteToolStripMenuItem.Text = "Description Web Site";
+            this.descriptionWebSiteToolStripMenuItem.Click += new System.EventHandler(this.descriptionWebSiteToolStripMenuItem_Click);
+            // 
+            // descriptionEmailToolStripMenuItem
+            // 
+            this.descriptionEmailToolStripMenuItem.Name = "descriptionEmailToolStripMenuItem";
+            this.descriptionEmailToolStripMenuItem.Size = new System.Drawing.Size(201, 22);
+            this.descriptionEmailToolStripMenuItem.Text = "Description Email";
+            this.descriptionEmailToolStripMenuItem.Click += new System.EventHandler(this.descriptionEmailToolStripMenuItem_Click);
+            // 
+            // descriptionPhoneToolStripMenuItem
+            // 
+            this.descriptionPhoneToolStripMenuItem.Name = "descriptionPhoneToolStripMenuItem";
+            this.descriptionPhoneToolStripMenuItem.Size = new System.Drawing.Size(201, 22);
+            this.descriptionPhoneToolStripMenuItem.Text = "Description Phone";
+            this.descriptionPhoneToolStripMenuItem.Click += new System.EventHandler(this.descriptionPhoneToolStripMenuItem_Click);
+            // 
+            // toolStripMenuItem1
+            // 
+            this.toolStripMenuItem1.Name = "toolStripMenuItem1";
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(198, 6);
+            // 
             // Selection_Filter
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(476, 205);
+            this.Controls.Add(this.APPS);
+            this.Controls.Add(this.APPD);
             this.Controls.Add(this.button11);
             this.Controls.Add(this.button9);
             this.Controls.Add(this.button6);
@@ -452,6 +588,7 @@ namespace KMZRebuilder
             this.Name = "Selection_Filter";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Selection Filter";
+            this.Load += new System.EventHandler(this.Selection_Filter_Load);
             this.tabControl1.ResumeLayout(false);
             this.tabPage1.ResumeLayout(false);
             this.tabPage1.PerformLayout();
@@ -460,6 +597,7 @@ namespace KMZRebuilder
             ((System.ComponentModel.ISupportInitialize)(this.inrad)).EndInit();
             this.tabPage3.ResumeLayout(false);
             this.tabPage3.PerformLayout();
+            this.contextMenuStrip1.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -499,5 +637,17 @@ namespace KMZRebuilder
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.LinkLabel linkLabel1;
         private System.Windows.Forms.Button button11;
+        private System.Windows.Forms.LinkLabel linkLabel2;
+        public System.Windows.Forms.RadioButton APPD;
+        public System.Windows.Forms.RadioButton APPS;
+        private System.Windows.Forms.ComboBox ApplyTo;
+        private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.Button button12;
+        private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
+        private System.Windows.Forms.ToolStripMenuItem defaultRegexForNameToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem descriptionWebSiteToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem descriptionEmailToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem1;
+        private System.Windows.Forms.ToolStripMenuItem descriptionPhoneToolStripMenuItem;
     }
 }

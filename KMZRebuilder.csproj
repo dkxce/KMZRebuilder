@@ -32,21 +32,26 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <PlatformTarget>x86</PlatformTarget>
     <OutputPath>bin\Debug\</OutputPath>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <PlatformTarget>x86</PlatformTarget>
     <OutputPath>bin\Release\</OutputPath>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="CSScriptLibrary.v1.1, Version=3.3.0.0, Culture=neutral, PublicKeyToken=70fcc3d18c749033, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>.\CSScriptLibrary.v1.1.dll</HintPath>
+    </Reference>
+    <Reference Include="CuttingGeometries, Version=1.0.7495.17843, Culture=neutral, processorArchitecture=MSIL" />
+    <Reference Include="GongShell, Version=0.6.0.31544, Culture=neutral, processorArchitecture=MSIL" />
     <Reference Include="ICSharpCode.SharpZipLib, Version=0.85.5.452, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>bin\Debug\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
-    <Reference Include="Magick.NET-x86, Version=6.0.0.0, Culture=neutral, PublicKeyToken=2004825badfa91ec, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>.\Magick.NET-x86.dll</HintPath>
-    </Reference>
-    <Reference Include="NaviMapNet, Version=1.0.6001.20706, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="Magick.NET-Q8-AnyCPU, Version=7.0.0.0, Culture=neutral, PublicKeyToken=2004825badfa91ec, processorArchitecture=MSIL" />
+    <Reference Include="NaviMapNet, Version=1.0.6548.17937, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>.\NaviMapNet.dll</HintPath>
     </Reference>
@@ -56,32 +61,88 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Data.SQLite, Version=1.0.113.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL" />
     <Reference Include="System.Deployment" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AddTextAsPoly.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AddTextAsPoly.Designer.cs">
+      <DependentUpon>AddTextAsPoly.cs</DependentUpon>
+    </Compile>
     <Compile Include="BenzinPriceAnalyzerForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="BenzinPriceAnalyzerForm.designer.cs">
       <DependentUpon>BenzinPriceAnalyzerForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="CSVTXTForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="CSVTXTForm.Designer.cs">
+      <DependentUpon>CSVTXTForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="DBFCodePage.cs" />
+    <Compile Include="DBFRegions.cs" />
+    <Compile Include="FileAss.cs" />
+    <Compile Include="FindReplaceDlg.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FindReplaceDlg.Designer.cs">
+      <DependentUpon>FindReplaceDlg.cs</DependentUpon>
+    </Compile>
+    <Compile Include="fit_Definitions.cs" />
+    <Compile Include="fit_FastCrc.cs" />
+    <Compile Include="fit_Parser.cs" />
+    <Compile Include="FontPath.cs" />
+    <Compile Include="GPXReader.cs" />
+    <Compile Include="GPXTachograph.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GPXTachograph.designer.cs">
+      <DependentUpon>GPXTachograph.cs</DependentUpon>
+    </Compile>
+    <Compile Include="InputBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="InterpolateLess.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="InterpolateLess.designer.cs">
+      <DependentUpon>InterpolateLess.cs</DependentUpon>
+    </Compile>
+    <Compile Include="LatLonParser.cs" />
     <Compile Include="LBNRenamerForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="LBNRenamerForm.designer.cs">
       <DependentUpon>LBNRenamerForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="MapViewerForm.cs">
+    <Compile Include="LineAreaStyleForm.cs">
       <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="LineAreaStyleForm.Designer.cs">
+      <DependentUpon>LineAreaStyleForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MapIcons.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MapIcons.Designer.cs">
+      <DependentUpon>MapIcons.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MapsForgeReader.cs" />
+    <Compile Include="MapViewerForm.cs">
+      <SubType>Component</SubType>
     </Compile>
     <Compile Include="MapViewerForm.Designer.cs">
       <DependentUpon>MapViewerForm.cs</DependentUpon>
     </Compile>
     <Compile Include="KMZRebuilederForm.cs">
-      <SubType>Form</SubType>
+      <SubType>Component</SubType>
     </Compile>
     <Compile Include="KMZRebuilederForm.Designer.cs">
       <DependentUpon>KMZRebuilederForm.cs</DependentUpon>
@@ -99,22 +160,60 @@
       <DependentUpon>KMNumeratorForm.cs</DependentUpon>
     </Compile>
     <Compile Include="MruList.cs" />
+    <Compile Include="NavitelGDB.cs" />
+    <Compile Include="OSMDATA.cs" />
     <Compile Include="PolyCreatorForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="PolyCreatorForm.designer.cs">
       <DependentUpon>PolyCreatorForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="PolyCreatorClipper.cs" />
     <Compile Include="PolyLineBuffer.cs" />
+    <Compile Include="ProcessingForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ProcessingForm.designer.cs">
+      <DependentUpon>ProcessingForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ProGorodPOI.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="AddTextAsPoly.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>AddTextAsPoly.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="BenzinPriceAnalyzerForm.resx">
       <DependentUpon>BenzinPriceAnalyzerForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CSVTXTForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>CSVTXTForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FindReplaceDlg.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>FindReplaceDlg.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GPXTachograph.resx">
+      <DependentUpon>GPXTachograph.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="InterpolateLess.resx">
+      <DependentUpon>InterpolateLess.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="LBNRenamerForm.resx">
       <DependentUpon>LBNRenamerForm.cs</DependentUpon>
       <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="LineAreaStyleForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>LineAreaStyleForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MapIcons.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>MapIcons.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MapViewerForm.resx">
       <SubType>Designer</SubType>
@@ -136,6 +235,10 @@
       <DependentUpon>PolyCreatorForm.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="ProcessingForm.resx">
+      <DependentUpon>ProcessingForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -145,9 +248,29 @@
       <DependentUpon>LayersRenamerForm.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="RenameDat.resx">
+      <DependentUpon>RenameDat.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ReportForm.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>ReportForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SwapIcons.resx">
+      <DependentUpon>SwapIcons.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="Selection Filter.resx">
       <SubType>Designer</SubType>
       <DependentUpon>Selection Filter.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TrackSplitter.resx">
+      <DependentUpon>TrackSplitter.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WGSFormX.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>WGSFormX.cs</DependentUpon>
     </EmbeddedResource>
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -163,6 +286,24 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <Compile Include="RenameDat.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="RenameDat.designer.cs">
+      <DependentUpon>RenameDat.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ReportForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ReportForm.Designer.cs">
+      <DependentUpon>ReportForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SwapIcons.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SwapIcons.designer.cs">
+      <DependentUpon>SwapIcons.cs</DependentUpon>
+    </Compile>
     <Compile Include="RussianHighwaysAjaxImporter.cs" />
     <Compile Include="LayersRenamerForm.cs">
       <SubType>Form</SubType>
@@ -176,10 +317,56 @@
     <Compile Include="Selection Filter.Designer.cs">
       <DependentUpon>Selection Filter.cs</DependentUpon>
     </Compile>
+    <Compile Include="TrackSplitter.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="TrackSplitter.designer.cs">
+      <DependentUpon>TrackSplitter.cs</DependentUpon>
+    </Compile>
     <Compile Include="WaitingForm.cs" />
+    <Compile Include="WGSFormX.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WGSFormX.Designer.cs">
+      <DependentUpon>WGSFormX.cs</DependentUpon>
+    </Compile>
+    <Compile Include="XProcessMessages.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="bin\Debug\TMP\IF637308437520156250\images\progorod19.png" />
+    <None Include="bin\Debug\TMP\IF637308437520156250\images\progorod00.png" />
+    <None Include="bin\Debug\TMP\IF637308437520156250\images\progorod01.png" />
+    <None Include="bin\Debug\TMP\IF637308437520156250\images\progorod02.png" />
+    <None Include="bin\Debug\TMP\IF637308437520156250\images\progorod03.png" />
+    <None Include="bin\Debug\TMP\IF637308437520156250\images\progorod04.png" />
+    <None Include="bin\Debug\TMP\IF637308437520156250\images\progorod05.png" />
+    <None Include="bin\Debug\TMP\IF637308437520156250\images\progorod06.png" />
+    <None Include="bin\Debug\TMP\IF637308437520156250\images\progorod07.png" />
+    <None Include="bin\Debug\TMP\IF637308437520156250\images\progorod08.png" />
+    <None Include="bin\Debug\TMP\IF637308437520156250\images\progorod09.png" />
+    <None Include="bin\Debug\TMP\IF637308437520156250\images\progorod10.png" />
+    <None Include="bin\Debug\TMP\IF637308437520156250\images\progorod11.png" />
+    <None Include="bin\Debug\TMP\IF637308437520156250\images\progorod12.png" />
+    <None Include="bin\Debug\TMP\IF637308437520156250\images\progorod13.png" />
+    <None Include="bin\Debug\TMP\IF637308437520156250\images\progorod14.png" />
+    <None Include="bin\Debug\TMP\IF637308437520156250\images\progorod15.png" />
+    <None Include="bin\Debug\TMP\IF637308437520156250\images\progorod16.png" />
+    <None Include="bin\Debug\TMP\IF637308437520156250\images\progorod17.png" />
+    <None Include="bin\Debug\TMP\IF637308437520156250\images\progorod18.png" />
     <Content Include="leaf.ico" />
+    <None Include="Resources\11FINISHD.bmp" />
+    <None Include="Resources\10STARTD.bmp" />
+    <None Include="Resources\09KMFINISH.bmp" />
+    <None Include="Resources\08KMSTART.bmp" />
+    <None Include="Resources\07FINISH.bmp" />
+    <None Include="Resources\06START.bmp" />
+    <None Include="Resources\05DRIVER.bmp" />
+    <None Include="Resources\04PERIODS.bmp" />
+    <None Include="Resources\03REST.bmp" />
+    <None Include="Resources\02WORK.bmp" />
+    <None Include="Resources\01DRIVE.bmp" />
+    <None Include="Resources\00COLORS.png" />
+    <None Include="Resources\12VEHICLE.bmp" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

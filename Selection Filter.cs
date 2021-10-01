@@ -14,7 +14,8 @@ namespace KMZRebuilder
 {
     public partial class Selection_Filter : Form
     {
-        KMZRebuilederForm parent;
+        KMZRebuilederForm parent = null;
+        ContentViewer cparent = null;
         KMFile kfile;
         KMLayer klayer;
         XmlNodeList placemarks;
@@ -25,10 +26,13 @@ namespace KMZRebuilder
         public List<PointF> LoadedRoute = new List<PointF>();
         public List<PointF> LoadedPoly = new List<PointF>();
 
-        public Selection_Filter(KMZRebuilederForm parent, KMFile km, KMLayer kl)
+        public Selection_Filter(Form parent, KMFile km, KMLayer kl)
         {
-            this.parent = parent;
-
+            if(parent is KMZRebuilederForm)
+                this.parent = (KMZRebuilederForm)parent;
+            if (parent is ContentViewer)
+                this.cparent = (ContentViewer)parent;
+            
             InitializeComponent();
             marksFilter.SelectedIndex = 0;
 
@@ -53,7 +57,9 @@ namespace KMZRebuilder
             label1.Text = String.Format("Total placemarks: {0}", total);
             filtered = ids.Count;
             int todel = total - filtered;
-            label3.Text = todel > 0 ? String.Format("Placemarks with filter: {0} to keep, {1} to delete", filtered, todel) : "---";
+            string del_text = "delete";
+            if (APPD.Visible) del_text = "mark/check";
+            label3.Text = todel > 0 ? String.Format("Placemarks with filter: {0} to keep, {1} to " + del_text, filtered, todel) : "---";
             button9.Enabled = button11.Enabled = todel > 0;
             label3.ForeColor = total == filtered ? Color.Black : Color.Maroon;
         }
@@ -66,16 +72,34 @@ namespace KMZRebuilder
             for (int i = 0; i < placemarks.Count; i++)
                 if (placemarks[i].HasChildNodes)
                 {
+                    bool reg_name = false;
+                    bool reg_desc = false;
+
                     XmlNode nn = placemarks[i].SelectSingleNode("name");
                     if (nn != null)
                     {
                         if (nn.HasChildNodes)
                         {
                             string nam = nn.ChildNodes[0].Value;
-                            if (reg.IsMatch(nam))
-                                ids.Add(i);
+                            if (reg.IsMatch(nam)) reg_name = true;
                         };
                     };
+
+                    string description = "";
+                    try { description = placemarks[i].SelectSingleNode("description").ChildNodes[0].Value; }
+                    catch { };
+                    if ((!String.IsNullOrEmpty(description)) && (reg.IsMatch(description)))
+                        reg_desc = true;
+
+                    bool add = false;
+
+                    if ((ApplyTo.SelectedIndex == 0) && reg_name) add = true;               // name only
+                    if ((ApplyTo.SelectedIndex == 1) && reg_desc) add = true;               // desc only
+                    if ((ApplyTo.SelectedIndex == 2) && (reg_name || reg_desc)) add = true; // name OR desc
+                    if ((ApplyTo.SelectedIndex == 3) && (reg_name && reg_desc)) add = true; // name AND desc
+                    if ((ApplyTo.SelectedIndex == 4) && (reg_name != reg_desc)) add = true; // name AND desc
+
+                    if (add) ids.Add(i);               
                 };            
             Up();
             button6.Enabled = true;
@@ -100,18 +124,34 @@ namespace KMZRebuilder
             {
                 if (placemarks[i].HasChildNodes)
                 {
+                    bool reg_name = false;
+                    bool reg_desc = false;
+
                     XmlNode nn = placemarks[i].SelectSingleNode("name");
                     if (nn != null)
                     {
                         if (nn.HasChildNodes)
                         {
                             string nam = nn.ChildNodes[0].Value;
-                            if (!reg.IsMatch(nam))
-                                ids.Add(i);
-                        }
-                        else ids.Add(i);
-                    }
-                    else ids.Add(i);
+                            if (reg.IsMatch(nam)) reg_name = true;
+                        };
+                    };
+
+                    string description = "";
+                    try { description = placemarks[i].SelectSingleNode("description").ChildNodes[0].Value; }
+                    catch { };
+                    if ((!String.IsNullOrEmpty(description)) && (reg.IsMatch(description)))
+                        reg_desc = true;
+
+                    bool add = false;
+
+                    if ((ApplyTo.SelectedIndex == 0) && reg_name) add = true;               // name only
+                    if ((ApplyTo.SelectedIndex == 1) && reg_desc) add = true;               // desc only
+                    if ((ApplyTo.SelectedIndex == 2) && (reg_name || reg_desc)) add = true; // name OR desc
+                    if ((ApplyTo.SelectedIndex == 3) && (reg_name && reg_desc)) add = true; // name AND desc
+                    if ((ApplyTo.SelectedIndex == 4) && (reg_name != reg_desc)) add = true; // name AND desc
+
+                    if (!add) ids.Add(i);
                 }
                 else ids.Add(i);
             };            
@@ -128,7 +168,7 @@ namespace KMZRebuilder
         {
             OpenFileDialog ofd = new OpenFileDialog();
             ofd.DefaultExt = ".kml,.gpx";
-            ofd.Filter = "KML, GPX (*.kml;*.gpx)|*.kml;*.gpx";
+            ofd.Filter = "KML, GPX & SHP files (*.kml;*.gpx;*.shp)|*.kml;*.gpx;*.shp";
             if (ofd.ShowDialog() == DialogResult.OK)
                 loadroute(ofd.FileName);
             ofd.Dispose();
@@ -144,7 +184,7 @@ namespace KMZRebuilder
             LoadedRoute.Clear();
 
             System.IO.FileStream fs = new FileStream(filename, FileMode.Open, FileAccess.Read);
-            System.IO.StreamReader sr = new StreamReader(fs);
+            System.IO.StreamReader sr = new StreamReader(fs);            
             if (System.IO.Path.GetExtension(filename).ToLower() == ".kml")
             {
                 string file = sr.ReadToEnd();
@@ -182,6 +222,51 @@ namespace KMZRebuilder
                     si = file.IndexOf("<rtept", ei);
                     if (si > 0)
                         ei = file.IndexOf(">", si);
+                };
+            };
+            if (Path.GetExtension(filename).ToLower() == ".shp")
+            {
+                fs.Position = 32;
+                int tof = fs.ReadByte();
+                if ((tof == 3))
+                {
+                    fs.Position = 104;
+                    byte[] ba = new byte[4];
+                    fs.Read(ba, 0, ba.Length);
+                    if (BitConverter.IsLittleEndian) Array.Reverse(ba);
+                    int len = BitConverter.ToInt32(ba, 0) * 2;
+                    fs.Read(ba, 0, ba.Length);
+                    if (!BitConverter.IsLittleEndian) Array.Reverse(ba);
+                    tof = BitConverter.ToInt32(ba, 0);
+                    if ((tof == 3))
+                    {
+                        fs.Position += 32;
+                        fs.Read(ba, 0, ba.Length);
+                        if (!BitConverter.IsLittleEndian) Array.Reverse(ba);
+                        if (BitConverter.ToInt32(ba, 0) == 1)
+                        {
+                            fs.Read(ba, 0, ba.Length);
+                            if (!BitConverter.IsLittleEndian) Array.Reverse(ba);
+                            int pCo = BitConverter.ToInt32(ba, 0);
+                            fs.Read(ba, 0, ba.Length);
+                            if (!BitConverter.IsLittleEndian) Array.Reverse(ba);
+                            if (BitConverter.ToInt32(ba, 0) == 0)
+                            {
+                                ba = new byte[8];
+                                for (int i = 0; i < pCo; i++)
+                                {
+                                    PointF ap = new PointF();
+                                    fs.Read(ba, 0, ba.Length);
+                                    if (!BitConverter.IsLittleEndian) Array.Reverse(ba);
+                                    ap.X = (float)BitConverter.ToDouble(ba, 0);
+                                    fs.Read(ba, 0, ba.Length);
+                                    if (!BitConverter.IsLittleEndian) Array.Reverse(ba);
+                                    ap.Y = (float)BitConverter.ToDouble(ba, 0);
+                                    LoadedRoute.Add(ap);
+                                };
+                            };
+                        };
+                    };
                 };
             };
             sr.Close();
@@ -315,21 +400,36 @@ namespace KMZRebuilder
 
         private void button9_Click(object sender, EventArgs e)
         {
-            for (int i = placemarks.Count - 1; i >= 0; i--)
-                if (!ids.Contains(i))
-                    placemarks[i].ParentNode.RemoveChild(placemarks[i]);
+            if (this.parent != null)
+            {
+                for (int i = placemarks.Count - 1; i >= 0; i--)
+                    if (!ids.Contains(i))
+                        placemarks[i].ParentNode.RemoveChild(placemarks[i]);
 
-            List();
-            parent.ReloadAfterFilter(kfile, klayer);
-            this.Focus();
-            Reset();
+                List();
+                parent.ReloadAfterFilter(kfile, klayer);
+                this.Focus();
+                Reset();
+            }
+            else
+            {
+                
+                List<int> ids2del = new List<int>();
+                for (int i = placemarks.Count - 1; i >= 0; i--)
+                    if (!ids.Contains(i))
+                        ids2del.Add(i);
+
+                cparent.ApplyFilter(ids.ToArray(), ids2del.ToArray(), APPS.Checked);
+                this.Focus();
+                Reset();
+            };
         }
 
         private void button10_Click(object sender, EventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog();
             ofd.DefaultExt = ".kml";
-            ofd.Filter = "KML (*.kml)|*.kml";
+            ofd.Filter = "KML & ESRI Shape files (*.kml;*.shp)|*.kml;*.shp|BBBike Extract Text with Url (*.txt)|*.txt";
             if (ofd.ShowDialog() == DialogResult.OK)
                 loadpoly(ofd.FileName);
             ofd.Dispose();
@@ -345,21 +445,97 @@ namespace KMZRebuilder
             LoadedPoly.Clear();
 
             System.IO.FileStream fs = new FileStream(filename, FileMode.Open, FileAccess.Read);
-            System.IO.StreamReader sr = new StreamReader(fs);
+            if (System.IO.Path.GetExtension(filename).ToLower() == ".txt")
             {
-                string file = sr.ReadToEnd();
-                int si = file.IndexOf("<coordinates>");
-                int ei = file.IndexOf("</coordinates>");
-                string co = file.Substring(si + 13, ei - si - 13).Trim().Replace("\r", " ").Replace("\n", " ").Replace("\t", " ");
-                string[] arr = co.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
-                if ((arr != null) && (arr.Length > 0))
-                    for (int i = 0; i < arr.Length; i++)
+                try
+                {
+                    StreamReader sr = new StreamReader(fs, Encoding.ASCII);
+                    string line = sr.ReadLine();
+                    if (line.StartsWith("[BBIKE_EXTRACT_LINK]")) line = sr.ReadLine();
+                    Regex rx = new Regex(@"coords=(?<coords>[^=\r\n\&\#]*)", RegexOptions.IgnoreCase);
+                    Match mx = rx.Match(line);
+                    if (!mx.Success) return;
+                    string coords = mx.Groups["coords"].Value.ToUpper().Replace("%2C", ",").Replace("%7C", "|");
+                    if (coords.Length == 0) return;
+                    string[] coord = coords.Split(new char[] { '|' });
+                    foreach (string c in coord)
                     {
-                        string[] xyz = arr[i].Split(new string[] { "," }, StringSplitOptions.None);
-                        LoadedPoly.Add(new PointF(float.Parse(xyz[0], ni), float.Parse(xyz[1], ni)));
+                        string[] xy = c.Split(new char[] { ',' });
+                        PointF pf = new PointF((float)double.Parse(xy[0], System.Globalization.CultureInfo.InvariantCulture), (float)double.Parse(xy[1], System.Globalization.CultureInfo.InvariantCulture));
+                        LoadedPoly.Add(pf);
                     };
-            };            
-            sr.Close();
+                    sr.Close();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    LoadedPoly.Clear();
+                    return;
+                };
+            };
+            if (Path.GetExtension(filename).ToLower() == ".kml")
+            {
+                System.IO.StreamReader sr = new StreamReader(fs);
+                {
+                    string file = sr.ReadToEnd();
+                    int si = file.IndexOf("<coordinates>");
+                    int ei = file.IndexOf("</coordinates>");
+                    string co = file.Substring(si + 13, ei - si - 13).Trim().Replace("\r", " ").Replace("\n", " ").Replace("\t", " ");
+                    string[] arr = co.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+                    if ((arr != null) && (arr.Length > 0))
+                        for (int i = 0; i < arr.Length; i++)
+                        {
+                            string[] xyz = arr[i].Split(new string[] { "," }, StringSplitOptions.None);
+                            LoadedPoly.Add(new PointF(float.Parse(xyz[0], ni), float.Parse(xyz[1], ni)));
+                        };
+                };
+                sr.Close();
+            };
+            if (Path.GetExtension(filename).ToLower() == ".shp")
+            {
+                fs.Position = 32;
+                int tof = fs.ReadByte();
+                if ((tof == 5))
+                {
+                    fs.Position = 104;
+                    byte[] ba = new byte[4];
+                    fs.Read(ba, 0, ba.Length);
+                    if (BitConverter.IsLittleEndian) Array.Reverse(ba);
+                    int len = BitConverter.ToInt32(ba, 0) * 2;
+                    fs.Read(ba, 0, ba.Length);
+                    if (!BitConverter.IsLittleEndian) Array.Reverse(ba);
+                    tof = BitConverter.ToInt32(ba, 0);
+                    if ((tof == 5))
+                    {
+                        fs.Position += 32;
+                        fs.Read(ba, 0, ba.Length);
+                        if (!BitConverter.IsLittleEndian) Array.Reverse(ba);
+                        if (BitConverter.ToInt32(ba, 0) == 1)
+                        {
+                            fs.Read(ba, 0, ba.Length);
+                            if (!BitConverter.IsLittleEndian) Array.Reverse(ba);
+                            int pCo = BitConverter.ToInt32(ba, 0);
+                            fs.Read(ba, 0, ba.Length);
+                            if (!BitConverter.IsLittleEndian) Array.Reverse(ba);
+                            if (BitConverter.ToInt32(ba, 0) == 0)
+                            {
+                                ba = new byte[8];
+                                for (int i = 0; i < pCo; i++)
+                                {
+                                    PointF ap = new PointF();
+                                    fs.Read(ba, 0, ba.Length);
+                                    if (!BitConverter.IsLittleEndian) Array.Reverse(ba);
+                                    ap.X = (float)BitConverter.ToDouble(ba, 0);
+                                    fs.Read(ba, 0, ba.Length);
+                                    if (!BitConverter.IsLittleEndian) Array.Reverse(ba);
+                                    ap.Y = (float)BitConverter.ToDouble(ba, 0);
+                                    LoadedPoly.Add(ap);
+                                };
+                            };
+                        };
+                    };
+                };
+            };
             fs.Close();
 
             label8.Text = "Polygon has " + LoadedPoly.Count.ToString() + " points";
@@ -466,6 +642,40 @@ namespace KMZRebuilder
         {
             button9_Click(sender, e);
             Close();
+        }
+
+        private void Selection_Filter_Load(object sender, EventArgs e)
+        {
+            ApplyTo.SelectedIndex = 0;
+        }
+
+        private void button12_Click(object sender, EventArgs e)
+        {
+            contextMenuStrip1.Show(button12, new Point(0, 0));
+        }
+
+        private void defaultRegexForNameToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            textBox1.Text = @"^([_\w\s\.\,\-\¹\#\:\/\\\!\?" + "\"" + @"'`\*\^\(\)\[\]\@\$\%\+]*)$";
+            ApplyTo.SelectedIndex = 0;
+        }
+
+        private void descriptionWebSiteToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            textBox1.Text = @"website=([\S\s][^\r\n]+)";
+            ApplyTo.SelectedIndex = 1;
+        }
+
+        private void descriptionEmailToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            textBox1.Text = @"email=([\S\s][^\r\n]+)";
+            ApplyTo.SelectedIndex = 1;
+        }
+
+        private void descriptionPhoneToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            textBox1.Text = @"phone=([\S\s][^\r\n]+)";
+            ApplyTo.SelectedIndex = 1;
         }
     }
 }

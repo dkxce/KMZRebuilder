@@ -6,8 +6,12 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using System.Xml;
+using System.Runtime.InteropServices;
+using System.Reflection;
+using System.Windows;
 
 namespace KMZRebuilder
 {
@@ -20,148 +24,256 @@ namespace KMZRebuilder
         private KMZRebuilederForm parent = null;
         private bool firstboot = true;
 
-        private string SASPlanetCacheDir = @"C:\Program Files\SASPlanet\cache\osmmapMapnik\";
+        private string SASPlanetCacheDir = @"C:\Program Files\SASPlanet\cache\osmmapMapnik";
         private string UserDefindedUrl = @"http://tile.openstreetmap.org/{z}/{x}/{y}.png";
+
+        MruList mru1;
+        State state;
 
         public ContentViewer(KMZRebuilederForm parent)
         {
             this.parent = parent;
             Init();
-        }
+            PastInit();
+            LoadXUN();
+        } 
 
         public ContentViewer(KMZRebuilederForm parent, WaitingBoxForm waitBox)
         {
             this.parent = parent;
             this.wbf = waitBox;
             Init();
+            PastInit();
+            LoadXUN();
+        }
+
+        private void PastInit()
+        {
+            ToolStripMenuItem mi = new ToolStripMenuItem("Select None");
+            mi.Click += new EventHandler(selectNoneToolStripMenuItem_Click);
+            mi.ShortcutKeys = Keys.N | Keys.Control;
+            MapViewer.AddItemToDefaultMenu(mi);
+            MapViewer.AddItemToDefaultMenu(new ToolStripSeparator());
+            mi = new ToolStripMenuItem("Switch to Constructor Mode");
+            mi.Click += new EventHandler(mcme_Click);
+            mi.ShortcutKeys = Keys.F3;
+            MapViewer.AddItemToDefaultMenu(mi);
+        }
+
+        private List<XUN> xuns = new List<XUN>();
+        private void LoadXUN()
+        {
+            string fn = KMZRebuilederForm.CurrentDirectory() + @"\Map_Places.txt";
+            if (!File.Exists(fn)) return;
+            FileStream fs = new FileStream(fn, FileMode.Open, FileAccess.Read);
+            StreamReader sr = new StreamReader(fs, System.Text.Encoding.GetEncoding(1251));
+            while (!sr.EndOfStream)
+            {
+                string line = sr.ReadLine();
+                if (line.StartsWith("#")) continue;
+                if (line.StartsWith("@")) continue;
+                if (line.Length < 5) continue;
+                string[] xyn = line.Split(new char[] { ' ' }, 3);
+                try
+                {
+                    double la = double.Parse(xyn[0], System.Globalization.CultureInfo.InvariantCulture);
+                    double lo = double.Parse(xyn[1], System.Globalization.CultureInfo.InvariantCulture);
+                    xuns.Add(new XUN(xyn[2], la, lo));
+                }
+                catch { };
+            };
+            sr.Close();
+            fs.Close();
+        }
+
+        public class XUN
+        {
+            public double lat;
+            public double lon;
+            public string nam;
+
+            public XUN(string nam, double lat, double lon)
+            {
+                this.lat = lat;
+                this.lon = lon;
+                this.nam = nam;
+            }
+
+            public override string ToString()
+            {
+                return String.Format(System.Globalization.CultureInfo.InvariantCulture, "{0} ({1:0.000000} {2:0.000000})", nam, lat, lon);
+            }
+        }
+
+        [Serializable]
+        public class MapStore
+        {
+            public string Name;
+            public string Url;
+            public string CacheDir;
+            public NaviMapNet.NaviMapNetViewer.MapServices Service = NaviMapNet.NaviMapNetViewer.MapServices.Custom_UserDefined;
+            public NaviMapNet.NaviMapNetViewer.ImageSourceTypes Source = NaviMapNet.NaviMapNetViewer.ImageSourceTypes.tiles;
+            public NaviMapNet.NaviMapNetViewer.ImageSourceProjections Projection = NaviMapNet.NaviMapNetViewer.ImageSourceProjections.EPSG3857;
+
+            public override string ToString()
+            {
+                return Name;
+            }
+
+            public MapStore() { }
+            public MapStore(string Name) { this.Name = Name; }
+            public MapStore(string Name, string Url, string Cache)
+            {
+                this.Name = Name;
+                this.Url = Url;
+                this.CacheDir = Cache;
+            }
         }
 
         private void Init()
         {
             InitializeComponent();
+
+            string fn = KMZRebuilederForm.CurrentDirectory() + @"\KMZRebuilder.stt";
+            if (File.Exists(fn)) state = State.Load(fn);
+
+            mru1 = new MruList(KMZRebuilederForm.CurrentDirectory()+@"\KMZRebuilder.drs", spcl, 10);
+            mru1.FileSelected += new MruList.FileSelectedEventHandler(mru1_FileSelected);
+
             mapTootTip.ShowAlways = true;            
 
             mapSelect = new NaviMapNet.MapLayer("mapSelect");
             MapViewer.MapLayers.Add(mapSelect);
             mapContent = new NaviMapNet.MapLayer("mapContent");
-            MapViewer.MapLayers.Add(mapContent);            
+            MapViewer.MapLayers.Add(mapContent);
+
+            // LOAD NO MAP
+            iStorages.Items.Add(new MapStore("[[*** No Map ***]]", "", null));
+
+            // LOAD MAPS FROM FILE
+            string mf = KMZRebuilederForm.CurrentDirectory() + @"\KMZRebuilder.maps";
+            if (File.Exists(mf))
+            {
+                MapStore[] mss = XMLSaved<MapStore[]>.Load(mf);
+                if ((mss != null) && (mss.Length > 0))
+                    iStorages.Items.AddRange(mss);
+            };
+
+            //iStorages.Items.Add("OSM Mapnik Render Tiles");
+            //iStorages.Items.Add("OSM OpenVkarte Render Tiles");
+            //iStorages.Items.Add("Wikimapia");
+
+            //iStorages.Items.Add("OpenTopoMaps");
+            //iStorages.Items.Add("Sputnik.ru");
+            //iStorages.Items.Add("RUMAP");
+            //iStorages.Items.Add("2GIS");
+            //iStorages.Items.Add("ArcGIS ESRI");
+
+            //iStorages.Items.Add("Nokia-Ovi");
+            //iStorages.Items.Add("OviMap");
+            //iStorages.Items.Add("OviMap Sputnik");
+            //iStorages.Items.Add("OviMap Relief");
+            //iStorages.Items.Add("OviMap Hybrid");
+
+            //iStorages.Items.Add("Kosmosnimki.ru ScanEx 1");
+            //iStorages.Items.Add("Kosmosnimki.ru ScanEx 2");
+            //iStorages.Items.Add("Kosmosnimki.ru IRS Sat");
+
+            //iStorages.Items.Add("Google Map");
+            //iStorages.Items.Add("Google Sat");
+
+            // LOAD USER-DEFINED MAPS
+            iStorages.Items.Add(new MapStore("[[*** User-Defined Url ***]]", "", "URLDefined"));
+            iStorages.Items.Add(new MapStore("[[*** SAS Planet Cache ***]]", "", "SASPlanet"));
 
             MapViewer.NotFoundTileColor = Color.LightYellow;
-            MapViewer.ImageSourceService = NaviMapNet.NaviMapNetViewer.MapServices.OSM_Mapnik;
-            MapViewer.WebRequestTimeout = 3000;
+            MapViewer.ImageSourceService = NaviMapNet.NaviMapNetViewer.MapServices.Custom_LocalFiles;
+            MapViewer.ImageSourceUrl = @"C:\Program Files\SASPlanet\cache\osmmapMapnik\";
+            MapViewer.WebRequestTimeout = 10000;
             MapViewer.ZoomID = 10;
             MapViewer.OnMapUpdate = new NaviMapNet.NaviMapNetViewer.MapEvent(MapUpdate);
-            //MapViewer.UserDefinedGetTileUrl = new NaviMapNet.NaviMapNetViewer.GetTilePathCall(this.GetTilePath);
-            MapViewer.DrawMap = true;
 
-            iStorages.Items.Add("No Map");
+            MapViewer.UserDefinedGetTileUrl = new NaviMapNet.NaviMapNetViewer.GetTilePathCall(UserDefinedGetTileUrl);    
+            
+            //MapViewer.DrawMap = true;
+            //MapViewer.ReloadMap();
 
-            iStorages.Items.Add("OSM Mapnik Render Tiles");
-            iStorages.Items.Add("OSM OpenVkarte Render Tiles");
-            iStorages.Items.Add("Wikimapia");
+            //iStorages.SelectedIndex = iStorages.Items.Count - 2;    
 
-            iStorages.Items.Add("OpenTopoMaps");
-            iStorages.Items.Add("Sputnik.ru");
-            iStorages.Items.Add("RUMAP");
-            iStorages.Items.Add("2GIS");
-            iStorages.Items.Add("ArcGIS ESRI");
+            if (state != null)
+            {
+                SASPlanetCacheDir = state.SASDir;
+                UserDefindedUrl = state.URL;
 
-            iStorages.Items.Add("Nokia-Ovi");
-            iStorages.Items.Add("OviMap");
-            iStorages.Items.Add("OviMap Sputnik");
-            iStorages.Items.Add("OviMap Relief");
-            iStorages.Items.Add("OviMap Hybrid");
+                if (state.MapID < iStorages.Items.Count)
+                    iStorages.SelectedIndex = state.MapID;                
+            };            
+        }
 
-            iStorages.Items.Add("Kosmosnimki.ru ScanEx 1");
-            iStorages.Items.Add("Kosmosnimki.ru ScanEx 2");
-            iStorages.Items.Add("Kosmosnimki.ru IRS Sat");
+        private void mru1_FileSelected(string file_name)
+        {
+            SASPlanetCacheDir = ClearLastSlash(file_name);
+            mru1.AddFile(SASPlanetCacheDir);
 
-            iStorages.Items.Add("Google Map");
-            iStorages.Items.Add("Google Sat");
+            if (iStorages.SelectedIndex == (iStorages.Items.Count - 1))
+                iStorages_SelectedIndexChanged(this, null);
+            else
+                iStorages.SelectedIndex = iStorages.Items.Count - 1;
+        }
 
-            iStorages.Items.Add("-- SAS Planet Cache --");
-            iStorages.Items.Add("-- User-Defined Url --");
-
-            iStorages.SelectedIndex = 1;
-
-            MapViewer.UserDefinedGetTileUrl += new NaviMapNet.NaviMapNetViewer.GetTilePathCall(UserDefinedGetTileUrl);
+        private string UserDefinedGetTileUrl(int x, int y, int z)
+        {
+            if (iStorages.SelectedIndex == (iStorages.Items.Count - 1))
+                return SASPlanetCache(x, y, z + 1);
+            return "";
         }
 
         private void iStorages_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (iStorages.SelectedIndex == 0)
+            MapStore iS = (MapStore)iStorages.SelectedItem;
+
+            MapViewer.ImageSourceService = iS.Service;
+            MapViewer.ImageSourceType = iS.Source;
+            MapViewer.ImageSourceProjection = iS.Projection;
+
+            if (iStorages.SelectedIndex < (iStorages.Items.Count - 1))
             {
-                MapViewer.ImageSourceService = NaviMapNet.NaviMapNetViewer.MapServices.Custom_UserDefined;
-                MapViewer.ImageSourceType = NaviMapNet.NaviMapNetViewer.ImageSourceTypes.tiles;
-                MapViewer.ImageSourceUrl = "";
+                MapViewer.UseDiskCache = true;
+                MapViewer.UserDefinedMapName = iS.CacheDir;
+
+                if (iStorages.SelectedIndex == (iStorages.Items.Count - 2))
+                    MapViewer.ImageSourceUrl = UserDefindedUrl;
+                else
+                    MapViewer.ImageSourceUrl = iS.Url;
             };
-            if (iStorages.SelectedIndex == 1)
-                MapViewer.ImageSourceService = NaviMapNet.NaviMapNetViewer.MapServices.OSM_Mapnik;
-            if (iStorages.SelectedIndex == 2)
-                MapViewer.ImageSourceService = NaviMapNet.NaviMapNetViewer.MapServices.OSM_Openvkarte;
-            if (iStorages.SelectedIndex == 3)
-                MapViewer.ImageSourceService = NaviMapNet.NaviMapNetViewer.MapServices.OSM_Wikimapia;
-            if (iStorages.SelectedIndex > 3)
+
+            if (iStorages.SelectedIndex == (iStorages.Items.Count - 1))
             {
-                MapViewer.ImageSourceService = NaviMapNet.NaviMapNetViewer.MapServices.Custom_UserDefined;
-                MapViewer.ImageSourceType = NaviMapNet.NaviMapNetViewer.ImageSourceTypes.tiles;
-                MapViewer.ImageSourceProjection = NaviMapNet.NaviMapNetViewer.ImageSourceProjections.EPSG3857;
+                MapViewer.UseDiskCache = false;
+                MapViewer.UserDefinedMapName = iS.CacheDir = @"LOCAL\" + SASPlanetCacheDir.Substring(SASPlanetCacheDir.LastIndexOf(@"\") + 1);
+                MapViewer.ImageSourceUrl = SASPlanetCacheDir;
             };
-            if (iStorages.SelectedIndex == 4)
-                MapViewer.ImageSourceUrl = "http://a.tile.opentopomap.org/{z}/{x}/{y}.png";
-            if (iStorages.SelectedIndex == 5)
-                MapViewer.ImageSourceUrl = "http://tiles.maps.sputnik.ru/{z}/{x}/{y}.png";
-            if (iStorages.SelectedIndex == 6)
-                MapViewer.ImageSourceUrl = "http://tile.digimap.ru/rumap/{z}/{x}/{y}.png";
-            if (iStorages.SelectedIndex == 7)
-                MapViewer.ImageSourceUrl = "https://tile1.maps.2gis.com/tiles?x={x}&y={y}&z={z}&v=1.1";
-            if (iStorages.SelectedIndex == 8)
-                MapViewer.ImageSourceUrl = "http://services.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}.png";
-            if (iStorages.SelectedIndex == 9)
-                MapViewer.ImageSourceUrl = "http://maptile.mapplayer1.maps.svc.ovi.com/maptiler/maptile/newest/normal.day/{z}/{x}/{y}/256/png8";
-            if (iStorages.SelectedIndex == 10)
-                MapViewer.ImageSourceUrl = "http://1.maptile.lbs.ovi.com/maptiler/v2/maptile/newest/normal.day/{z}/{x}/{y}/256/png8?lg=RUS&token=fee2f2a877fd4a429f17207a57658582&appId=nokiaMaps";
-            if (iStorages.SelectedIndex == 11)
-                MapViewer.ImageSourceUrl = "http://1.maptile.lbs.ovi.com/maptiler/v2/maptile/newest/satellite.day/{z}/{x}/{y}/256/png8?lg=RUS&token=fee2f2a877fd4a429f17207a57658582&appId=nokiaMaps";
-            if (iStorages.SelectedIndex == 12)
-                MapViewer.ImageSourceUrl = "http://1.maptile.lbs.ovi.com/maptiler/v2/maptile/newest/hybrid.day/{z}/{x}/{y}/256/png8?lg=RUS&token=fee2f2a877fd4a429f17207a57658582&appId=nokiaMaps";
-            if (iStorages.SelectedIndex == 13)
-                MapViewer.ImageSourceUrl = "http://1.maptile.lbs.ovi.com/maptiler/v2/maptile/newest/terrain.day/{z}/{x}/{y}/256/png8?lg=RUS&token=fee2f2a877fd4a429f17207a57658582&appId=nokiaMaps";
-            if (iStorages.SelectedIndex == 14)
-                MapViewer.ImageSourceUrl = "http://maps.kosmosnimki.ru/TileService.ashx?Request=gettile&LayerName=04C9E7CE82C34172910ACDBF8F1DF49A&apikey=7BDJ6RRTHH&crs=epsg:3857&z={z}&x={x}&y={y}";
-            if (iStorages.SelectedIndex == 15)
-                MapViewer.ImageSourceUrl = "http://maps.kosmosnimki.ru/TileService.ashx?Request=gettile&LayerName=04C9E7CE82C34172910ACDBF8F1DF49A&apikey=7BDJ6RRTHH&crs=epsg:3857&z={z}&x={x}&y={y}";
-            if (iStorages.SelectedIndex == 16)
-                MapViewer.ImageSourceUrl = "http://irs.gis-lab.info/?layers=irs&request=GetTile&z={z}&x={x}&y={y}";
-            if (iStorages.SelectedIndex == 17)
-                MapViewer.ImageSourceUrl = "http://mts0.google.com/vt/lyrs=m@177000000&hl=ru&src=app&x={x}&s=&y={y}&z={z}&s=Ga";
-            if (iStorages.SelectedIndex == 18)
-                MapViewer.ImageSourceUrl = "http://mts0.google.com/vt/lyrs=h@177000000&hl=ru&src=app&x={x}&s=&y={y}&z={z}&s=G";
-            if (iStorages.SelectedIndex == 20)
-                MapViewer.ImageSourceUrl = UserDefindedUrl;
 
-            MapViewer.ReloadMap();
-        }
-
-        private void toolStripMenuItem4_Click(object sender, EventArgs e)
-        {
-            MapViewer.DrawTilesBorder = !MapViewer.DrawTilesBorder;
-            toolStripMenuItem4.Checked = MapViewer.DrawTilesBorder;
-            MapViewer.ReloadMap();
-        }
-
-        private void toolStripMenuItem5_Click(object sender, EventArgs e)
-        {
-            MapViewer.DrawTilesXYZ = !MapViewer.DrawTilesXYZ;
-            toolStripMenuItem5.Checked = MapViewer.DrawTilesXYZ;
+            iStorages.Refresh();
             MapViewer.ReloadMap();
         }
 
         private void MapUpdate()
         {
-            toolStripStatusLabel1.Text = "Last Requested File: " + MapViewer.LastRequestedFile;
+            string lreq = MapViewer.LastRequestedFile;
+            if (lreq.Length > 70) lreq = "... " + lreq.Substring(lreq.Length - 70);            
+
+            toolStripStatusLabel1.Text = "Last Requested File: " + lreq;
             toolStripStatusLabel2.Text = MapViewer.CenterDegreesLat.ToString().Replace(",", ".");
             toolStripStatusLabel3.Text = MapViewer.CenterDegreesLon.ToString().Replace(",", ".");
+
+            string regNm = "...";
+            if (MapViewer.ZoomID > 7)
+            {
+                int regNo = KMZRebuilederForm.PIRU.PointInRegion(MapViewer.CenterDegreesY, MapViewer.CenterDegreesX);
+                regNm = regNo > 0 ? KMZRebuilederForm.PIRU.GetRegionName(regNo) : "...";
+            };
+            RegName.Text = regNm;
         }
 
         private Timer mmTimer = null;
@@ -224,237 +336,483 @@ namespace KMZRebuilder
         {
             if (objects.SelectedItems.Count == 0) return;
             
-            NaviMapNet.MapObject mo = mapContent[objects.SelectedIndices[0]];            
-            MapViewer.CenterDegrees = mo.Center;
+            NaviMapNet.MapObject mo = mapContent[objects.SelectedIndices[0]];
+            if ((mo is NaviMapNet.MapPolyLine) || (mo is NaviMapNet.MapPolygon))
+            {
+                if (mo is NaviMapNet.MapPolyLine)
+                {
+                    if ((mo.Bounds.Width > MapViewer.MapBoundsRectDegrees.Width) || (mo.Bounds.Height > MapViewer.MapBoundsRectDegrees.Height))
+                        MapViewer.CenterDegrees = mo.Points[0];
+                    else
+                        MapViewer.ZoomByArea((mo as NaviMapNet.MapPolyLine).Bounds, MapViewer.ZoomID);
+                }
+                else
+                {
+                    byte nextZoom = MapViewer.ZoomID;
+                    if ((mo.Bounds.Width > MapViewer.MapBoundsRectDegrees.Width) || (mo.Bounds.Height > MapViewer.MapBoundsRectDegrees.Height))
+                    {
+                        int pow = (int)Math.Round(Math.Max(mo.Bounds.Width / MapViewer.MapBoundsRectDegrees.Width, mo.Bounds.Height / MapViewer.MapBoundsRectDegrees.Height));
+                        nextZoom = (byte)(nextZoom - pow);
+                        if (nextZoom < 2) nextZoom = 2;
+                        if (nextZoom > 20) nextZoom = 2;
+                    };
+                    MapViewer.ZoomByArea((mo as NaviMapNet.MapPolygon).Bounds, nextZoom);
+                };
+            }
+            else
+            {
+                double[] b = MapViewer.MapBoundsMinMaxDegrees;
+                if((mo.Points[0].X < b[0]) || (mo.Points[0].Y < b[1]) || (mo.Points[0].X > b[2]) || (mo.Points[0].Y > b[3]))
+                    MapViewer.CenterDegrees = mo.Points[0];
+            };
             SelectOnMap(objects.SelectedIndices[0]);
         }
 
+        Dictionary<string, string> style2image = new Dictionary<string, string>();
+        private int prev_selected = -1;
         private void laySelect_SelectedIndexChanged(object sender, EventArgs e)
         {
+            List<int> selected_to_del = new List<int>();
+            if(prev_selected == laySelect.SelectedIndex)
+            {
+                if (objects.Items.Count > 0)
+                    for (int i = 0; i < objects.Items.Count; i++)
+                        if (objects.Items[i].SubItems[6].Text == "Yes")
+                            selected_to_del.Add(i);
+            }
+            else
+                mapSelect.Clear();
+            prev_selected = laySelect.SelectedIndex;
+
             System.Globalization.CultureInfo ci = System.Globalization.CultureInfo.InstalledUICulture;
             System.Globalization.NumberFormatInfo ni = (System.Globalization.NumberFormatInfo)ci.NumberFormat.Clone();
             ni.NumberDecimalSeparator = ".";
 
             images.Images.Clear();
             objects.Items.Clear();
-            mapContent.Clear();
+            mapContent.Clear();            
+            
 
-            Hashtable imList = new Hashtable();            
+            Hashtable imList = new Hashtable();
 
-            KMLayer l = (KMLayer)parent.kmzLayers.Items[laySelect.SelectedIndex];
-            XmlNode xn = l.file.kmlDoc.SelectNodes("kml/Document/Folder")[l.id];
-            XmlNodeList xns = xn.SelectNodes("Placemark/LineString/coordinates");            
-            if (xns.Count > 0)
+            if (true)
             {
-                for (int x = 0; x < xns.Count; x++)
-                {
-                    toolStripStatusLabel1.Text = String.Format("Loading {0} of {1} lines",x,xns.Count);
-                    statusStrip2.Refresh();
-                    if (wbf != null) wbf.Text = String.Format("Loading {0} of {1} lines", x, xns.Count);
-                    
-                    string[] llza = xns[x].ChildNodes[0].Value.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
-                    string name = xns[x].ParentNode.ParentNode.SelectSingleNode("name").ChildNodes[0].Value;
-                    string description = "";
-                    try { description = xns[x].ParentNode.ParentNode.SelectSingleNode("description").ChildNodes[0].Value; }
-                    catch { };
+                KMLayer l = (KMLayer)parent.kmzLayers.Items[laySelect.SelectedIndex];
+                XmlNode xn = l.file.kmlDoc.SelectNodes("kml/Document/Folder")[l.id];
 
-                    string styleUrl = "";
-                    if (xns[x].ParentNode.ParentNode.SelectSingleNode("styleUrl") != null) styleUrl = xns[x].ParentNode.ParentNode.SelectSingleNode("styleUrl").ChildNodes[0].Value;
-                    if (styleUrl.IndexOf("#") == 0) styleUrl = styleUrl.Remove(0, 1);
-
-                    Color lineColor = Color.FromArgb(255, Color.Blue);
-                    int lineWidth = 3;
-
-                    XmlNode sn = null;
-                    if (styleUrl != "")
+                int el_line = 0;
+                int el_polygon = 0;
+                int el_point = 0;
+                XmlNodeList xnf = xn.SelectNodes("Placemark");
+                if (xnf.Count > 0)
+                    for (int el = 0; el < xnf.Count; el++)
                     {
-                        string firstsid = styleUrl;
-                        XmlNodeList pk = l.file.kmlDoc.SelectNodes("kml/Document/StyleMap[@id='" + styleUrl + "']/Pair/key");
-                        if (pk.Count > 0)
-                            for (int n = 0; n < pk.Count; n++)
+                        if (el % 100 == 0)
+                        {
+                            toolStripStatusLabel1.Text = String.Format("Loading {0} of {1} placemarks", el, xnf.Count);
+                            statusStrip2.Refresh();
+                        };
+                        if ((wbf != null) && (el % 100 == 0)) wbf.Text = String.Format("Loading {0} of {1} placemarks", el, xnf.Count);
+
+                        if (xnf[el].ChildNodes.Count == 0) continue;
+
+                        if (xnf[el].SelectNodes("LineString").Count > 0) // ++LINE
+                        {
+                            XmlNode xnn = xnf[el].SelectNodes("LineString/coordinates")[0];
+
+                            string[] llza = xnn.ChildNodes[0].Value.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+                            string name = "NoName";
+                            try { name = xnn.ParentNode.ParentNode.SelectSingleNode("name").ChildNodes[0].Value; }
+                            catch { };
+                            string description = "";
+                            try { description = xnn.ParentNode.ParentNode.SelectSingleNode("description").ChildNodes[0].Value; }
+                            catch { };
+
+                            string styleUrl = "";
+                            if (xnn.ParentNode.ParentNode.SelectSingleNode("styleUrl") != null) styleUrl = xnn.ParentNode.ParentNode.SelectSingleNode("styleUrl").ChildNodes[0].Value;
+                            if (styleUrl.IndexOf("#") == 0) styleUrl = styleUrl.Remove(0, 1);
+
+                            Color lineColor = Color.FromArgb(255, Color.Blue);
+                            int lineWidth = 3;
+
+                            XmlNode sn = null;
+                            if (styleUrl != "")
                             {
-                                XmlNode cn = pk[n];
-                                if ((cn.ChildNodes[0].Value != "normal") && (n > 0)) continue;
-                                if (cn.ParentNode.SelectSingleNode("styleUrl") == null) continue;
-                                firstsid = cn.ParentNode.SelectSingleNode("styleUrl").ChildNodes[0].Value;
-                                if (firstsid.IndexOf("#") == 0) firstsid = firstsid.Remove(0, 1);
-                            };
-                        try
-                        {
-                            sn = l.file.kmlDoc.SelectSingleNode("kml/Document/Style[@id='" + firstsid + "']/LineStyle");
-                        }
-                        catch { };
-                    }
-                    else
-                        sn = xns[x].ParentNode.ParentNode.SelectSingleNode("Style/LineStyle");
-                    if (sn != null)
-                    {
-                        string colval = sn.SelectSingleNode("color").ChildNodes[0].Value;
-                        try
-                        {
-                            lineColor = Color.FromName(colval);
-                            if (colval.Length == 8)
-                            {
-                                lineColor = Color.FromArgb(
-                                    Convert.ToInt32(colval.Substring(0, 2), 16),
-                                    Convert.ToInt32(colval.Substring(2, 2), 16),
-                                    Convert.ToInt32(colval.Substring(4, 2), 16),
-                                    Convert.ToInt32(colval.Substring(6, 2), 16)
-                                    );
-                            };
-                        }
-                        catch { };
-                        string widval = sn.SelectSingleNode("width").ChildNodes[0].Value;
-                        try
-                        {
-                            lineWidth = (int)double.Parse(widval, ni);
-                            if (lineWidth < 3) lineWidth = 3;
-                        }
-                        catch { };
-                    };
-
-                    List<PointF> xy = new List<PointF>();
-                    foreach (string llzi in llza)
-                    {
-                        string[] llz = llzi.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries);
-                        xy.Add(new PointF(float.Parse(llz[0], ni), float.Parse(llz[1], ni)));
-                    };
-
-                    NaviMapNet.MapPolyLine ml = new NaviMapNet.MapPolyLine(xy.ToArray());
-                    ml.Name = name;
-                    ml.UserData = description;
-                    ml.Color = lineColor;
-                    ml.Width = lineWidth;
-
-                    mapContent.Add(ml);
-                    ListViewItem lvi = objects.Items.Add(ml.Name, -1);
-                    lvi.SubItems.Add("Line");
-                    lvi.SubItems.Add("");
-                    lvi.SubItems.Add("");
-                    lvi.SubItems.Add("");
-                    lvi.SubItems.Add("");
-                    lvi.SubItems.Add("");
-                    lvi.SubItems.Add("Placemark/LineString/coordinates["+x.ToString()+"]");
-                };
-            };
-
-            xns = xn.SelectNodes("Placemark/Point/coordinates");
-            if (xns.Count > 0)
-            {
-                for (int x = 0; x < xns.Count; x++)
-                {
-                    toolStripStatusLabel1.Text = String.Format("Loading {0} of {1} points", x, xns.Count);
-                    statusStrip2.Refresh();
-                    if (wbf != null) wbf.Text = String.Format("Loading {0} of {1} points", x, xns.Count);
-
-                    string[] llz = xns[x].ChildNodes[0].Value.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries);
-                    string name = "";
-                    try { name = xns[x].ParentNode.ParentNode.SelectSingleNode("name").ChildNodes[0].Value; } catch { };
-                    string description = "";
-                    try { description = xns[x].ParentNode.ParentNode.SelectSingleNode("description").ChildNodes[0].Value; }
-                    catch { };
-
-                    string styleUrl = "";
-                    string href = "";
-                    if (xns[x].ParentNode.ParentNode.SelectSingleNode("styleUrl") != null) styleUrl = xns[x].ParentNode.ParentNode.SelectSingleNode("styleUrl").ChildNodes[0].Value;
-                    if (styleUrl.IndexOf("#") == 0) styleUrl = styleUrl.Remove(0, 1);
-
-                    if (styleUrl != "")
-                    {
-                        string firstsid = styleUrl;
-                        XmlNodeList pk = l.file.kmlDoc.SelectNodes("kml/Document/StyleMap[@id='" + styleUrl + "']/Pair/key");
-                        if (pk.Count > 0)
-                            for (int n = 0; n < pk.Count; n++)
-                            {
-                                XmlNode cn = pk[n];
-                                if ((cn.ChildNodes[0].Value != "normal") && (n > 0)) continue;
-                                if (cn.ParentNode.SelectSingleNode("styleUrl") == null) continue;
-                                firstsid = cn.ParentNode.SelectSingleNode("styleUrl").ChildNodes[0].Value;
-                                if (firstsid.IndexOf("#") == 0) firstsid = firstsid.Remove(0, 1);
-                            };
-                        try
-                        {
-                            XmlNode nts = l.file.kmlDoc.SelectSingleNode("kml/Document/Style[@id='" + firstsid + "']/IconStyle/Icon/href");
-                            href = nts.ChildNodes[0].Value;
-                        }
-                        catch { };
-                    };
-
-                    NaviMapNet.MapPoint mp = new NaviMapNet.MapPoint(double.Parse(llz[1], ni), double.Parse(llz[0], ni));
-                    mp.Name = name;
-                    mp.UserData = description;
-                    mp.SizePixels = new Size(16, 16);
-                    int ii = -1;
-                    if (imList.ContainsKey(href)) 
-                        ii = (int)imList[href];
-                    else
-                    {
-                        if (href == "")
-                            imList.Add(href, -1);
-                        else
-                        {
-                            Image im = null;
-                            if (Uri.IsWellFormedUriString(href, UriKind.Absolute))
-                            {
-                                System.Net.HttpWebRequest request = (System.Net.HttpWebRequest)System.Net.HttpWebRequest.Create(href);
-
+                                string firstsid = styleUrl;
+                                XmlNodeList pk = l.file.kmlDoc.SelectNodes("kml/Document/StyleMap[@id='" + styleUrl + "']/Pair/key");
+                                if (pk.Count > 0)
+                                    for (int n = 0; n < pk.Count; n++)
+                                    {
+                                        XmlNode cn = pk[n];
+                                        if ((cn.ChildNodes[0].Value != "normal") && (n > 0)) continue;
+                                        if (cn.ParentNode.SelectSingleNode("styleUrl") == null) continue;
+                                        firstsid = cn.ParentNode.SelectSingleNode("styleUrl").ChildNodes[0].Value;
+                                        if (firstsid.IndexOf("#") == 0) firstsid = firstsid.Remove(0, 1);
+                                    };
                                 try
                                 {
-                                    using (System.Net.HttpWebResponse response = (System.Net.HttpWebResponse)request.GetResponse())
-                                    using (Stream stream = response.GetResponseStream())
-                                        im = Bitmap.FromStream(stream);
+                                    sn = l.file.kmlDoc.SelectSingleNode("kml/Document/Style[@id='" + firstsid + "']/LineStyle");
                                 }
-                                catch
-                                { im = null; };
+                                catch { };
                             }
                             else
+                                sn = xnn.ParentNode.ParentNode.SelectSingleNode("Style/LineStyle");
+                            if (sn != null)
                             {
-                                try { im = Image.FromFile(l.file.tmp_file_dir + href); } catch { im = null; };
+                                string colval = sn.SelectSingleNode("color").ChildNodes[0].Value;
+                                try
+                                {
+                                    lineColor = Color.FromName(colval);
+                                    if (colval.Length == 8)
+                                    {
+                                        lineColor = Color.FromArgb(
+                                            Convert.ToInt32(colval.Substring(0, 2), 16),
+                                            Convert.ToInt32(colval.Substring(6, 2), 16),
+                                            Convert.ToInt32(colval.Substring(4, 2), 16),
+                                            Convert.ToInt32(colval.Substring(2, 2), 16)
+                                            );
+                                    };
+                                }
+                                catch { };
+                                string widval = sn.SelectSingleNode("width").ChildNodes[0].Value;
+                                try
+                                {
+                                    lineWidth = (int)double.Parse(widval, ni);
+                                    if (lineWidth < 3) lineWidth = 3;
+                                }
+                                catch { };
                             };
 
-                            if (im != null)
+                            List<PointF> xy = new List<PointF>();
+                            foreach (string llzix in llza)
                             {
-                                images.Images.Add(href, (Image)new Bitmap(im));
-                                im.Dispose();
-                                imList.Add(href, ii = images.Images.Count - 1);
+                                string llzi = llzix.Trim('\r').Trim('\n');
+                                if (String.IsNullOrEmpty(llzi)) continue;
+                                string[] llz = llzi.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries);
+                                xy.Add(new PointF(float.Parse(llz[0], ni), float.Parse(llz[1], ni)));
+                            };
+
+                            NaviMapNet.MapPolyLine ml = new NaviMapNet.MapPolyLine(xy.ToArray());
+                            ml.Name = name;
+                            ml.UserData = description;
+                            ml.Color = lineColor;
+                            ml.Width = lineWidth;
+
+                            Image im = new Bitmap(16, 16);
+                            Graphics g = Graphics.FromImage(im);
+                            g.FillRectangle(new SolidBrush(lineColor), 0, 0, 16, 16);
+                            g.DrawString("L", new Font("Terminal", 11, FontStyle.Bold), new SolidBrush(Color.FromArgb(255 - lineColor.R, 255 - lineColor.G, 255 - lineColor.B)), 1, -1);
+                            g.Dispose();
+                            images.Images.Add(im);
+
+                            if (l.file.DrawEvenSizeIsTooSmall) ml.DrawEvenSizeIsTooSmall = true;
+                            mapContent.Add(ml);
+                            ListViewItem lvi = objects.Items.Add(ml.Name, images.Images.Count - 1);
+                            lvi.SubItems.Add("Line (" + ml.PointsCount.ToString() + " points)");
+                            lvi.SubItems.Add(ml.Points[0].Y.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                            lvi.SubItems.Add(ml.Points[0].X.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                            lvi.SubItems.Add("");
+                            lvi.SubItems.Add("");
+                            lvi.SubItems.Add("");
+                            lvi.SubItems.Add("Placemark/LineString/coordinates[" + el_line.ToString() + "]");
+                            if (((el_point + el_polygon + el_line) == 0) && firstboot) MapViewer.CenterDegrees = ml.Points[0];
+
+                            if (selected_to_del.IndexOf(lvi.Index) >= 0)
+                            {
+                                lvi.SubItems[6].Text = "Yes";
+                                lvi.Font = new Font(lvi.Font, FontStyle.Strikeout);
+                                mapContent[lvi.Index].Visible = false;
+                            };
+
+                            el_line++;
+                        }; // --LINE
+
+                        if (xnf[el].SelectNodes("Polygon").Count > 0) // ++Polygon
+                        {
+                            XmlNode xnn = xnf[el].SelectNodes("Polygon/outerBoundaryIs/LinearRing/coordinates")[0];
+
+                            string[] llza = xnn.ChildNodes[0].Value.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+                            string name = "NoName";
+                            try { name = xnn.ParentNode.ParentNode.ParentNode.ParentNode.SelectSingleNode("name").ChildNodes[0].Value; }
+                            catch { };
+                            string description = "";
+                            try { description = xnn.ParentNode.ParentNode.ParentNode.ParentNode.SelectSingleNode("description").ChildNodes[0].Value; }
+                            catch { };
+
+                            string styleUrl = "";
+                            if (xnn.ParentNode.ParentNode.ParentNode.ParentNode.SelectSingleNode("styleUrl") != null) styleUrl = xnn.ParentNode.ParentNode.ParentNode.ParentNode.SelectSingleNode("styleUrl").ChildNodes[0].Value;
+                            if (styleUrl.IndexOf("#") == 0) styleUrl = styleUrl.Remove(0, 1);
+
+                            Color lineColor = Color.FromArgb(255, Color.Blue);
+                            int lineWidth = 3;
+                            Color fillColor = Color.FromArgb(255, Color.Blue);
+                            int fill = 1;
+
+                            XmlNode sl = null;
+                            XmlNode sf = null;
+                            if (styleUrl != "")
+                            {
+                                string firstsid = styleUrl;
+                                XmlNodeList pk = l.file.kmlDoc.SelectNodes("kml/Document/StyleMap[@id='" + styleUrl + "']/Pair/key");
+                                if (pk.Count > 0)
+                                    for (int n = 0; n < pk.Count; n++)
+                                    {
+                                        XmlNode cn = pk[n];
+                                        if ((cn.ChildNodes[0].Value != "normal") && (n > 0)) continue;
+                                        if (cn.ParentNode.SelectSingleNode("styleUrl") == null) continue;
+                                        firstsid = cn.ParentNode.SelectSingleNode("styleUrl").ChildNodes[0].Value;
+                                        if (firstsid.IndexOf("#") == 0) firstsid = firstsid.Remove(0, 1);
+                                    };
+                                try
+                                {
+                                    sl = l.file.kmlDoc.SelectSingleNode("kml/Document/Style[@id='" + firstsid + "']/LineStyle");
+                                }
+                                catch { };
+                                try
+                                {
+                                    sf = l.file.kmlDoc.SelectSingleNode("kml/Document/Style[@id='" + firstsid + "']/PolyStyle");
+                                }
+                                catch { };
                             }
                             else
-                                imList.Add(href, ii = -1);
-                        };
-                    };
-                    if (ii >= 0)
-                    {
-                        mp.Color = Color.Transparent;
-                        mp.Squared = true;
-                        mp.Img = images.Images[ii];
-                    }
-                    else
-                    {
-                        mp.Color = Color.Purple;
-                        mp.Squared = false;
-                    };
+                            {
+                                sl = xnn.ParentNode.ParentNode.SelectSingleNode("Style/LineStyle");
+                                sf = xnn.ParentNode.ParentNode.SelectSingleNode("Style/PolyStyle");
+                            };
+                            if (sl != null)
+                            {
+                                string colval = sl.SelectSingleNode("color").ChildNodes[0].Value;
+                                try
+                                {
+                                    lineColor = Color.FromName(colval);
+                                    if (colval.Length == 8)
+                                    {
+                                        lineColor = Color.FromArgb(
+                                            Convert.ToInt32(colval.Substring(0, 2), 16),
+                                            Convert.ToInt32(colval.Substring(6, 2), 16),
+                                            Convert.ToInt32(colval.Substring(4, 2), 16),
+                                            Convert.ToInt32(colval.Substring(2, 2), 16)
+                                            );
+                                    };
+                                }
+                                catch { };
+                                string widval = sl.SelectSingleNode("width").ChildNodes[0].Value;
+                                try
+                                {
+                                    lineWidth = (int)double.Parse(widval, ni);
+                                    if (lineWidth < 2)
+                                        lineWidth = 2;
+                                }
+                                catch { };
+                            };
+                            if (sf != null)
+                            {
+                                string colval = sf.SelectSingleNode("color").ChildNodes[0].Value;
+                                try
+                                {
+                                    fillColor = Color.FromName(colval);
+                                    if (colval.Length == 8)
+                                    {
+                                        fillColor = Color.FromArgb(
+                                            Convert.ToInt32(colval.Substring(0, 2), 16),
+                                            Convert.ToInt32(colval.Substring(6, 2), 16),
+                                            Convert.ToInt32(colval.Substring(4, 2), 16),
+                                            Convert.ToInt32(colval.Substring(2, 2), 16)
+                                            );
+                                    };
+                                }
+                                catch { };
+                                string fillval = sf.SelectSingleNode("fill").ChildNodes[0].Value;
+                                try
+                                {
+                                    fill = int.Parse(fillval, ni);
+                                }
+                                catch { };
+                            };
 
-                    mapContent.Add(mp);
-                    ListViewItem lvi = objects.Items.Add(String.Format("{0}", mp.Name, mp.Center.Y.ToString().Replace(",", "."), mp.Center.X.ToString().Replace(",", ".")), ii);
-                    lvi.SubItems.Add("Point");
-                    lvi.SubItems.Add(mp.Center.Y.ToString());
-                    lvi.SubItems.Add(mp.Center.X.ToString());
-                    lvi.SubItems.Add("");
-                    lvi.SubItems.Add("");
-                    lvi.SubItems.Add("");
-                    lvi.SubItems.Add("Placemark/Point/coordinates[" + x.ToString() + "]");
-                    if ((x == 0) && firstboot) MapViewer.CenterDegrees = mp.Center;
-                };
+                            List<PointF> xy = new List<PointF>();
+                            foreach (string llzix in llza)
+                            {
+                                string llzi = llzix.Trim('\r').Trim('\n');
+                                if (String.IsNullOrEmpty(llzi)) continue;
+                                string[] llz = llzi.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries);
+                                xy.Add(new PointF(float.Parse(llz[0], ni), float.Parse(llz[1], ni)));
+                            };
+
+                            NaviMapNet.MapPolygon mp = new NaviMapNet.MapPolygon(xy.ToArray());
+                            mp.Name = name;
+                            mp.UserData = description;
+                            mp.BorderColor = lineColor;
+                            mp.Width = lineWidth;
+                            mp.BodyColor = Color.FromArgb(0, fillColor);
+                            if (fill != 0)
+                                mp.BodyColor = fillColor;
+
+                            Image im = new Bitmap(16, 16);
+                            Graphics g = Graphics.FromImage(im);
+                            g.FillRectangle(new SolidBrush(fillColor), 0, 0, 16, 16);
+                            g.DrawRectangle(new Pen(new SolidBrush(lineColor), 2), 0, 0, 16, 16);
+                            g.DrawString("A", new Font("Terminal", 11, FontStyle.Bold), new SolidBrush(Color.FromArgb(255 - fillColor.R, 255 - fillColor.G, 255 - fillColor.B)), 1, -1);
+                            g.Dispose();
+                            images.Images.Add(im);
+
+                            if (l.file.DrawEvenSizeIsTooSmall) mp.DrawEvenSizeIsTooSmall = true;
+                            mapContent.Add(mp);
+                            ListViewItem lvi = objects.Items.Add(mp.Name, images.Images.Count - 1);
+                            lvi.SubItems.Add("Polygon (" + mp.PointsCount.ToString() + " points)");
+                            lvi.SubItems.Add(mp.Center.Y.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                            lvi.SubItems.Add(mp.Center.X.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                            lvi.SubItems.Add("");
+                            lvi.SubItems.Add("");
+                            lvi.SubItems.Add("");
+                            lvi.SubItems.Add("Placemark/Polygon/outerBoundaryIs/LinearRing/coordinates[" + el_polygon.ToString() + "]");
+                            if (((el_point + el_polygon + el_line) == 0) && firstboot) MapViewer.CenterDegrees = mp.Center;
+
+                            if (selected_to_del.IndexOf(lvi.Index) >= 0)
+                            {
+                                lvi.SubItems[6].Text = "Yes";
+                                lvi.Font = new Font(lvi.Font, FontStyle.Strikeout);
+                                mapContent[lvi.Index].Visible = false;
+                            };
+
+                            el_polygon++;
+                        }; // --Polygon
+
+                        if (xnf[el].SelectNodes("Point").Count > 0) // ++Point
+                        {
+                            XmlNode xnn = xnf[el].SelectNodes("Point/coordinates")[0];
+
+                            string[] llz = xnn.ChildNodes[0].Value.Replace("\r", "").Replace("\n", "").Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries);
+                            string name = "NoName";
+                            try { name = xnn.ParentNode.ParentNode.SelectSingleNode("name").ChildNodes[0].Value; }
+                            catch { };
+                            string description = "";
+                            try { description = xnn.ParentNode.ParentNode.SelectSingleNode("description").ChildNodes[0].Value; }
+                            catch { };
+
+                            string styleUrl = "";
+                            string href = "";
+                            try
+                            {
+                                if (xnn.ParentNode.ParentNode.SelectSingleNode("styleUrl") != null) styleUrl = xnn.ParentNode.ParentNode.SelectSingleNode("styleUrl").ChildNodes[0].Value;
+                                if (styleUrl.IndexOf("#") == 0) styleUrl = styleUrl.Remove(0, 1);
+                            }
+                            catch { };
+
+                            if (styleUrl != "")
+                            {
+                                string firstsid = styleUrl;
+                                XmlNodeList pk = l.file.kmlDoc.SelectNodes("kml/Document/StyleMap[@id='" + styleUrl + "']/Pair/key");
+                                if (pk.Count > 0)
+                                    for (int n = 0; n < pk.Count; n++)
+                                    {
+                                        XmlNode cn = pk[n];
+                                        if ((cn.ChildNodes[0].Value != "normal") && (n > 0)) continue;
+                                        if (cn.ParentNode.SelectSingleNode("styleUrl") == null) continue;
+                                        firstsid = cn.ParentNode.SelectSingleNode("styleUrl").ChildNodes[0].Value;
+                                        if (firstsid.IndexOf("#") == 0) firstsid = firstsid.Remove(0, 1);
+                                    };
+                                try
+                                {
+                                    XmlNode nts = l.file.kmlDoc.SelectSingleNode("kml/Document/Style[@id='" + firstsid + "']/IconStyle/Icon/href");
+                                    href = nts.ChildNodes[0].Value;
+                                    if (!style2image.ContainsKey("#" + firstsid))
+                                        style2image.Add("#" + firstsid, href);
+                                }
+                                catch { };
+                            };
+
+                            NaviMapNet.MapPoint mp = new NaviMapNet.MapPoint(double.Parse(llz[1], ni), double.Parse(llz[0], ni));
+                            mp.Name = name;
+                            mp.UserData = description;
+                            mp.SizePixels = new Size(16, 16);
+                            int ii = -1;
+                            if (imList.ContainsKey(href))
+                                ii = (int)imList[href];
+                            else
+                            {
+                                if (href == "")
+                                    imList.Add(href, -1);
+                                else
+                                {
+                                    Image im = null;
+                                    if (Uri.IsWellFormedUriString(href, UriKind.Absolute))
+                                    {
+                                        System.Net.HttpWebRequest request = (System.Net.HttpWebRequest)System.Net.HttpWebRequest.Create(href);
+
+                                        try
+                                        {
+                                            using (System.Net.HttpWebResponse response = (System.Net.HttpWebResponse)request.GetResponse())
+                                            using (Stream stream = response.GetResponseStream())
+                                                im = Bitmap.FromStream(stream);
+                                        }
+                                        catch
+                                        { im = null; };
+                                    }
+                                    else
+                                    {
+                                        try { im = Image.FromFile(l.file.tmp_file_dir + href); }
+                                        catch { im = null; };
+                                    };
+
+                                    if (im != null)
+                                    {
+                                        images.Images.Add(href, (Image)new Bitmap(im));
+                                        im.Dispose();
+                                        imList.Add(href, ii = images.Images.Count - 1);
+                                    }
+                                    else
+                                        imList.Add(href, ii = -1);
+                                };
+                            };
+                            if (ii >= 0)
+                            {
+                                mp.Color = Color.Transparent;
+                                mp.Squared = true;
+                                mp.Img = images.Images[ii];
+                            }
+                            else
+                            {
+                                mp.Color = Color.Purple;
+                                mp.Squared = false;
+                            };
+
+                            mapContent.Add(mp);
+                            ListViewItem lvi = objects.Items.Add(String.Format("{0}", mp.Name, mp.Center.Y.ToString(System.Globalization.CultureInfo.InvariantCulture), mp.Center.X.ToString(System.Globalization.CultureInfo.InvariantCulture)), ii);
+                            lvi.SubItems.Add("Point");
+                            lvi.SubItems.Add(mp.Center.Y.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                            lvi.SubItems.Add(mp.Center.X.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                            lvi.SubItems.Add("");
+                            lvi.SubItems.Add("");
+                            lvi.SubItems.Add("");
+                            lvi.SubItems.Add("Placemark/Point/coordinates[" + el_point.ToString() + "]");
+                            if (((el_point + el_polygon + el_line) == 0) && firstboot) MapViewer.CenterDegrees = mp.Center;
+
+                            if (selected_to_del.IndexOf(lvi.Index) >= 0)
+                            {
+                                lvi.SubItems[6].Text = "Yes";
+                                lvi.Font = new Font(lvi.Font, FontStyle.Strikeout);
+                                mapContent[lvi.Index].Visible = false;
+                            };
+
+                            el_point++;
+                        }; // --Point
+                    };
             };
 
             toolStripStatusLabel1.Text = "All placemarks loaded";
             statusStrip2.Refresh();
 
+            NPB.Enabled = false;
+            NNB.Enabled = false;
+
+            laySelect.Enabled = selected_to_del.Count == 0;
             MapViewer.DrawOnMapData();
             firstboot = false;
+            UpdateCheckedAndMarked(true);            
         }
 
-        private void FindCopies(int toIndex, bool xy4, bool nm4, Single distanceInMeters)
+        private void FindCopies(int toIndex, bool xy4, bool nm5, Single distanceInMeters)
         {
             if (objects.Items.Count == 0) return;
 
@@ -467,8 +825,7 @@ namespace KMZRebuilder
 
             int simIndex = 0;
 
-            Hashtable simByXY = new Hashtable();
-            Hashtable simByNm = new Hashtable();
+            Dictionary<string,int[]> copies = new Dictionary<string,int[]>(); // all combinations store
 
             for (int i = 0; i < objects.Items.Count; i++)
             {
@@ -487,69 +844,94 @@ namespace KMZRebuilder
                     {
                         NaviMapNet.MapObject a = mapContent[i];
                         NaviMapNet.MapObject b = mapContent[j];
-                        if (xy4)
+                        bool same = (!nm5) || (a.Name.Trim().ToLower() == b.Name.Trim().ToLower());
+                        if (xy4 && same)
                         {
+                            same = false;
                             if (a.PointsCount == b.PointsCount)
                             {
-                                bool isSame = true;
+                                same = true;
                                 for (int n = 0; n < a.PointsCount; n++)
                                 {
                                     if (distanceInMeters <= 0)
                                     {
-                                        if (a.Points[n].X != b.Points[n].X) { isSame = false; break; };
-                                        if (a.Points[n].Y != b.Points[n].Y) { isSame = false; break; }
+                                        if (a.Points[n].X != b.Points[n].X) { same = false; break; };
+                                        if (a.Points[n].Y != b.Points[n].Y) { same = false; break; }
                                     }
                                     else
                                     {
                                         float dist = Utils.GetLengthMeters(a.Points[n].Y, a.Points[n].X, b.Points[n].Y, b.Points[n].X, false);
-                                        if (dist > distanceInMeters) { isSame = false; break; };
+                                        if (dist > distanceInMeters) 
+                                        { same = false; break; };
                                     };
-                                };
-                                if (isSame)
-                                {
-                                    string key = a.Center.X.ToString() + "," + a.Center.Y.ToString();
-                                    if (!simByXY.ContainsKey(key)) simByXY.Add(key, new int[] { simIndex++ });
-                                    List<int> val = new List<int>();
-                                    val.AddRange((int[])simByXY[key]);
-                                    if (val.IndexOf(i, 1) < 0) val.Add(i);
-                                    if (val.IndexOf(j, 1) < 0) val.Add(j);
-                                    simByXY[key] = val.ToArray();
-
-                                    int colIndex = val[0] % colors.Length;
-                                    objects.Items[i].BackColor = colors[colIndex];
-                                    objects.Items[j].BackColor = colors[colIndex];
-
-                                    objects.Items[i].SubItems[4].Text = val[0].ToString();
-                                    objects.Items[j].SubItems[4].Text = val[0].ToString();
-                                };
+                                };                                
                             };
                         };
-                        if (nm4)
+                        string key = String.Format(System.Globalization.CultureInfo.InvariantCulture, "{0},{1}", a.Center.X, a.Center.Y);
+                        if (nm5) key = a.Name.Trim().ToLower();
+                        if (same)
                         {
-                            if (a.Name == b.Name)
+                            int fex = -1;
+                            int sex = -1;
+                            if (copies.Count > 0)
+                                foreach (KeyValuePair<string, int[]> kpv in copies)
+                                {
+                                    if (Array.IndexOf<int>(kpv.Value, i) >= 0) fex = kpv.Value[0];
+                                    if (Array.IndexOf<int>(kpv.Value, j) >= 0) sex = kpv.Value[0];
+                                };
+                            if ((fex >= 0) && (sex >= 0) && (fex == sex))
+                                continue; // combination exists
+
+                            if (!copies.ContainsKey(key)) copies.Add(key, new int[] { simIndex++ }); // create new combination or add to existing
+                            List<int> val = new List<int>();
+                            val.AddRange(copies[key]);
+                            if (val.IndexOf(i, 1) < 0) val.Add(i);
+                            if (val.IndexOf(j, 1) < 0) val.Add(j);
+                            copies[key] = val.ToArray();
+
+                            int colIndex = val[0] % colors.Length;
+                            objects.Items[i].BackColor = colors[colIndex];
+                            objects.Items[j].BackColor = colors[colIndex];
+
+                            if (nm5)
                             {
-                                string key = a.Name;
-                                if (!simByNm.ContainsKey(key)) simByNm.Add(key, new int[] { simIndex++ });
-                                List<int> val = new List<int>();
-                                val.AddRange((int[])simByNm[key]);
-                                if (val.IndexOf(i, 1) < 0) val.Add(i);
-                                if (val.IndexOf(j, 1) < 0) val.Add(j);
-                                simByNm[key] = val.ToArray();
-
-                                int colIndex = val[0] % colors.Length;
-                                objects.Items[i].BackColor = colors[colIndex];
-                                objects.Items[j].BackColor = colors[colIndex];
-
                                 objects.Items[i].SubItems[5].Text = val[0].ToString();
                                 objects.Items[j].SubItems[5].Text = val[0].ToString();
+                            };
+                            if (xy4)
+                            {
+                                if(objects.Items[i].SubItems[4].Text == "")
+                                  objects.Items[i].SubItems[4].Text = val[0].ToString();
+                                if(objects.Items[j].SubItems[4].Text == "")
+                                  objects.Items[j].SubItems[4].Text = val[0].ToString();
                             };
                         };
                     };
 
             status.Text = "";
-            if (simByXY.Count > 0) status.Text += "Found " + simByXY.Count.ToString() + " similar placemarks by coordinates\r\n";
-            if (simByNm.Count > 0) status.Text += "Found " + simByNm.Count.ToString() + " similar placemarks by name\r\n";
-            if (status.Text == "") status.Text = "No copies found";
+            int ttl = 0;
+            if (copies.Count > 0)
+            {
+                NPB.Enabled = xy4;
+                NNB.Enabled = nm5;
+
+                foreach (KeyValuePair<string, int[]> kpv in copies)
+                    ttl += (kpv.Value.Length - 2);
+                if (xy4 && nm5)
+                    status.Text += "Found " + ttl.ToString() + " combinations for " + copies.Count.ToString() + " placemarks\r\n";
+                else if (xy4)
+                    status.Text += "Found " + ttl.ToString() + " combinations for " + copies.Count.ToString() + " placemarks by coordinates\r\n";
+                else if (nm5)
+                    status.Text += "Found " + ttl.ToString() + " combinations for " + copies.Count.ToString() + " placemarks by name\r\n";
+                if (ttl > objects.Items.Count)
+                    status.Text += "Too many combinations! You must use less search radius!\r\n";
+            }
+            else
+            {
+                status.Text = "No copies found";
+                NPB.Enabled = false;
+                NNB.Enabled = false;
+            };
             status.SelectionStart = status.TextLength;
             status.ScrollToCaret();
         }
@@ -557,12 +939,13 @@ namespace KMZRebuilder
         private void MapViewer_MouseClick(object sender, MouseEventArgs e)
         {
             if (!locate) return;
+
             if (mapContent.ObjectsCount == 0) return;
             Point clicked = MapViewer.MousePositionPixels;
             PointF sCenter = MapViewer.PixelsToDegrees(clicked);
             PointF sFrom = MapViewer.PixelsToDegrees(new Point(clicked.X - 5, clicked.Y + 5));
             PointF sTo = MapViewer.PixelsToDegrees(new Point(clicked.X + 5, clicked.Y - 5));
-            NaviMapNet.MapObject[] objs = mapContent.Select(new RectangleF(sFrom, new SizeF(sTo.X - sFrom.X, sTo.Y - sFrom.Y)));
+            NaviMapNet.MapObject[] objs = mapContent.Select(new RectangleF(sFrom, new SizeF(sTo.X - sFrom.X, sTo.Y - sFrom.Y)), NaviMapNet.MapObjectType.mEllipse | NaviMapNet.MapObjectType.mLine | NaviMapNet.MapObjectType.mPoint | NaviMapNet.MapObjectType.mPolygon | NaviMapNet.MapObjectType.mPolyline, true, false);
             if ((objs != null) && (objs.Length > 0))
             {
                 uint len = uint.MaxValue;
@@ -624,7 +1007,12 @@ namespace KMZRebuilder
                 mapSelect.Clear();
                 MapViewer.DrawOnMapData();
             };
-            if (objects.SelectedItems.Count == 0) return;
+            if (objects.SelectedItems.Count == 0)
+            {
+                persquare.Visible = false;
+                return;
+            };
+            persquare.Visible = false;
 
             objects.EnsureVisible(objects.SelectedIndices[0]);
             prevSII = objects.SelectedItems[0];
@@ -633,6 +1021,21 @@ namespace KMZRebuilder
 
             NaviMapNet.MapObject mo = mapContent[objects.SelectedIndices[0]];
             textBox1.Text = mo.UserData.ToString().Replace("<br/>", "\r\n").Replace("<br>", "\r\n");
+            if (mo is NaviMapNet.MapPolyLine)
+            {
+                uint len = PolyLineBuffer.PolyLineBufferCreator.GetDistInMeters(mo.Points, false);
+                persquare.Text = "Length: " + (len < 1000 ? len.ToString() + " m" : ((double)len / 1000.0).ToString("0.00" + " km"));
+                persquare.Visible = true;
+            };
+            if (mo is NaviMapNet.MapPolygon)
+            {
+                uint len = PolyLineBuffer.PolyLineBufferCreator.GetDistInMeters(mo.Points, true);
+                double square = PolyLineBuffer.PolyLineBufferCreator.GetSquareInMeters(mo.Points);
+                persquare.Text = "Perimeter: " + (len < 1000 ? len.ToString() + " m" : ((double)len / 1000.0).ToString("0.00" + " km"))
+                    +
+                    " / Square: " + square.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture) + " km2";
+                persquare.Visible = true;
+            };
         }
 
         private void SelectOnMap(int id)
@@ -640,40 +1043,138 @@ namespace KMZRebuilder
             if (id < 0) return;
 
             mapSelect.Clear();
+            if (mapContent[id].ObjectType == NaviMapNet.MapObjectType.mPolyline)
+            {
+                NaviMapNet.MapPolyLine mp = new NaviMapNet.MapPolyLine(mapContent[id].Points);
+                mp.Name = "Selected";
+                mp.Color = Color.FromArgb(100, Color.Blue);
+                mp.Width = (mapContent[id] as NaviMapNet.MapPolyLine).Width + 4;
+                mapSelect.Add(mp);
+                MapViewer.DrawOnMapData();
+            };
+            if (mapContent[id].ObjectType == NaviMapNet.MapObjectType.mPolygon)
+            {
+                NaviMapNet.MapPolygon mp = new NaviMapNet.MapPolygon(mapContent[id].Points);
+                mp.Name = "Selected";
+                mp.Color = Color.FromArgb(100, Color.Blue);
+                mp.Width = (mapContent[id] as NaviMapNet.MapPolygon).Width + 4;
+                mapSelect.Add(mp);
+                MapViewer.DrawOnMapData();
+            };
             if (mapContent[id].ObjectType == NaviMapNet.MapObjectType.mPoint)
             {
                 NaviMapNet.MapPoint mp = new NaviMapNet.MapPoint(mapContent[id].Center);
                 mp.Name = "Selected";
                 mp.SizePixels = new Size(22, 22);
                 mp.Squared = false;
-                mp.Color = Color.Red;
+                mp.Color = Color.Fuchsia;
                 mapSelect.Add(mp);
                 MapViewer.DrawOnMapData();
             };
         }
 
         private void contextMenuStrip1_Opening(object sender, CancelEventArgs e)
-        {   
-            currItem.Enabled = objects.SelectedItems.Count > 0;
+        {
+            SASPlacemarkConnector sc = new SASPlacemarkConnector();
+            exportToSASPlanetToolStripMenuItem.Enabled =
+                (objects.SelectedItems.Count > 0) && (sc.SASisOpen);
+            importFromSASPlanetToolStripMenuItem.Enabled =
+                sc.SASisOpen && sc.Visible;
+
             allItem.Enabled = objects.Items.Count > 0;
+            addCopyOfPointToolStripMenuItem.Enabled =
+                (objects.SelectedItems.Count > 0) && (objects.SelectedItems[0].SubItems[1].Text == "Point");
 
             renameToolStripMenuItem.Enabled = objects.SelectedItems.Count > 0;
-
+            setNewIconToAllTheSameToolStripMenuItem.Enabled = objects.SelectedItems.Count > 0;
+            changeIconToolStripMenuItem.Enabled = objects.SelectedItems.Count > 0;
+            setNewIconFromListToolStripMenuItem.Enabled = objects.SelectedItems.Count > 0;
+            setNewIconFromListToAllWithSameImagesToolStripMenuItem.Enabled = objects.SelectedItems.Count > 0;
+            
             markAsSkipWhenSaveToolStripMenuItem.Enabled = objects.SelectedItems.Count > 0;
             if(objects.SelectedItems.Count > 0)
-                markAsSkipWhenSaveToolStripMenuItem.Checked = objects.SelectedItems[0].SubItems[6].Text == "Yes";            
+                markAsSkipWhenSaveToolStripMenuItem.Checked = objects.SelectedItems[0].SubItems[6].Text == "Yes";
+
+            exPOlToolStripMenuItem.Enabled = false;
+            savePolyToolStripMenuItem.Enabled = false;
+            interpolateToolStripMenuItem.Enabled = false;
+            openInTrackSplitterToolStripMenuItem.Enabled = false;
+            inverseLineDirectionToolStripMenuItem.Enabled = false;
+            getCRCOfImageToolStripMenuItem.Enabled = false;
+            if (objects.SelectedItems.Count > 0)
+            {
+                //if (objects.SelectedItems[0].SubItems[1].Text.StartsWith("Polygon"))
+
+                if (objects.SelectedItems[0].SubItems[1].Text != "Point")
+                {
+                    setNewIconFromListToolStripMenuItem.Enabled = false;
+                    setNewIconFromListToAllWithSameImagesToolStripMenuItem.Enabled = false;
+                    changeIconToolStripMenuItem.Enabled = false;
+                    setNewIconToAllTheSameToolStripMenuItem.Enabled = false;
+                    addCopyOfPointToolStripMenuItem.Enabled = false;
+                    LPSB.Enabled = true;
+                    exPOlToolStripMenuItem.Enabled = true;
+                    savePolyToolStripMenuItem.Enabled = true;
+                    interpolateToolStripMenuItem.Enabled = true;
+                    if (objects.SelectedItems[0].SubItems[1].Text.StartsWith("Polygon"))
+                        savePolyToolStripMenuItem.Text = "Save Polygon to File ...";
+                    if (objects.SelectedItems[0].SubItems[1].Text.StartsWith("Line"))
+                    {
+                        openInTrackSplitterToolStripMenuItem.Enabled = true;
+                        savePolyToolStripMenuItem.Text = "Convert to Polygon and Save to File ...";
+                        inverseLineDirectionToolStripMenuItem.Enabled = true;
+                    };
+                }
+                else
+                {
+                    getCRCOfImageToolStripMenuItem.Enabled = true;
+                    LPSB.Enabled = false;
+                };
+            };
+            
+            removeOSMSpecifiedTagsFromDescriptionToolStripMenuItem.Enabled =
+            removeDescriptionToolStripMenuItem.Enabled =
+            cHBN.Enabled =
+                cHBNIP.Enabled =
+                    cHBNIL.Enabled =
+                        cHBNIF.Enabled =
+                            cHBDC.Enabled =
+                                cHB3.Enabled = 
+                                    cHB2.Enabled =
+                                        cHB0.Enabled = 
+                                            objects.CheckedItems.Count > 0;
+            cHB3A.Enabled = 
+                cHB2A.Enabled =
+                    cHB0A.Enabled =
+                        objects.CheckedItems.Count < objects.Items.Count;
+
+            cHBA.Enabled  = (objects.CheckedItems.Count < objects.Items.Count);
+            cHB1.Enabled  = (objects.CheckedItems.Count > 0) && (laySelect.Items.Count > 1);
+            cHBD.Enabled = (objects.CheckedItems.Count > 0) && (laySelect.Items.Count > 1);
+            cHBDS.Enabled = (objects.CheckedItems.Count > 0) && sc.SASisOpen;
+            cHBDM.Enabled = prev_m > 0;
+
+            NBC4.Enabled = NBC2.Enabled = NBC0.Enabled = prev_m > 0;
+            NBC5.Enabled = NBC3.Enabled = NBC1.Enabled = prev_m < objects.Items.Count;
+
+            markAllItemsAsDeletedToolStripMenuItem.Enabled = prev_m != objects.Items.Count;
+            markAllAsNotDeletedToolStripMenuItem.Enabled = prev_m > 0;
+
+            sba.Enabled = objects.Items.Count > 1;
+            sbi.Enabled = objects.Items.Count > 1;
+            sbd.Enabled = (objects.Items.Count > 1) && (objects.SelectedItems.Count > 0) && (objects.SelectedItems[0].SubItems[1].Text == "Point");
+            sbl.Enabled = (objects.Items.Count > 1) && (objects.SelectedItems.Count > 0) && (objects.SelectedItems[0].SubItems[1].Text.StartsWith("Line"));
+            sbls.Enabled = (objects.Items.Count > 1) && (objects.SelectedItems.Count > 0) && (objects.SelectedItems[0].SubItems[1].Text.StartsWith("Line"));
+            sbrn.Enabled = objects.Items.Count > 1;
+            sbrs.Enabled = objects.Items.Count > 1;
         }
 
         private void findSimilarToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (objects.SelectedItems.Count == 0) return;
-            string dist = "0";
-            if (KMZRebuilederForm.InputBox("Distance", "Max distance in meters:", ref dist) == DialogResult.OK)
-            {
-                int d = 0;
-                if(int.TryParse(dist, out d))
-                    FindCopies(objects.SelectedIndices[0], true, false, d);
-            };            
+            int dist = 2;
+            if (System.Windows.Forms.InputBox.Show("Distance", "Max distance in meters:", ref dist, 0, 9999) == DialogResult.OK)
+                    FindCopies(objects.SelectedIndices[0], true, false, dist);
         }
 
         private void markAsSkipWhenSaveToolStripMenuItem_Click(object sender, EventArgs e)
@@ -685,42 +1186,6 @@ namespace KMZRebuilder
                 objects.SelectedItems[0].Font = new Font(objects.SelectedItems[0].Font, FontStyle.Strikeout);
             else
                 objects.SelectedItems[0].Font = new Font(objects.SelectedItems[0].Font, FontStyle.Regular);
-
-            CheckMarked();
-        }
-
-        private void markSimilarAsDeletedToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (objects.SelectedItems.Count == 0) return;
-            string simByXY = objects.SelectedItems[0].SubItems[4].Text;
-            string simByNM = objects.SelectedItems[0].SubItems[5].Text;
-            
-            int sxy = 0;
-            if (simByXY != "")
-                for (int i = 0; i < objects.Items.Count; i++)
-                    if(i != objects.SelectedIndices[0])
-                        if (objects.Items[i].SubItems[4].Text == simByXY)
-                        {
-                            objects.Items[i].SubItems[6].Text = "Yes";
-                            objects.Items[i].Font = new Font(objects.Items[i].Font, FontStyle.Strikeout);
-                            sxy++;
-                        };
-
-            int snm = 0;
-            if (simByNM != "")
-                for (int i = 0; i < objects.Items.Count; i++)
-                    if (i != objects.SelectedIndices[0])
-                        if (objects.Items[i].SubItems[5].Text == simByNM)
-                        {
-                            objects.Items[i].SubItems[6].Text = "Yes";
-                            objects.Items[i].Font = new Font(objects.Items[i].Font, FontStyle.Strikeout);
-                            snm++;
-                        };
-
-            if (sxy > 0) status.Text += "Marked " + sxy.ToString() + " copies as Deleted by Coordinates\r\n";
-            if (snm > 0) status.Text += "Marked " + snm.ToString() + " copies as Deleted by Name\r\n";
-            status.SelectionStart = status.TextLength;
-            status.ScrollToCaret();
 
             CheckMarked();
         }
@@ -802,13 +1267,9 @@ namespace KMZRebuilder
 
         private void findCopiesForToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            string dist = "0";
-            if (KMZRebuilederForm.InputBox("Distance", "Max distance in meters:", ref dist) == DialogResult.OK)
-            {
-                int d = 0;
-                if (int.TryParse(dist, out d))
-                    FindCopies(-1, true, false, d);
-            };                    
+            int dist = 2;
+            if (System.Windows.Forms.InputBox.Show("Distance", "Max distance in meters:", ref dist, 0, 9999) == DialogResult.OK)
+                FindCopies(-1, true, false, dist);
         }
 
         private void markAllItemsAsDeletedToolStripMenuItem_Click(object sender, EventArgs e)
@@ -852,43 +1313,7 @@ namespace KMZRebuilder
         private void findCopiesForEachItemByNameToolStripMenuItem_Click(object sender, EventArgs e)
         {
             FindCopies(-1, false, true, 0);
-        }
-
-        private void markCopiesAsNotDeletedToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (objects.SelectedItems.Count == 0) return;
-            string simByXY = objects.SelectedItems[0].SubItems[4].Text;
-            string simByNM = objects.SelectedItems[0].SubItems[5].Text;
-
-            int sxy = 0;
-            if (simByXY != "")
-                for (int i = 0; i < objects.Items.Count; i++)
-                    if (i != objects.SelectedIndices[0])
-                        if (objects.Items[i].SubItems[4].Text == simByXY)
-                        {
-                            objects.Items[i].SubItems[6].Text = "";
-                            objects.Items[i].Font = new Font(objects.Items[i].Font, FontStyle.Regular);
-                            sxy++;
-                        };
-
-            int snm = 0;
-            if (simByNM != "")
-                for (int i = 0; i < objects.Items.Count; i++)
-                    if (i != objects.SelectedIndices[0])
-                        if (objects.Items[i].SubItems[5].Text == simByNM)
-                        {
-                            objects.Items[i].SubItems[6].Text = "";
-                            objects.Items[i].Font = new Font(objects.Items[i].Font, FontStyle.Regular);
-                            snm++;
-                        };
-
-            if (sxy > 0) status.Text += "Marked " + sxy.ToString() + " copies as Not Deleted by Coordinates\r\n";
-            if (snm > 0) status.Text += "Marked " + snm.ToString() + " copies as Not Deleted by Name\r\n";
-            status.SelectionStart = status.TextLength;
-            status.ScrollToCaret();
-
-            CheckMarked();
-        }
+        }        
 
         private void markCopiesAsNotDeletedToolStripMenuItem1_Click(object sender, EventArgs e)
         {
@@ -955,6 +1380,13 @@ namespace KMZRebuilder
 
         private void ContentViewer_FormClosing(object sender, FormClosingEventArgs e)
         {
+            state = new State();
+            state.MapID = iStorages.SelectedIndex;
+            state.SASDir = SASPlanetCacheDir;
+            state.URL = UserDefindedUrl;
+            string fn = KMZRebuilederForm.CurrentDirectory() + @"\KMZRebuilder.stt";
+            State.Save(fn, state);
+
             if (objects.Items.Count == 0) return;
 
             int marked = 0;
@@ -977,41 +1409,76 @@ namespace KMZRebuilder
 
             KMLayer l = (KMLayer)parent.kmzLayers.Items[laySelect.SelectedIndex];
             int pDel = 0;
+            int[] pla = new int[3];
             for (int i = objects.Items.Count - 1; i >= 0; i--)
                 if (objects.Items[i].SubItems[6].Text == "Yes")
                 {
-                    string XPath = objects.Items[i].SubItems[7].Text;
+                    string XPath = objects.Items[i].SubItems[7].Text; 
                     string indx = XPath.Substring(XPath.IndexOf("["));
                     XPath = XPath.Remove(XPath.IndexOf("["));
                     int ind = int.Parse(indx.Substring(1, indx.Length - 2));
                     XmlNode xn = l.file.kmlDoc.SelectNodes("kml/Document/Folder")[l.id];
                     xn = xn.SelectNodes(XPath)[ind].ParentNode.ParentNode;
+                    if (xn.Name == "outerBoundaryIs") // polygon
+                    {
+                        xn = xn.ParentNode.ParentNode;
+                        pla[2]++;
+                    }
+                    else
+                    {
+                        if (xn.SelectSingleNode("Point") != null) pla[0]++;
+                        if (xn.SelectSingleNode("LineString") != null) pla[1]++;
+                    };
                     xn = xn.ParentNode.RemoveChild(xn);
                     pDel++;
                 };
             l.file.SaveKML();
             l.placemarks -= pDel;
+            l.points -= pla[0];
+            l.lines -= pla[1];
+            l.areas -= pla[2];
             parent.Refresh();
         }
 
+        private int prev_m = 0;
         private void CheckMarked()
         {
             if (objects.Items.Count == 0) return;
 
             int marked = 0;
             for (int i = 0; i < objects.Items.Count; i++)
-                if (objects.Items[i].SubItems[6].Text == "Yes")
-                    marked++;
+            {
+                bool mrkd = objects.Items[i].SubItems[6].Text == "Yes";
+                if (mrkd) marked++;
+                mapContent[i].Visible = !mrkd;
+            };
 
             laySelect.Enabled = marked == 0;
+            MapViewer.DrawOnMapData();
+
+            if (prev_m != marked)
+            {
+                prev_m = marked;
+                UpdateCheckedAndMarked(true);                
+            };
             
         }
 
         private void objects_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            if (e.KeyChar != Convert.ToChar(Keys.Enter)) return;
-            if (objects.SelectedIndices.Count == 0) return;            
-            SelectOnMap(objects.SelectedIndices[0]);
+        {            
+            if (objects.SelectedIndices.Count == 0) return;
+            if (e.KeyChar == Convert.ToChar(Keys.Enter))
+                objects_DoubleClick(sender, e);
+            if (e.KeyChar == ' ')
+            {
+                if (!objects.CheckBoxes)
+                {
+                    objects.SelectedItems[0].Checked = true;
+                    objects.CheckBoxes = true;
+                } 
+                else if(objects.CheckedItems.Count == 0)
+                    objects.CheckBoxes = false;
+            };
         }
 
         private void renameToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1026,9 +1493,18 @@ namespace KMZRebuilder
             XmlNode xf = l.file.kmlDoc.SelectNodes("kml/Document/Folder")[l.id];
             XmlNode xy = xf.SelectNodes(XPath)[ind].ParentNode.ParentNode.SelectSingleNode("Point/coordinates");
             XmlNode xn = xf.SelectNodes(XPath)[ind].ParentNode.ParentNode.SelectSingleNode("name");
+            if(xn == null)
+                xn = xf.SelectNodes(XPath)[ind].ParentNode.ParentNode.ParentNode.ParentNode.SelectSingleNode("name");
             XmlNode xd = xf.SelectNodes(XPath)[ind].ParentNode.ParentNode.SelectSingleNode("description");
+            if(xd == null)
+                xd = xf.SelectNodes(XPath)[ind].ParentNode.ParentNode.ParentNode.ParentNode.SelectSingleNode("description");
 
-            string nam = xn.ChildNodes[0].Value;
+            string style = "";
+            XmlNode st = xf.SelectNodes(XPath)[ind].ParentNode.ParentNode.SelectSingleNode("styleUrl");
+            if ((st != null) && (st.ChildNodes.Count > 0))
+                style = st.ChildNodes[0].Value;
+            string nam = "NoName";
+            try { nam = xn.ChildNodes[0].Value; } catch { };
             string xyt = xy == null ? ",," : xy.ChildNodes[0].Value;
             string[] xya = xyt.Split(new string[] { "," }, StringSplitOptions.None);
             string x = xya[0];
@@ -1036,23 +1512,30 @@ namespace KMZRebuilder
             string desc = "";
             if ((xd != null) && (xd.ChildNodes.Count > 0)) desc = xd.ChildNodes[0].Value;
             string dw = desc;
+            string styleN = style;
 
-            if (InputXY(objects.SelectedItems[0].SubItems[1].Text == "Point", ref nam, ref y, ref x, ref desc) == DialogResult.OK)
+            int xcx = images.Images.Count;
+            if (InputXY(objects.SelectedItems[0].SubItems[1].Text == "Point", ref nam, ref y, ref x, ref desc, ref styleN) == DialogResult.OK)
             {
                 bool ch = false;
                 bool chxy = false;
                 nam = nam.Trim();
                 desc = desc.Trim();
-                if (nam != xn.ChildNodes[0].Value) ch = true;
-                if (desc != dw) ch = true;
+                try { if (nam != xn.ChildNodes[0].Value) ch = true; }
+                catch { ch = true; };
+                if (desc != dw) ch = true;                
                 x = x.Trim().Replace(",", ".");
                 y = y.Trim().Replace(",", ".");
+                if (styleN != style) { ch = true; chxy = true; };
                 if (x != xya[0]) chxy = true;
                 if (y != xya[1]) chxy = true;
                 if (ch)
                 {
                     objects.SelectedItems[0].Text = nam;
-                    xn.ChildNodes[0].Value = nam;
+                    if(xn.ChildNodes.Count > 0)
+                        xn.ChildNodes[0].Value = nam;
+                    else
+                        xn.AppendChild(l.file.kmlDoc.CreateTextNode(nam));
                     NaviMapNet.MapObject mo = mapContent[objects.SelectedIndices[0]];
                     mo.Name = nam;
 
@@ -1064,6 +1547,20 @@ namespace KMZRebuilder
                         xf.SelectNodes(XPath)[ind].ParentNode.ParentNode.AppendChild(xd);
                     };
                     xd.AppendChild(l.file.kmlDoc.CreateTextNode(desc));
+                    if (st != null)
+                        st.RemoveAll();
+                    else
+                    {
+                        st = l.file.kmlDoc.CreateElement("styleUrl");
+                        xf.SelectNodes(XPath)[ind].ParentNode.ParentNode.AppendChild(st);
+                    };
+                    st.AppendChild(l.file.kmlDoc.CreateTextNode(styleN));
+                    if (style2image.ContainsKey(styleN))
+                        if (images.Images.ContainsKey(style2image[styleN]))
+                        {
+                            mo.Img = images.Images[style2image[styleN]];
+                            objects.SelectedItems[0].ImageIndex = images.Images.IndexOfKey(style2image[styleN]);
+                        };
                     mo.UserData = desc;
                     textBox1.Text = desc; 
                 };
@@ -1076,59 +1573,81 @@ namespace KMZRebuilder
                     System.Globalization.CultureInfo ci = System.Globalization.CultureInfo.InstalledUICulture;
                     System.Globalization.NumberFormatInfo ni = (System.Globalization.NumberFormatInfo)ci.NumberFormat.Clone();
                     ni.NumberDecimalSeparator = ".";
-                    mp.Points[0] = new PointF(float.Parse(x, ni), float.Parse(y, ni));
+                    mp.Points[0] = new PointF(float.Parse(x, ni), float.Parse(y, ni));                    
+                };
+                if (ch || chxy)
+                {                    
+                    l.file.SaveKML();
                     MapViewer.DrawOnMapData();
                 };
-                if (ch || chxy) l.file.SaveKML();
             };
         }
 
-        public static DialogResult InputXY(bool changeXY, ref string value, ref string lat, ref string lon, ref string desc)
+        public DialogResult InputXY(bool changeXY, ref string value, ref string lat, ref string lon, ref string desc, ref string style)
         {
             Form form = new Form();
+            form.ShowInTaskbar = false;
             Label nameText = new Label();
             Label xText = new Label();
             Label yText = new Label();
             Label dText = new Label();
-            TextBox nameBox = new TextBox();
-            TextBox xBox = new TextBox();
-            TextBox yBox = new TextBox();
-            TextBox dBox = new TextBox();
+            PictureBox pBox = new PictureBox();
+            ComboBox cBox = new ComboBox(); cBox.DropDownStyle = ComboBoxStyle.DropDownList; cBox.FlatStyle = FlatStyle.Flat;
+            TextBox nameBox = new TextBox(); nameBox.BorderStyle = BorderStyle.FixedSingle;
+            TextBox xBox = new TextBox(); xBox.BorderStyle = BorderStyle.FixedSingle;
+            xBox.Name = "xBox";
+            TextBox yBox = new TextBox(); yBox.BorderStyle = BorderStyle.FixedSingle;
+            yBox.Name = "yBox";
+            TextBox dBox = new TextBox(); dBox.BorderStyle = BorderStyle.FixedSingle;
             dBox.Multiline = true;
             Button buttonOk = new Button();
             Button buttonCancel = new Button();
 
+            if (changeXY)
+            {
+                foreach (KeyValuePair<string, string> kvp in style2image)
+                    cBox.Items.Add(kvp.Key);
+                cBox.SelectedIndexChanged += new EventHandler(cBox_SelectedIndexChanged);
+            }
+            else
+            {
+                cBox.Visible = false;
+                pBox.Visible = false;
+            };
+
             form.Text = "Change placemark";
             nameText.Text = "Name:";
-            nameBox.Text = value;
-            xText.Text = "Longitude:";
-            xBox.Text = lon;
-            yText.Text = "Latitude:";
-            yBox.Text = lat;
+            nameBox.Text = value.Replace("\r\n", "").Trim();
+            xText.Text = "Longitude (D/DM/DMS):";
+            xBox.Text = lon.Replace("\r\n", "").Trim();
+            yText.Text = "Latitude (D/DM/DMS):";
+            yBox.Text = lat.Replace("\r\n","").Trim();
             dText.Text = "Description:";
             dBox.Text = desc;
 
             if (!changeXY) xBox.Enabled = yBox.Enabled = false;
 
-            xBox.KeyPress += new KeyPressEventHandler(xy_KeyPress);
-            yBox.KeyPress += new KeyPressEventHandler(xy_KeyPress);
+            xBox.Validating += new CancelEventHandler(xBox_Validating);
+            yBox.Validating += new CancelEventHandler(xBox_Validating);
             
             buttonOk.Text = "OK";
             buttonCancel.Text = "Cancel";
             buttonOk.DialogResult = DialogResult.OK;
             buttonCancel.DialogResult = DialogResult.Cancel;
 
-            nameText.SetBounds(9, 10, 372, 13);
-            nameBox.SetBounds(12, 26, 372, 20);
-            yText.SetBounds(9, 50, 372, 13);
-            yBox.SetBounds(12, 66, 372, 20);
-            xText.SetBounds(9, 90, 372, 13);
-            xBox.SetBounds(12, 106, 372, 20);
-            dText.SetBounds(9, 130, 372, 13);
-            dBox.SetBounds(12, 146, 372, 80);
+            nameText.SetBounds(9, 20, 372, 13);
+            nameBox.SetBounds(12, 36, 372, 20);
+            yText.SetBounds(9, 60, 372, 13);
+            yBox.SetBounds(12, 76, 372, 20);
+            xText.SetBounds(9, 100, 372, 13);
+            xBox.SetBounds(12, 116, 372, 20);
+            dText.SetBounds(9, 140, 372, 13);
+            dBox.SetBounds(12, 156, 372, 80);
 
-            buttonOk.SetBounds(228, 237, 75, 23);
-            buttonCancel.SetBounds(309, 237, 75, 23);
+            buttonOk.SetBounds(228, 247, 75, 23);
+            buttonCancel.SetBounds(309, 247, 75, 23);
+            cBox.SetBounds(198, 6, 90, 23);
+            pBox.SetBounds(174, 7, 22, 22);            
             
             nameText.AutoSize = true;
             nameBox.Anchor = nameBox.Anchor | AnchorStyles.Right;
@@ -1138,8 +1657,8 @@ namespace KMZRebuilder
             buttonOk.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             buttonCancel.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
 
-            form.ClientSize = new Size(396, 270);
-            form.Controls.AddRange(new Control[] { nameText, nameBox, yText, yBox, xText, xBox, dText, dBox, buttonOk, buttonCancel });
+            form.ClientSize = new Size(396, 280);
+            form.Controls.AddRange(new Control[] { nameText, nameBox, yText, yBox, xText, xBox, dText, dBox, cBox, buttonOk, buttonCancel, pBox });
             form.ClientSize = new Size(Math.Max(300, nameText.Right + 10), form.ClientSize.Height);
             form.FormBorderStyle = FormBorderStyle.FixedDialog;
             form.StartPosition = FormStartPosition.CenterParent;
@@ -1148,53 +1667,52 @@ namespace KMZRebuilder
             form.AcceptButton = buttonOk;
             form.CancelButton = buttonCancel;
 
+            if(cBox.Items.IndexOf(style) >= 0)
+                cBox.SelectedIndex = cBox.Items.IndexOf(style);
+            else
+                if(cBox.Items.Count > 0)
+                    cBox.SelectedIndex = 0;
+
             DialogResult dialogResult = form.ShowDialog();
             form.Dispose();
             if(dialogResult == DialogResult.OK)
-            value = nameBox.Text;
-            lat = yBox.Text;
-            lon = xBox.Text;
+            value = nameBox.Text;            
             desc = dBox.Text;
+            if (changeXY)
+            {
+                lat = yBox.Text;
+                lon = xBox.Text;
+                style = cBox.Text;
+            };
             return dialogResult;
         }
 
-        private static void xy_KeyPress(object sender, KeyPressEventArgs e)
+        private static void xBox_Validating(object sender, CancelEventArgs e)
         {
-            // allows 0-9, backspace, and decimal, and -
-            if (((e.KeyChar < 48 || e.KeyChar > 57) && e.KeyChar != 8 && e.KeyChar != 46 && e.KeyChar != 45))
-            {
-                e.Handled = true;
-                return;
-            }
+            TextBox tb = (sender as TextBox);
+            double d = 0.0;
+            if (double.TryParse(tb.Text,System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out d)) return;
 
-            // checks to make sure only 1 decimal is allowed
-            if (e.KeyChar == 46)
-            {
-                if ((sender as TextBox).Text.IndexOf(e.KeyChar) != -1)
-                    e.Handled = true;
-            }
+            string wast = tb.Text.Trim();
+            string text = tb.Text.Replace(",", ".").Trim();
+            if (tb.Name == "xBox")
+                try { d = LatLonParser.Parse(text, false); } catch { };
+            if (tb.Name == "yBox")
+                try { d = LatLonParser.Parse(text, true); } catch { };
+            tb.Text = LatLonParser.DoubleToStringMax(d, 8);
+            if (wast != tb.Text)
+                e.Cancel = true;
+            tb.SelectAll();
+        }        
 
-            // checks to make sure only 1 - is allowed
-            if (e.KeyChar == 45)
-            {
-                if ((sender as TextBox).SelectionStart != 0)
-                    e.Handled = true;
-                if ((sender as TextBox).Text.IndexOf(e.KeyChar) != -1)
-                    e.Handled = true;
-            }
-        }
-
-        private void changeToolStripMenuItem_Click(object sender, EventArgs e)
+        private void cBox_SelectedIndexChanged(object sender, EventArgs e)
         {
+            ComboBox cBox = sender as ComboBox;
+            PictureBox pBox = (PictureBox)(cBox.Parent.Controls[cBox.Parent.Controls.Count - 1]);
+            if (style2image.ContainsKey(cBox.Text))
+                pBox.Image = images.Images[style2image[cBox.Text]];
+        }        
 
-        }
-
-        private string UserDefinedGetTileUrl(int x, int y, int z)
-        {
-            if (iStorages.SelectedIndex == 19) return SASPlanetCache(x, y, z + 1);
-            return "";
-        }
-        
         private string SASPlanetCache(int x, int y, int z)
         {
             string basedir = String.Format(@"{1}\z{0}", z, SASPlanetCacheDir);
@@ -1215,6 +1733,12 @@ namespace KMZRebuilder
                         string yy = ydir + @"\y" + y.ToString() + ".png";
                         if (File.Exists(yy))
                             return yy;
+                        yy = ydir + @"\y" + y.ToString() + ".jpg";
+                        if (File.Exists(yy))
+                            return yy;
+                        yy = ydir + @"\y" + y.ToString() + ".gif";
+                        if (File.Exists(yy))
+                            return yy;
                     };
                 };
             };
@@ -1225,8 +1749,25 @@ namespace KMZRebuilder
         private void èçìåíèòüToolStripMenuItem_Click(object sender, EventArgs e)
         {
             string spcd = SASPlanetCacheDir;
-            if (KMZRebuilederForm.InputBox("SAS Planet Cache", "Enter Cache Path Here:", ref spcd) == DialogResult.OK)
-                SASPlanetCacheDir = spcd;
+            if (InputBox.QueryDirectoryBox("SAS Planet Cache", "Enter Cache Path Here:", ref spcd) == DialogResult.OK)
+                SASPlanetCacheDir = ClearLastSlash(spcd);
+            else
+                return;
+
+            if(Directory.Exists(SASPlanetCacheDir))
+                mru1.AddFile(SASPlanetCacheDir);
+
+            if (iStorages.SelectedIndex == (iStorages.Items.Count - 1))
+                iStorages_SelectedIndexChanged(sender, e);
+            else
+                iStorages.SelectedIndex = iStorages.Items.Count - 1;
+        }
+
+        public string ClearLastSlash(string file_name)
+        {
+            if (file_name.Substring(file_name.Length - 1) == @"\")
+                return file_name.Remove(file_name.Length - 1);
+            return file_name;
         }
 
         private void èçìåíèòüUserDefinedUrlToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1235,8 +1776,10 @@ namespace KMZRebuilder
             if (KMZRebuilederForm.InputBox("User-Defined Url", "Enter Url Here:", ref udu) == DialogResult.OK)
             {
                 UserDefindedUrl = udu;
-                if (iStorages.SelectedIndex == 20)
-                    MapViewer.ImageSourceUrl = UserDefindedUrl;
+                if (iStorages.SelectedIndex == (iStorages.Items.Count - 2))
+                    iStorages_SelectedIndexChanged(sender, e);
+                else
+                    iStorages.SelectedIndex = iStorages.Items.Count - 2;
             };
         }
 
@@ -1248,15 +1791,3839 @@ namespace KMZRebuilder
         private void textBox2_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (e.KeyChar != (Char)13) return;
+            e.Handled = true;
+
             if (objects.Items.Count == 0) return;
             string st = textBox2.Text.ToLower();
+            List<int> foundAll = new List<int>();
             for (int i = 0; i < objects.Items.Count; i++)
                 if (objects.Items[i].SubItems[0].Text.ToLower().Contains(st))
+                    foundAll.Add(i);
+
+            if (foundAll.Count == 0) return;
+
+            int si = -1;
+            if (objects.SelectedIndices.Count > 0)
+                si = foundAll.IndexOf(objects.SelectedIndices[0]);
+            if ((si >= 0) && (si < (foundAll.Count - 1)))
+            {
+                objects.Items[foundAll[si + 1]].Selected = true;
+                objects.Items[foundAll[si + 1]].EnsureVisible();
+            }
+            else
+            {
+                objects.Items[foundAll[0]].Selected = true;
+                objects.Items[foundAll[0]].EnsureVisible();
+            };
+        }
+
+        private void selectMarkDeleteToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (objects.Items.Count == 0) return;
+
+            OpenFileDialog ofd = new OpenFileDialog();
+            ofd.DefaultExt = ".cscript";
+            ofd.InitialDirectory = KMZRebuilederForm.CurrentDirectory() + @"\Scripts";
+            ofd.Filter = "CS Scripts (*.cscript)|*.cscript";
+            if (ofd.ShowDialog() == DialogResult.OK)
+            {
+                string script = "";
+                System.IO.StreamReader sr = new StreamReader(ofd.FileName, System.Text.Encoding.GetEncoding(1251));
+                script = sr.ReadToEnd();
+                sr.Close();
+                CallSctript(script);
+            };
+            ofd.Dispose();
+        }
+
+        private void CallSctript(string script)
+        {            
+            System.Reflection.Assembly ScriptAsm = null;
+            try
+            {
+                ScriptAsm = CSScriptLibrary.CSScript.LoadCode(
+                     "using System;\r\n " +
+                     "using System.Text;\r\n " +
+                     "using System.Collections.Generic;\r\n " +                     
+                     "using System.Collections;\r\n " +
+                     "using System.Drawing;\r\n " +
+                     "using System.Windows.Forms;\r\n" +
+                     "public class Script {\r\n" +
+                     script +
+                     "}", null);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Script Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            };
+
+            ScriptHelper sh = new ScriptHelper(ScriptAsm);
+                        
+            int simIndex = 0;
+
+            Hashtable simByXY = new Hashtable();
+            Hashtable simByNm = new Hashtable();
+            
+            int mad = 0;
+            for (int i = 0; i < mapContent.ObjectsCount - 1; i++)
+            {
+                NaviMapNet.MapObject a = mapContent[i];
+                if(sh.MarkAsDeleted((byte) a.ObjectType, a.Name, a.X, a.Y, a.Points, a.UserData))
+                {
+                    mad++;
+                    objects.Items[i].SubItems[6].Text = "Yes";
+                    objects.Items[i].Font = new Font(objects.Items[i].Font, FontStyle.Strikeout);                    
+                };
+            };
+
+            status.Text = "";
+            if (simByXY.Count > 0) status.Text += "Found " + simByXY.Count.ToString() + " similar placemarks by coordinates\r\n";
+            if (simByNm.Count > 0) status.Text += "Found " + simByNm.Count.ToString() + " similar placemarks by name\r\n";
+            if (status.Text == "") status.Text = String.Format("{0} objects marked as deleted", mad);
+            status.SelectionStart = status.TextLength;
+            status.ScrollToCaret();
+        }
+
+        public class ScriptHelper : CSScriptLibrary.AsmHelper
+        {
+            public ScriptHelper(System.Reflection.Assembly asm)
+                : base(asm)
+            {
+
+            }
+
+            public bool MarkAsDeleted(byte ObjectType, string Name, double X, double Y, PointF[] points, object UsersData)
+            {
+                return (bool)this.Invoke("Script.MarkAsDeleted", new object[] { ObjectType, Name, X, Y, points, UsersData });
+            }
+        }
+
+        private void toolStripDropDownButton1_DropDownOpening(object sender, EventArgs e)
+        {
+            spcl.Enabled = mru1.Count > 0;
+            MCDT.Enabled = File.Exists(KMZRebuilederForm.CurrentDirectory() + @"\Map_Cache_Dirs.txt");
+            CDSC.Enabled = Directory.Exists(state.SASCacheDir);
+        }
+
+        private void applySelectionFilterToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (laySelect.SelectedIndex < 0) return;
+            KMLayer l = (KMLayer)parent.kmzLayers.Items[laySelect.SelectedIndex];
+
+            Selection_Filter sfw = new Selection_Filter(this, l.file, l);
+            sfw.APPD.Visible = true;
+            sfw.APPS.Visible = true;
+            sfw.ShowDialog();
+            sfw.Dispose();
+        }
+
+        public void ApplyFilter(int[] toKeep, int[] toDel, bool checkbox)
+        {
+            if (laySelect.SelectedIndex < 0) return;
+            if (toDel == null) return;
+            KMLayer l = (KMLayer)parent.kmzLayers.Items[laySelect.SelectedIndex];
+
+            if (checkbox)
+                objects.CheckBoxes = true;
+
+            XmlNodeList placemarks = l.file.kmlDoc.SelectNodes("kml/Document/Folder")[l.id].SelectNodes("Placemark");
+            for (int i = 0; i < toDel.Length; i++)
+            {
+                if (checkbox)
+                    objects.Items[toDel[i]].Checked = true;
+                else
+                {
+                    objects.Items[toDel[i]].SubItems[6].Text = "Yes";
+                    objects.Items[toDel[i]].Font = new Font(objects.Items[toDel[i]].Font, FontStyle.Strikeout);
+                };
+            };
+
+            CheckMarked();
+        }
+
+        private void ContentViewer_Load(object sender, EventArgs e)
+        {
+            MapViewer.DrawMap = true;
+        }
+
+        private void âûáðàòüÏàïêóÊýøàSASPlanetToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            string mcd = KMZRebuilederForm.CurrentDirectory() + @"\Map_Cache_Dirs.txt";
+            if (File.Exists(mcd))
+            {
+                List<string> pathes = new List<string>();
+                List<string> names = new List<string>();
+                try
+                {
+                    FileStream fs = new FileStream(mcd, FileMode.Open, FileAccess.Read);
+                    StreamReader sr = new StreamReader(fs, System.Text.Encoding.GetEncoding(1251));
+                    while (!sr.EndOfStream)
+                    {
+                        string line = sr.ReadLine();
+                        if (String.IsNullOrEmpty(line)) continue;
+                        if (line.StartsWith("#")) continue;
+                        if (line.StartsWith("@")) continue;
+                        line = line.Replace("%CD%", KMZRebuilederForm.CurrentDirectory());
+                        string[] LP = line.Split(new char[] { '=' }, 2);
+                        string prefix = "";
+                        if (LP.Length > 1)
+                        {
+                            line = ClearLastSlash(LP[1]);
+                            prefix = LP[0].Trim();
+                        }
+                        else
+                            line = ClearLastSlash(LP[0]);
+                        if (Directory.Exists(line))
+                        {
+                            pathes.Add(line);
+                            names.Add((String.IsNullOrEmpty(prefix) ? "" : (prefix + ": ")) + Path.GetFileName(line) + " ... " + line);
+                        };
+                    };
+                    sr.Close();
+                    fs.Close();
+                }
+                catch
+                { };
+                if (pathes.Count > 0)
+                {
+                    int sel = -1;
+                    for (int i = 0; i < pathes.Count; i++)
+                        if (pathes[i] == SASPlanetCacheDir)
+                            sel = i;
+                    if (InputBox.Show("SAS Planet Cache", "Select Path:", names.ToArray(), ref sel) == DialogResult.OK)
+                    {
+                        SASPlanetCacheDir = ClearLastSlash(pathes[sel]);
+                        if(Directory.Exists(SASPlanetCacheDir))
+                            mru1.AddFile(SASPlanetCacheDir);
+
+                        if (iStorages.SelectedIndex == (iStorages.Items.Count - 1))
+                            iStorages_SelectedIndexChanged(sender, e);
+                        else
+                            iStorages.SelectedIndex = iStorages.Items.Count - 1;
+                    };
+                };
+            };       
+        }
+
+        private void spvl_Click(object sender, EventArgs e)
+        {
+            spvl.Checked = !(splitContainer1.Panel2Collapsed = !splitContainer1.Panel2Collapsed);
+        }
+
+        private void iStorages_DrawItem(object sender, DrawItemEventArgs e)
+        {
+            if (e.Index == -1) return;
+
+            string text = ((ComboBox)sender).Items[e.Index].ToString();
+            int lastIndex = ((ComboBox)sender).Items.Count - 1;
+
+            Color itemForegroundColor = new Color();
+            itemForegroundColor = Color.Black;
+            bool selected = e.BackColor != ((ComboBox)sender).BackColor;
+
+            if (e.Index == 0)
+                itemForegroundColor = Color.Silver;
+            else if (e.Index < (lastIndex - 1))
+                itemForegroundColor = Color.Black;
+            else if (e.Index == lastIndex)
+            {
+                itemForegroundColor = Color.DarkViolet;
+                if (selected && ((ComboBox)sender).DroppedDown)
+                    text = SASPlanetCacheDir;
+                else
+                {
+                    string txt = SASPlanetCacheDir;
+                    SizeF sf = e.Graphics.MeasureString("PATH: .. " + txt, e.Font);
+                    while (sf.Width > e.Bounds.Width)
+                    {
+                        txt = txt.Remove(0, 1);
+                        sf = e.Graphics.MeasureString("PATH: .. " + txt, e.Font);
+                    };
+                    text = "PATH: .. " + txt;
+                };
+            }
+            else
+            {
+                itemForegroundColor = Color.Green;
+                if (selected && ((ComboBox)sender).DroppedDown)
+                    text = UserDefindedUrl;
+                else
+                {
+                    string txt = UserDefindedUrl;
+                    SizeF sf = e.Graphics.MeasureString("URL: .. " + txt, e.Font);
+                    while (sf.Width > e.Bounds.Width)
+                    {
+                        txt = txt.Remove(0, 1);
+                        sf = e.Graphics.MeasureString("URL: .. " + txt, e.Font);
+                    };
+                    text = "URL: .. " + txt;
+                };
+            };
+
+            e.DrawBackground();
+            e.Graphics.FillRectangle(new SolidBrush(selected ? itemForegroundColor : ((ComboBox)sender).BackColor), e.Bounds);
+            e.Graphics.DrawString(text, e.Font, new SolidBrush(selected ? ((ComboBox)sender).BackColor : itemForegroundColor), e.Bounds);
+            e.DrawFocusRectangle();
+        }
+
+        private void BTNMORE_Click(object sender, EventArgs e)
+        {
+            toolStripDropDownButton1.ShowDropDown();
+        }
+
+        private void âûáðàòüÏàïêóÑÊýøåìToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            
+        }
+
+        private void CDSC_Click(object sender, EventArgs e)
+        {
+            if (!Directory.Exists(state.SASCacheDir)) return;
+
+            string[] dirs = Directory.GetDirectories(state.SASCacheDir, "*.*");
+            if (dirs == null) return;
+            if (dirs.Length == 0) return;
+
+            int sel = -1;
+            string[] names = new string[dirs.Length];
+            for (int i = 0; i < dirs.Length; i++)
+            {
+                names[i] = Path.GetFileName(dirs[i]);
+                if (dirs[i] == SASPlanetCacheDir) sel = i;
+            };
+
+            if (InputBox.Show("SAS Planet Cache", "Select Path:", names, ref sel) == DialogResult.OK)
+            {
+                SASPlanetCacheDir = ClearLastSlash(dirs[sel]);
+                if (Directory.Exists(SASPlanetCacheDir))
+                    mru1.AddFile(SASPlanetCacheDir);
+
+                if (iStorages.SelectedIndex == (iStorages.Items.Count - 1))
+                    iStorages_SelectedIndexChanged(sender, e);
+                else
+                    iStorages.SelectedIndex = iStorages.Items.Count - 1;
+            };
+        }        
+
+        private void addCopyOfPointToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (objects.SelectedIndices.Count == 0) return;
+            if (objects.SelectedItems[0].SubItems[1].Text != "Point") return;
+
+            KMLayer l = (KMLayer)parent.kmzLayers.Items[laySelect.SelectedIndex];
+            XmlNode xf = l.file.kmlDoc.SelectNodes("kml/Document/Folder")[l.id];
+
+            string style = "#none";
+            
+            string XPath = objects.SelectedItems[0].SubItems[7].Text;
+            string indx = XPath.Substring(XPath.IndexOf("["));
+            XPath = XPath.Remove(XPath.IndexOf("["));
+            int ind = int.Parse(indx.Substring(1, indx.Length - 2));
+            XmlNode st = xf.SelectNodes(XPath)[ind].ParentNode.ParentNode.SelectSingleNode("styleUrl");
+            if ((st != null) && (st.ChildNodes.Count > 0))
+                style = st.ChildNodes[0].Value;
+            st = xf.SelectNodes(XPath)[ind].ParentNode.ParentNode;
+            
+            XmlNode el = l.file.kmlDoc.CreateElement("Placemark");            
+            el.AppendChild(l.file.kmlDoc.CreateElement("name"));            
+            el.AppendChild(l.file.kmlDoc.CreateElement("styleUrl").AppendChild(l.file.kmlDoc.CreateTextNode(style)).ParentNode);
+            el.AppendChild(l.file.kmlDoc.CreateElement("Point").AppendChild(l.file.kmlDoc.CreateElement("coordinates")).ParentNode);
+            el.AppendChild(l.file.kmlDoc.CreateElement("description"));
+            XmlNode xy = el.SelectSingleNode("Point/coordinates");
+            XmlNode xn = el.SelectSingleNode("name");
+            XmlNode xd = el.SelectSingleNode("description");
+
+            string nam = st.SelectSingleNode("name").ChildNodes[0].Value+" (Copy)";
+            string xyt = xy == null ? ",," : st.SelectSingleNode("Point/coordinates").ChildNodes[0].Value;
+            string[] xya = xyt.Split(new string[] { "," }, StringSplitOptions.None);
+            string x = xya[0];
+            string y = xya[1];
+            string desc = "";
+            if ((st.SelectSingleNode("description") != null) && (st.SelectSingleNode("description").ChildNodes.Count > 0)) desc = st.SelectSingleNode("description").ChildNodes[0].Value;
+            string dw = desc;
+            st = st.SelectSingleNode("styleUrl");
+
+            if (InputXY(objects.SelectedItems[0].SubItems[1].Text == "Point", ref nam, ref y, ref x, ref desc, ref style) == DialogResult.OK)
+            {
+                bool ch = false;
+                if (!String.IsNullOrEmpty(nam)) ch = true;
+                if (!String.IsNullOrEmpty(desc)) ch = true;
+                x = x.Trim().Replace(",", ".");
+                y = y.Trim().Replace(",", ".");
+                if (!String.IsNullOrEmpty(x)) ch = true;
+                if (!String.IsNullOrEmpty(y)) ch = true;
+                if (ch)
+                {
+                    xn.AppendChild(l.file.kmlDoc.CreateTextNode(nam));
+                    xd.AppendChild(l.file.kmlDoc.CreateTextNode(desc));
+                    xy.AppendChild(l.file.kmlDoc.CreateTextNode(String.Format("{0},{1},0", x, y)));
+                    st.ChildNodes[0].Value = style;
+                    xf.AppendChild(el);
+                    l.file.SaveKML();
+                    l.placemarks++;
+                    l.points++;
+                    parent.Refresh();
+                    laySelect.Items[laySelect.SelectedIndex] = l.ToString();
+                    if (objects.Items.Count > 0)
+                        objects.Items[objects.Items.Count - 1].Selected = true;
+                };
+            };
+        }
+
+        private void mcmn_Click(object sender, EventArgs e)
+        {
+            mcm_Change(0);
+        }
+
+        private void mcme_Click(object sender, EventArgs e)
+        {
+            mcm_Change(1);
+        }
+
+        private void mcm_Change(byte mode)
+        {
+            if (mode == 0)
+            {
+                mcmn.Checked = true;
+                mcme.Checked = false;
+                MapViewer.UseDefaultContextMenu = true;
+                MapViewer.ContextMenuStrip = null;
+                OMM.Text = "N";
+                OMM.ForeColor = Color.Green;
+            };
+            if (mode == 1)
+            {
+                mcmn.Checked = false;
+                mcme.Checked = true;
+                MapViewer.UseDefaultContextMenu = false;
+                MapViewer.ContextMenuStrip = contextMenuStrip2;
+                OMM.Text = "C";
+                OMM.ForeColor = Color.Red;
+            };
+        }
+
+        private void addNewPointToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            KMLayer l = (KMLayer)parent.kmzLayers.Items[laySelect.SelectedIndex];
+            XmlNode xf = l.file.kmlDoc.SelectNodes("kml/Document/Folder")[l.id];
+
+            string style = "#none";
+            XmlNode st = null;
+            if (objects.SelectedIndices.Count > 0)
+            {
+                string XPath = objects.SelectedItems[0].SubItems[7].Text;
+                string indx = XPath.Substring(XPath.IndexOf("["));
+                XPath = XPath.Remove(XPath.IndexOf("["));
+                int ind = int.Parse(indx.Substring(1, indx.Length - 2));
+                st = xf.SelectNodes(XPath)[ind].ParentNode.ParentNode.SelectSingleNode("styleUrl");
+                if ((st != null) && (st.ChildNodes.Count > 0))
+                    style = st.ChildNodes[0].Value;
+            };
+
+            XmlNode el = l.file.kmlDoc.CreateElement("Placemark");            
+            el.AppendChild(l.file.kmlDoc.CreateElement("name"));            
+            el.AppendChild(l.file.kmlDoc.CreateElement("styleUrl").AppendChild(l.file.kmlDoc.CreateTextNode(style)).ParentNode);
+            el.AppendChild(l.file.kmlDoc.CreateElement("Point").AppendChild(l.file.kmlDoc.CreateElement("coordinates")).ParentNode);
+            el.AppendChild(l.file.kmlDoc.CreateElement("description"));
+            st = el.SelectSingleNode("styleUrl");
+            XmlNode xy = el.SelectSingleNode("Point/coordinates");
+            XmlNode xn = el.SelectSingleNode("name");
+            XmlNode xd = el.SelectSingleNode("description");
+
+            string nam = "Point "+DateTime.Now.ToString("yyyyMMddHHmmss");
+            string x = MapViewer.MouseDownDegrees.X.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            string y = MapViewer.MouseDownDegrees.Y.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            string desc = "";
+            if ((xd != null) && (xd.ChildNodes.Count > 0)) desc = xd.ChildNodes[0].Value;
+            string dw = desc;
+
+            if (InputXY(true, ref nam, ref y, ref x, ref desc, ref style) == DialogResult.OK)
+            {
+                bool ch = false;
+                if (!String.IsNullOrEmpty(nam)) ch = true;
+                if (!String.IsNullOrEmpty(desc)) ch = true;
+                x = x.Trim().Replace(",", ".");
+                y = y.Trim().Replace(",", ".");
+                if (!String.IsNullOrEmpty(x)) ch = true;
+                if (!String.IsNullOrEmpty(y)) ch = true;
+                if (ch)
+                {
+                    xn.AppendChild(l.file.kmlDoc.CreateTextNode(nam));
+                    xd.AppendChild(l.file.kmlDoc.CreateTextNode(desc));
+                    xy.AppendChild(l.file.kmlDoc.CreateTextNode(String.Format("{0},{1},0", x, y)));
+                    st.ChildNodes[0].Value = style;
+                    xf.AppendChild(el);
+
+                    l.file.SaveKML();
+                    l.placemarks++;
+                    l.points++;
+                    parent.Refresh();
+                    laySelect.Items[laySelect.SelectedIndex] = l.ToString();
+                    if (objects.Items.Count > 0)
+                        objects.Items[objects.Items.Count - 1].Selected = true;
+                };
+            };
+        }
+
+        private void addNewPointWithNewStyleToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            KMLayer l = (KMLayer)parent.kmzLayers.Items[laySelect.SelectedIndex];
+            XmlNode xf = l.file.kmlDoc.SelectNodes("kml/Document/Folder")[l.id];
+
+            string style = "new_"+DateTime.UtcNow.ToString("HHmmss");
+            string href = "images/"+style+".png";
+            style2image.Add("#"+style, href);
+            File.Copy(KMZRebuilederForm.CurrentDirectory() + @"KMZRebuilder.noi.png", l.file.tmp_file_dir + href.Replace("/",@"\"));
+            images.Images.Add("images/" + style + ".png", Image.FromFile(l.file.tmp_file_dir + href.Replace("/",@"\")));
+            XmlNode ssd = l.file.kmlDoc.SelectSingleNode("kml/Document"); //Style[@id='" + firstsid + "']/IconStyle/Icon/href");
+            ssd = ssd.AppendChild(l.file.kmlDoc.CreateElement("Style"));
+            XmlAttribute attr = l.file.kmlDoc.CreateAttribute("id");
+            attr.Value = style;
+            ssd.Attributes.Append(attr);
+            ssd = ssd.AppendChild(l.file.kmlDoc.CreateElement("IconStyle"));
+            ssd = ssd.AppendChild(l.file.kmlDoc.CreateElement("Icon"));
+            ssd = ssd.AppendChild(l.file.kmlDoc.CreateElement("href"));
+            ssd.AppendChild(l.file.kmlDoc.CreateTextNode(href));
+            style = "#" + style;            
+
+            XmlNode el = l.file.kmlDoc.CreateElement("Placemark");
+            el.AppendChild(l.file.kmlDoc.CreateElement("name"));
+            el.AppendChild(l.file.kmlDoc.CreateElement("styleUrl").AppendChild(l.file.kmlDoc.CreateTextNode(style)).ParentNode);
+            el.AppendChild(l.file.kmlDoc.CreateElement("Point").AppendChild(l.file.kmlDoc.CreateElement("coordinates")).ParentNode);            
+            el.AppendChild(l.file.kmlDoc.CreateElement("description"));            
+            XmlNode st = el.SelectSingleNode("styleUrl");
+            XmlNode xy = el.SelectSingleNode("Point/coordinates");
+            XmlNode xn = el.SelectSingleNode("name");
+            XmlNode xd = el.SelectSingleNode("description");
+
+            string nam = "Point " + DateTime.Now.ToString("yyyyMMddHHmmss");
+            string x = MapViewer.MouseDownDegrees.X.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            string y = MapViewer.MouseDownDegrees.Y.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            string desc = "";
+            if ((xd != null) && (xd.ChildNodes.Count > 0)) desc = xd.ChildNodes[0].Value;
+            string dw = desc;
+
+            if (InputXY(true, ref nam, ref y, ref x, ref desc, ref style) == DialogResult.OK)
+            {
+                bool ch = false;
+                if (!String.IsNullOrEmpty(nam)) ch = true;
+                if (!String.IsNullOrEmpty(desc)) ch = true;
+                x = x.Trim().Replace(",", ".");
+                y = y.Trim().Replace(",", ".");
+                if (!String.IsNullOrEmpty(x)) ch = true;
+                if (!String.IsNullOrEmpty(y)) ch = true;
+                if (ch)
+                {
+                    xn.AppendChild(l.file.kmlDoc.CreateTextNode(nam));
+                    xd.AppendChild(l.file.kmlDoc.CreateTextNode(desc));
+                    xy.AppendChild(l.file.kmlDoc.CreateTextNode(String.Format("{0},{1},0", x, y)));
+                    st.ChildNodes[0].Value = style;
+                    xf.AppendChild(el);
+
+                    l.file.SaveKML();
+                    l.placemarks++;
+                    l.points++;
+                    parent.Refresh();
+                    laySelect.Items[laySelect.SelectedIndex] = l.ToString();
+                    if (objects.Items.Count > 0)
+                        objects.Items[objects.Items.Count - 1].Selected = true;
+                };
+            };
+        }
+
+        private void addNewPointWithNewIconToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            addNewPointWithNewIconFromFile(MapViewer.MouseDownDegrees);
+        }
+
+        private void addNewPointWithNewIconFromFile(PointF click)
+        {
+            PointF where = click;
+
+            OpenFileDialog ofd = new OpenFileDialog();
+            ofd.Title = "Select Image";
+            ofd.DefaultExt = ".png";
+            ofd.Filter = "Image Files (*.png;*.jpg;*.jpeg;*.gif)|*.png;*.jpg;*.jpeg;*.gif";
+            if (ofd.ShowDialog() != DialogResult.OK)
+            {
+                ofd.Dispose();
+                return;
+            };            
+
+            KMLayer l = (KMLayer)parent.kmzLayers.Items[laySelect.SelectedIndex];
+            XmlNode xf = l.file.kmlDoc.SelectNodes("kml/Document/Folder")[l.id];
+
+            string style = "new_" + DateTime.UtcNow.ToString("HHmmss");
+            string href = "images/" + style + ".png";
+            style2image.Add("#" + style, href);
+
+            ImageMagick.MagickImage im = new ImageMagick.MagickImage(ofd.FileName);
+            ofd.Dispose();
+            if ((im.Width > 32) || (im.Height > 32))
+            {
+                im.Resize(32, 32);
+                MapIcons.SaveIcon(im, l.file.tmp_file_dir + href.Replace("/", @"\"));
+            }
+            else
+                MapIcons.SaveIcon(ofd.FileName, l.file.tmp_file_dir + href.Replace("/", @"\"));
+            images.Images.Add("images/" + style + ".png", im.ToBitmap());
+            im.Dispose();
+            XmlNode ssd = l.file.kmlDoc.SelectSingleNode("kml/Document"); //Style[@id='" + firstsid + "']/IconStyle/Icon/href");
+            ssd = ssd.AppendChild(l.file.kmlDoc.CreateElement("Style"));
+            XmlAttribute attr = l.file.kmlDoc.CreateAttribute("id");
+            attr.Value = style;
+            ssd.Attributes.Append(attr);
+            ssd = ssd.AppendChild(l.file.kmlDoc.CreateElement("IconStyle"));
+            ssd = ssd.AppendChild(l.file.kmlDoc.CreateElement("Icon"));
+            ssd = ssd.AppendChild(l.file.kmlDoc.CreateElement("href"));
+            ssd.AppendChild(l.file.kmlDoc.CreateTextNode(href));
+            style = "#" + style;
+
+            XmlNode el = l.file.kmlDoc.CreateElement("Placemark");
+            el.AppendChild(l.file.kmlDoc.CreateElement("name"));
+            el.AppendChild(l.file.kmlDoc.CreateElement("styleUrl").AppendChild(l.file.kmlDoc.CreateTextNode(style)).ParentNode);
+            el.AppendChild(l.file.kmlDoc.CreateElement("Point").AppendChild(l.file.kmlDoc.CreateElement("coordinates")).ParentNode);            
+            el.AppendChild(l.file.kmlDoc.CreateElement("description"));            
+            XmlNode st = el.SelectSingleNode("styleUrl");
+            XmlNode xy = el.SelectSingleNode("Point/coordinates");
+            XmlNode xn = el.SelectSingleNode("name");
+            XmlNode xd = el.SelectSingleNode("description");
+
+            string nam = "Point " + DateTime.Now.ToString("yyyyMMddHHmmss");
+            string x = where.X.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            string y = where.Y.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            string desc = "";
+            if ((xd != null) && (xd.ChildNodes.Count > 0)) desc = xd.ChildNodes[0].Value;
+            string dw = desc;
+
+            if (InputXY(true, ref nam, ref y, ref x, ref desc, ref style) == DialogResult.OK)
+            {
+                bool ch = false;
+                if (!String.IsNullOrEmpty(nam)) ch = true;
+                if (!String.IsNullOrEmpty(desc)) ch = true;
+                x = x.Trim().Replace(",", ".");
+                y = y.Trim().Replace(",", ".");
+                if (!String.IsNullOrEmpty(x)) ch = true;
+                if (!String.IsNullOrEmpty(y)) ch = true;
+                if (ch)
+                {
+                    xn.AppendChild(l.file.kmlDoc.CreateTextNode(nam));
+                    xd.AppendChild(l.file.kmlDoc.CreateTextNode(desc));
+                    xy.AppendChild(l.file.kmlDoc.CreateTextNode(String.Format("{0},{1},0", x, y)));
+                    st.ChildNodes[0].Value = style;
+                    xf.AppendChild(el);
+
+                    l.file.SaveKML();
+                    l.placemarks++;
+                    l.points++;
+                    parent.Refresh();
+                    laySelect.Items[laySelect.SelectedIndex] = l.ToString();
+                    if (objects.Items.Count > 0)
+                        objects.Items[objects.Items.Count - 1].Selected = true;
+                };
+            };
+        }
+
+        private void changeIconToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (objects.SelectedIndices.Count == 0) return;
+
+            /////////////
+
+            OpenFileDialog ofd = new OpenFileDialog();
+            ofd.Title = "Select Image";
+            ofd.DefaultExt = ".png";
+            ofd.Filter = "Image Files (*.png;*.jpg;*.jpeg;*.gif)|*.png;*.jpg;*.jpeg;*.gif";
+            if (ofd.ShowDialog() != DialogResult.OK)
+            {
+                ofd.Dispose();
+                return;
+            };            
+
+            KMLayer l = (KMLayer)parent.kmzLayers.Items[laySelect.SelectedIndex];
+            XmlNode xf = l.file.kmlDoc.SelectNodes("kml/Document/Folder")[l.id];
+
+            string style = "new_" + DateTime.UtcNow.ToString("HHmmss");
+            string href = "images/" + style + ".png";
+            style2image.Add("#" + style, href);
+
+            ImageMagick.MagickImage im = new ImageMagick.MagickImage(ofd.FileName);
+            ofd.Dispose();
+            if ((im.Width > 32) || (im.Height > 32))
+            {
+                im.Resize(32, 32);
+                MapIcons.SaveIcon(im, l.file.tmp_file_dir + href.Replace("/", @"\"));
+            }
+            else
+                MapIcons.SaveIcon(ofd.FileName, l.file.tmp_file_dir + href.Replace("/", @"\"));
+            images.Images.Add("images/" + style + ".png", im.ToBitmap());
+            im.Dispose();
+            XmlNode ssd = l.file.kmlDoc.SelectSingleNode("kml/Document"); //Style[@id='" + firstsid + "']/IconStyle/Icon/href");
+            ssd = ssd.AppendChild(l.file.kmlDoc.CreateElement("Style"));
+            XmlAttribute attr = l.file.kmlDoc.CreateAttribute("id");
+            attr.Value = style;
+            ssd.Attributes.Append(attr);
+            ssd = ssd.AppendChild(l.file.kmlDoc.CreateElement("IconStyle"));
+            ssd = ssd.AppendChild(l.file.kmlDoc.CreateElement("Icon"));
+            ssd = ssd.AppendChild(l.file.kmlDoc.CreateElement("href"));
+            ssd.AppendChild(l.file.kmlDoc.CreateTextNode(href));
+            style = "#" + style;
+
+            /////////////
+
+            string XPath = objects.SelectedItems[0].SubItems[7].Text;
+            string indx = XPath.Substring(XPath.IndexOf("["));
+            XPath = XPath.Remove(XPath.IndexOf("["));
+            int ind = int.Parse(indx.Substring(1, indx.Length - 2));
+            XmlNode st = xf.SelectNodes(XPath)[ind].ParentNode.ParentNode.SelectSingleNode("styleUrl");
+            if ((st != null) && (st.ChildNodes.Count > 0))
+                st.ChildNodes[0].Value = style;
+            else
+            {
+                if(st == null)
+                    st = xf.SelectNodes(XPath)[ind].ParentNode.ParentNode.AppendChild(l.file.kmlDoc.CreateElement("styleUrl"));
+                st.AppendChild(l.file.kmlDoc.CreateTextNode(style));
+            };
+            NaviMapNet.MapObject mo = mapContent[objects.SelectedIndices[0]];
+            mo.Img = images.Images[style2image[style]];
+            objects.SelectedItems[0].ImageIndex = images.Images.IndexOfKey(style2image[style]);
+            l.file.SaveKML();
+            MapViewer.DrawOnMapData();
+        }
+
+        private void setNewIconToAllTheSameToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (objects.SelectedIndices.Count == 0) return;
+
+            /////////////
+
+            string style = "";
+            KMLayer l = (KMLayer)parent.kmzLayers.Items[laySelect.SelectedIndex];
+            string XPath = objects.SelectedItems[0].SubItems[7].Text;
+            string indx = XPath.Substring(XPath.IndexOf("["));
+            XPath = XPath.Remove(XPath.IndexOf("["));
+            int ind = int.Parse(indx.Substring(1, indx.Length - 2));
+            XmlNode xf = l.file.kmlDoc.SelectNodes("kml/Document/Folder")[l.id];            
+            XmlNode st = xf.SelectNodes(XPath)[ind].ParentNode.ParentNode.SelectSingleNode("styleUrl");
+            if ((st != null) && (st.ChildNodes.Count > 0))
+                style = st.ChildNodes[0].Value;
+            if (String.IsNullOrEmpty(style)) return;
+
+            style = style.Replace("#", "");
+            XmlNode nts = l.file.kmlDoc.SelectSingleNode("kml/Document/Style[@id='" + style + "']/IconStyle/Icon/href");
+            string href = null;
+            if((nts != null) && (nts.ChildNodes.Count > 0))
+                href = nts.ChildNodes[0].Value;
+            else
+                return;
+            string file_name = l.file.tmp_file_dir + href.Replace("/", @"\");
+
+            /////////////
+
+            OpenFileDialog ofd = new OpenFileDialog();
+            ofd.Title = "Select Image";
+            ofd.DefaultExt = ".png";
+            ofd.Filter = "Image Files (*.png;*.jpg;*.jpeg;*.gif)|*.png;*.jpg;*.jpeg;*.gif";
+            if (ofd.ShowDialog() != DialogResult.OK)
+            {
+                ofd.Dispose();
+                return;
+            };
+
+            ImageMagick.MagickImage im = new ImageMagick.MagickImage(ofd.FileName);
+            ofd.Dispose();
+            if ((im.Width > 32) || (im.Height > 32))
+            {
+                im.Resize(32, 32);
+                MapIcons.SaveIcon(im, file_name);
+            }
+            else
+                MapIcons.SaveIcon(ofd.FileName, file_name);
+            im.Dispose();
+
+            /////////////
+
+            int si = objects.SelectedIndices[0];
+            laySelect_SelectedIndexChanged(sender, e);
+            objects.Items[si].Selected = true;
+        }
+
+        private void sWAPToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (mcmn.Checked)
+                mcme_Click(sender, e);
+            else
+                mcmn_Click(sender, e);
+        }
+
+        private void switchToNavigationModeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            mcmn_Click(sender, e);
+        }
+
+        private void addNewPointWithNewIconFromListToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            PointF where = MapViewer.MouseDownDegrees;
+
+            if (parent.mapIcons == null)
+                parent.mapIcons = new MapIcons();
+            DialogResult dr = parent.mapIcons.ShowDialog();
+            if (dr == DialogResult.Ignore)
+                addNewPointWithNewIconFromFile(where);
+            if (dr != DialogResult.OK) return;            
+
+            KMLayer l = (KMLayer)parent.kmzLayers.Items[laySelect.SelectedIndex];
+            XmlNode xf = l.file.kmlDoc.SelectNodes("kml/Document/Folder")[l.id];
+
+            string style = "new_" + DateTime.UtcNow.ToString("HHmmss");
+            string href = "images/" + style + ".png";
+            style2image.Add("#" + style, href);
+            
+            ImageMagick.MagickImage im = new ImageMagick.MagickImage((Bitmap)parent.mapIcons.SelectedImage);
+            if ((im.Width > 32) || (im.Height > 32))
+            {
+                im.Resize(32, 32);
+                MapIcons.SaveIcon(im, l.file.tmp_file_dir + href.Replace("/", @"\"));
+            }
+            else
+                MapIcons.SaveIcon(parent.mapIcons.SelectedImageArr,l.file.tmp_file_dir + href.Replace("/", @"\"));
+            images.Images.Add("images/" + style + ".png", im.ToBitmap());
+            im.Dispose();
+            XmlNode ssd = l.file.kmlDoc.SelectSingleNode("kml/Document"); //Style[@id='" + firstsid + "']/IconStyle/Icon/href");
+            ssd = ssd.AppendChild(l.file.kmlDoc.CreateElement("Style"));
+            XmlAttribute attr = l.file.kmlDoc.CreateAttribute("id");
+            attr.Value = style;
+            ssd.Attributes.Append(attr);
+            ssd = ssd.AppendChild(l.file.kmlDoc.CreateElement("IconStyle"));
+            ssd = ssd.AppendChild(l.file.kmlDoc.CreateElement("Icon"));
+            ssd = ssd.AppendChild(l.file.kmlDoc.CreateElement("href"));
+            ssd.AppendChild(l.file.kmlDoc.CreateTextNode(href));
+            style = "#" + style;
+
+            XmlNode el = l.file.kmlDoc.CreateElement("Placemark");
+            el.AppendChild(l.file.kmlDoc.CreateElement("name"));
+            el.AppendChild(l.file.kmlDoc.CreateElement("styleUrl").AppendChild(l.file.kmlDoc.CreateTextNode(style)).ParentNode);
+            el.AppendChild(l.file.kmlDoc.CreateElement("Point").AppendChild(l.file.kmlDoc.CreateElement("coordinates")).ParentNode);            
+            el.AppendChild(l.file.kmlDoc.CreateElement("description"));            
+            XmlNode st = el.SelectSingleNode("styleUrl");
+            XmlNode xy = el.SelectSingleNode("Point/coordinates");
+            XmlNode xn = el.SelectSingleNode("name");
+            XmlNode xd = el.SelectSingleNode("description");
+
+            string nam = "Point " + DateTime.Now.ToString("yyyyMMddHHmmss");
+            string x = where.X.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            string y = where.Y.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            string desc = "";
+            if ((xd != null) && (xd.ChildNodes.Count > 0)) desc = xd.ChildNodes[0].Value;
+            string dw = desc;
+
+            if (InputXY(true, ref nam, ref y, ref x, ref desc, ref style) == DialogResult.OK)
+            {
+                bool ch = false;
+                if (!String.IsNullOrEmpty(nam)) ch = true;
+                if (!String.IsNullOrEmpty(desc)) ch = true;
+                x = x.Trim().Replace(",", ".");
+                y = y.Trim().Replace(",", ".");
+                if (!String.IsNullOrEmpty(x)) ch = true;
+                if (!String.IsNullOrEmpty(y)) ch = true;
+                if (ch)
+                {
+                    xn.AppendChild(l.file.kmlDoc.CreateTextNode(nam));
+                    xd.AppendChild(l.file.kmlDoc.CreateTextNode(desc));
+                    xy.AppendChild(l.file.kmlDoc.CreateTextNode(String.Format("{0},{1},0", x, y)));
+                    st.ChildNodes[0].Value = style;
+                    xf.AppendChild(el);
+
+                    l.file.SaveKML();
+                    l.placemarks++;
+                    l.points++;
+                    parent.Refresh();
+                    laySelect.Items[laySelect.SelectedIndex] = l.ToString();
+                    if (objects.Items.Count > 0)
+                        objects.Items[objects.Items.Count - 1].Selected = true;
+                };
+            };
+        }
+
+        private void setNewIconFromListToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (objects.SelectedIndices.Count == 0) return;
+
+            /////////////
+
+            if (parent.mapIcons == null)
+                parent.mapIcons = new MapIcons();
+            DialogResult dr = parent.mapIcons.ShowDialog();
+            if (dr == DialogResult.Ignore)
+                changeIconToolStripMenuItem_Click(sender, e);
+            if (dr != DialogResult.OK) return;                                    
+
+            KMLayer l = (KMLayer)parent.kmzLayers.Items[laySelect.SelectedIndex];
+            XmlNode xf = l.file.kmlDoc.SelectNodes("kml/Document/Folder")[l.id];
+
+            string style = "new_" + DateTime.UtcNow.ToString("HHmmss");
+            string href = "images/" + style + ".png";
+            style2image.Add("#" + style, href);
+
+            ImageMagick.MagickImage im = new ImageMagick.MagickImage((Bitmap)parent.mapIcons.SelectedImage);
+            if ((im.Width > 32) || (im.Height > 32))
+            {
+                im.Resize(32, 32);
+                MapIcons.SaveIcon(im, l.file.tmp_file_dir + href.Replace("/", @"\"));
+            }
+            else
+                MapIcons.SaveIcon(parent.mapIcons.SelectedImageArr, l.file.tmp_file_dir + href.Replace("/", @"\"));
+            images.Images.Add("images/" + style + ".png", im.ToBitmap());
+            im.Dispose();
+            XmlNode ssd = l.file.kmlDoc.SelectSingleNode("kml/Document"); //Style[@id='" + firstsid + "']/IconStyle/Icon/href");
+            ssd = ssd.AppendChild(l.file.kmlDoc.CreateElement("Style"));
+            XmlAttribute attr = l.file.kmlDoc.CreateAttribute("id");
+            attr.Value = style;
+            ssd.Attributes.Append(attr);
+            ssd = ssd.AppendChild(l.file.kmlDoc.CreateElement("IconStyle"));
+            ssd = ssd.AppendChild(l.file.kmlDoc.CreateElement("Icon"));
+            ssd = ssd.AppendChild(l.file.kmlDoc.CreateElement("href"));
+            ssd.AppendChild(l.file.kmlDoc.CreateTextNode(href));
+            style = "#" + style;
+
+            /////////////
+
+            string XPath = objects.SelectedItems[0].SubItems[7].Text;
+            string indx = XPath.Substring(XPath.IndexOf("["));
+            XPath = XPath.Remove(XPath.IndexOf("["));
+            int ind = int.Parse(indx.Substring(1, indx.Length - 2));
+            XmlNode st = xf.SelectNodes(XPath)[ind].ParentNode.ParentNode.SelectSingleNode("styleUrl");
+            if ((st != null) && (st.ChildNodes.Count > 0))
+                st.ChildNodes[0].Value = style;
+            else
+            {
+                if (st == null)
+                    st = xf.SelectNodes(XPath)[ind].ParentNode.ParentNode.AppendChild(l.file.kmlDoc.CreateElement("styleUrl"));
+                st.AppendChild(l.file.kmlDoc.CreateTextNode(style));
+            };
+            NaviMapNet.MapObject mo = mapContent[objects.SelectedIndices[0]];
+            mo.Img = images.Images[style2image[style]];
+            objects.SelectedItems[0].ImageIndex = images.Images.IndexOfKey(style2image[style]);
+            l.file.SaveKML();
+            MapViewer.DrawOnMapData();
+        }
+
+        private void setNewIconFromListToAllWithSameImagesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (objects.SelectedIndices.Count == 0) return;
+
+            /////////////
+
+            string style = "";
+            KMLayer l = (KMLayer)parent.kmzLayers.Items[laySelect.SelectedIndex];
+            string XPath = objects.SelectedItems[0].SubItems[7].Text;
+            string indx = XPath.Substring(XPath.IndexOf("["));
+            XPath = XPath.Remove(XPath.IndexOf("["));
+            int ind = int.Parse(indx.Substring(1, indx.Length - 2));
+            XmlNode xf = l.file.kmlDoc.SelectNodes("kml/Document/Folder")[l.id];
+            XmlNode st = xf.SelectNodes(XPath)[ind].ParentNode.ParentNode.SelectSingleNode("styleUrl");
+            if ((st != null) && (st.ChildNodes.Count > 0))
+                style = st.ChildNodes[0].Value;
+            if (String.IsNullOrEmpty(style)) return;
+
+            style = style.Replace("#", "");
+            XmlNode nts = l.file.kmlDoc.SelectSingleNode("kml/Document/Style[@id='" + style + "']/IconStyle/Icon/href");
+            string href = null;
+            if ((nts != null) && (nts.ChildNodes.Count > 0))
+                href = nts.ChildNodes[0].Value;
+            else
+                return;
+            string file_name = l.file.tmp_file_dir + href.Replace("/", @"\");
+
+            /////////////
+
+            if (parent.mapIcons == null)
+                parent.mapIcons = new MapIcons();
+            DialogResult dr = parent.mapIcons.ShowDialog();
+            if (dr == DialogResult.Ignore)
+                setNewIconToAllTheSameToolStripMenuItem_Click(sender, e);
+            if (dr != DialogResult.OK) return;
+
+            ImageMagick.MagickImage im = new ImageMagick.MagickImage((Bitmap)parent.mapIcons.SelectedImage);
+            if ((im.Width > 32) || (im.Height > 32))
+            {
+                im.Resize(32, 32);
+                MapIcons.SaveIcon(im, file_name);
+            }
+            else
+                MapIcons.SaveIcon(parent.mapIcons.SelectedImageArr, file_name);
+            im.Dispose();
+
+            /////////////
+
+            int si = objects.SelectedIndices[0];
+            laySelect_SelectedIndexChanged(sender, e);
+            objects.Items[si].Selected = true;
+        }
+
+        private void addTextAsPolygonHereToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            AddTextAsPolyF(true);
+        }
+
+        private void addTextAsPolylineHereToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            AddTextAsPolyF(false);
+        }
+
+        private void AddTextAsPolyF(bool ispolygon)
+        {
+            PointF where = MapViewer.MouseDownDegrees;
+            uint lm = GetLengthMetersC(where.Y - 0.005, where.X, where.Y + 0.005, where.X, false);
+            float scale_d = 0.01f / (float)lm;
+
+            AddTextAsPoly atap = new AddTextAsPoly(KMZRebuilederForm.CurrentDirectory()+@"\Fonts\");
+            if (ispolygon)
+            {
+                atap.LBColor.BackColor = Color.FromArgb(255, Color.Red);
+                atap.LColor.Text = LineAreaStyleForm.HexConverter(Color.Red);
+                atap.ABColor.BackColor = Color.FromArgb(255, Color.Lime);
+                atap.AColor.Text = LineAreaStyleForm.HexConverter(Color.Lime);
+                atap.Text = "Add Text as Polygone";
+            }
+            else
+            {
+                atap.LBColor.BackColor = Color.FromArgb(255, Color.Blue);
+                atap.LColor.Text = LineAreaStyleForm.HexConverter(Color.Blue);
+                atap.Text = "Add Text as Polyline";
+                atap.AColor.Enabled = false;
+                atap.ABColor.Enabled = false;
+                atap.AOpacity.Enabled = false;
+                atap.AFill.Enabled = false;
+            };
+            if ((atap.ShowDialog() != DialogResult.OK) || (String.IsNullOrEmpty(atap.TextOut.Text.Trim())))
+            {
+                atap.Dispose();
+                return;
+            };
+
+            FontFamily font = null;
+            if (atap.fontCustom.Checked && (atap.fontCustomList.SelectedIndex >= 0))
+                font = ((AddTextAsPoly.FontRec)atap.fontCustomList.Items[atap.fontCustomList.SelectedIndex]).font;
+            if (atap.fontSystem.Checked && (atap.fontSysList.SelectedIndex >= 0))
+                font = ((AddTextAsPoly.FontRec)atap.fontSysList.Items[atap.fontSysList.SelectedIndex]).font;
+            if (font == null)
+            {
+                atap.Dispose();
+                return;
+            };
+            float scale = scale_d * (float)atap.TextSize.Value;
+            string text = atap.TextOut.Text.Trim();
+            float angle = 90 - (float)atap.TextAzimuth.Value;
+            FontPath.PathOffset offset = (FontPath.PathOffset)atap.TextAlign.SelectedIndex;
+            if (offset == FontPath.PathOffset.TopLeft) // Flip vertical align
+                offset = FontPath.PathOffset.BottomLeft;
+            else if (offset == FontPath.PathOffset.TopMiddle)
+                offset = FontPath.PathOffset.BottomMiddle;
+            else if (offset == FontPath.PathOffset.TopRight)
+                offset = FontPath.PathOffset.BottomRight;
+            else if (offset == FontPath.PathOffset.BottomLeft)
+                offset = FontPath.PathOffset.TopLeft;
+            else if (offset == FontPath.PathOffset.BottomMiddle)
+                offset = FontPath.PathOffset.TopMiddle;
+            else if (offset == FontPath.PathOffset.BottomRight)
+                offset = FontPath.PathOffset.TopRight;
+            Color lineColor = Color.FromArgb((int)((float)atap.LOpacity.Value / 100f * 255f), atap.LBColor.BackColor);
+            int lineWidth = (int)atap.LWidth.Value;
+            Color fillColor = Color.FromArgb((int)((float)atap.AOpacity.Value / 100f * 255f), atap.ABColor.BackColor);
+            int fill = atap.AFill.SelectedIndex;
+            atap.Dispose();            
+            PointF startPoint = new PointF(where.X,where.Y);
+
+            Application.DoEvents();
+            wbf.Show("Add Text as Shape", "Wait, calculating points...");
+            FontPath.PointD[][] pathes = null;
+            try
+            {
+                pathes = FontPath.StringToPath(font, text, scale, startPoint, offset, true, false, angle);
+            }
+            catch (Exception ex)
+            {
+                wbf.Hide();
+                Application.DoEvents();
+                MessageBox.Show("Text Error: " + ex.Message, "Add Text as Shape", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            };
+
+            string[] PolygonStrings = null;
+            if(ispolygon)
+                PolygonStrings = FontPath.PathToPolygonString(pathes);
+            else
+                PolygonStrings = FontPath.PathToLineString(pathes);
+            string XML = "";
+            int count = 0;
+            string stylen = "newstyle" + DateTime.UtcNow.ToString("HHmmss");
+            foreach (string coords in PolygonStrings)
+            {
+                count++;
+                XML += "<Placemark>\r\n";
+                XML += "<name><![CDATA[" + String.Format("{0} {1}/{2}", text, count, PolygonStrings.Length) + "]]></name>\r\n";
+                XML += "<styleUrl>#" + stylen + "</styleUrl>\r\n";
+                XML += "<description><![CDATA[" + String.Format("Part {1}/{2} of {0}", text, count, PolygonStrings.Length) + "]]></description>\r\n";
+                if (ispolygon)
+                {                                        
+                    XML += "<Polygon><extrude>1</extrude><outerBoundaryIs><LinearRing>\r\n";
+                    XML += "<coordinates>" + coords + "</coordinates>\r\n";
+                    XML += "</LinearRing></outerBoundaryIs></Polygon>\r\n";
+                }
+                else
+                {
+                    XML += "<LineString>\r\n";
+                    XML += "<coordinates>" + coords + "</coordinates>\r\n";
+                    XML += "</LineString>\r\n";
+                };
+                XML += "</Placemark>\r\n";
+            };
+            wbf.Hide();
+            
+            string style = "<Style id=\"" + stylen + "\"><LineStyle><color>" + AddTextAsPoly.HexStyleConverter(lineColor) + "</color><width>" + lineWidth.ToString() + "</width></LineStyle>";
+            if(ispolygon)
+                style += "<PolyStyle><color>" + AddTextAsPoly.HexStyleConverter(fillColor) + "</color><fill>" + fill.ToString() + "</fill></PolyStyle>";
+            style += "</Style>\r\n";
+
+            KMLayer l = (KMLayer)parent.kmzLayers.Items[laySelect.SelectedIndex];
+            XmlNode xf = l.file.kmlDoc.SelectNodes("kml/Document/Folder")[l.id];
+            xf.InnerXml += XML;
+            l.file.kmlDoc.SelectNodes("kml/Document")[0].InnerXml += style;            
+
+            l.file.SaveKML();
+            l.placemarks += PolygonStrings.Length;
+            if(ispolygon)
+                l.areas += PolygonStrings.Length;
+            else
+                l.lines += PolygonStrings.Length;
+            parent.Refresh();
+            laySelect.Items[laySelect.SelectedIndex] = l.ToString();            
+        }        
+
+        private void LPSB_Click(object sender, EventArgs e)
+        {
+            if (objects.SelectedItems.Count == 0) return;
+            if (objects.SelectedItems[0].SubItems[1].Text == "Point") return;
+            bool ispolygon = false;
+
+            KMLayer l = (KMLayer)parent.kmzLayers.Items[laySelect.SelectedIndex];
+            string XPath = objects.SelectedItems[0].SubItems[7].Text;
+            string indx = XPath.Substring(XPath.IndexOf("["));
+            XPath = XPath.Remove(XPath.IndexOf("["));
+            int ind = int.Parse(indx.Substring(1, indx.Length - 2));
+            XmlNode x_folder = l.file.kmlDoc.SelectNodes("kml/Document/Folder")[l.id];
+            string styleUrl = "";
+            XmlNode x_placemark = x_folder.SelectNodes(XPath)[ind].ParentNode.ParentNode;
+            if (x_placemark.Name == "outerBoundaryIs")
+            {
+                x_placemark = x_placemark.ParentNode.ParentNode;
+                ispolygon = true;
+            };
+            XmlNode x_style = x_placemark.SelectSingleNode("styleUrl");
+            if ((x_style != null) && (x_style.ChildNodes.Count > 0))
+                styleUrl = x_style.ChildNodes[0].Value;
+            XmlNode x_linestyle = null;
+            XmlNode x_areastyle = null;
+
+            if (styleUrl.IndexOf("#") == 0) styleUrl = styleUrl.Remove(0, 1);
+
+            Color lineColor = Color.FromArgb(255, Color.Blue);
+            int lineWidth = 3;
+            Color fillColor = Color.FromArgb(255, Color.Blue);
+            int fill = 1;
+            
+            if (styleUrl != "")
+            {
+                string firstsid = styleUrl;
+                XmlNodeList pk = l.file.kmlDoc.SelectNodes("kml/Document/StyleMap[@id='" + styleUrl + "']/Pair/key");
+                if (pk.Count > 0)
+                    for (int n = 0; n < pk.Count; n++)
+                    {
+                        XmlNode cn = pk[n];
+                        if ((cn.ChildNodes[0].Value != "normal") && (n > 0)) continue;
+                        if (cn.ParentNode.SelectSingleNode("styleUrl") == null) continue;
+                        firstsid = cn.ParentNode.SelectSingleNode("styleUrl").ChildNodes[0].Value;
+                        if (firstsid.IndexOf("#") == 0) firstsid = firstsid.Remove(0, 1);
+                    };
+                try
+                {
+                    x_linestyle = l.file.kmlDoc.SelectSingleNode("kml/Document/Style[@id='" + firstsid + "']/LineStyle");
+                }
+                catch { };
+                try
+                {
+                    x_areastyle = l.file.kmlDoc.SelectSingleNode("kml/Document/Style[@id='" + firstsid + "']/PolyStyle");
+                }
+                catch { };
+            }
+            else
+            {
+                x_linestyle = x_placemark.SelectSingleNode("Style/LineStyle");
+                x_areastyle = x_placemark.SelectSingleNode("Style/PolyStyle");
+            };
+            if (x_linestyle != null)
+            {
+                string colval = x_linestyle.SelectSingleNode("color").ChildNodes[0].Value;
+                try
+                {
+                    lineColor = Color.FromName(colval);
+                    if (colval.Length == 8)
+                    {
+                        lineColor = Color.FromArgb(
+                            Convert.ToInt32(colval.Substring(0, 2), 16),
+                            Convert.ToInt32(colval.Substring(6, 2), 16),
+                            Convert.ToInt32(colval.Substring(4, 2), 16),
+                            Convert.ToInt32(colval.Substring(2, 2), 16)
+                            );
+                    };
+                }
+                catch { };
+                string widval = x_linestyle.SelectSingleNode("width").ChildNodes[0].Value;
+                try
+                {
+                    lineWidth = (int)double.Parse(widval, System.Globalization.CultureInfo.InvariantCulture);
+                }
+                catch { };
+            };
+            if (x_areastyle != null)
+            {
+                string colval = x_areastyle.SelectSingleNode("color").ChildNodes[0].Value;
+                try
+                {
+                    fillColor = Color.FromName(colval);
+                    if (colval.Length == 8)
+                    {
+                        fillColor = Color.FromArgb(
+                            Convert.ToInt32(colval.Substring(0, 2), 16),
+                            Convert.ToInt32(colval.Substring(6, 2), 16),
+                            Convert.ToInt32(colval.Substring(4, 2), 16),
+                            Convert.ToInt32(colval.Substring(2, 2), 16)
+                            );
+                    };
+                }
+                catch { };
+                string fillval = x_areastyle.SelectSingleNode("fill").ChildNodes[0].Value;
+                try
+                {
+                   fill = int.Parse(fillval, System.Globalization.CultureInfo.InvariantCulture);
+                }
+                catch { };
+            };
+
+            LineAreaStyleForm lasf = new LineAreaStyleForm();
+            lasf.LBColor.BackColor = Color.FromArgb(255, lineColor);
+            lasf.LColor.Text = LineAreaStyleForm.HexConverter(lineColor);
+            lasf.LOpacity.Value = (int)((float)lineColor.A / 255f * 100f);
+            lasf.LWidth.Value = lineWidth;
+            lasf.ApplyTo.SelectedIndex = 1;
+            if (ispolygon)
+            {
+                lasf.ABColor.BackColor = Color.FromArgb(255, fillColor);
+                lasf.AColor.Text = LineAreaStyleForm.HexConverter(fillColor);
+                lasf.AOpacity.Value = (int)((float)fillColor.A / 255f * 100f);
+                lasf.AFill.SelectedIndex = fill == 1 ? 1 : 0;
+            }
+            else
+            {
+                lasf.AColor.Enabled = false;
+                lasf.ABColor.Enabled = false;
+                lasf.AOpacity.Enabled = false;
+                lasf.AFill.Enabled = false;
+            };
+            if (lasf.ShowDialog() != DialogResult.OK)
+            {
+                lasf.Dispose();
+                return;
+            };
+
+            lineColor = Color.FromArgb((int)((float)lasf.LOpacity.Value / 100f * 255f),lasf.LBColor.BackColor);
+            lineWidth = (int)lasf.LWidth.Value;
+            fillColor = Color.FromArgb((int)((float)lasf.AOpacity.Value / 100f * 255f), lasf.ABColor.BackColor);
+            fill = lasf.AFill.SelectedIndex;
+            if(true) // todo // if (lasf.ApplyTo.SelectedIndex == 1)
+            {
+                NaviMapNet.MapObject mo = mapContent[objects.SelectedIndices[0]];
+
+                foreach (XmlNode n in x_placemark.SelectNodes("styleUrl"))
+                    n.ParentNode.RemoveChild(n);
+                foreach (XmlNode n in x_placemark.SelectNodes("Style"))
+                    n.ParentNode.RemoveChild(n);
+                if ((lasf.ApplyTo.SelectedIndex == 0) || ((lasf.ApplyTo.SelectedIndex == 1) && String.IsNullOrEmpty(styleUrl)))
+                        styleUrl = "newStyle" + DateTime.UtcNow.ToString("HHmmss");
+
+                x_style = l.file.kmlDoc.CreateElement("styleUrl");
+                x_style.AppendChild(l.file.kmlDoc.CreateTextNode("#" + styleUrl));
+                x_placemark.AppendChild(x_style);
+
+                if (lasf.ApplyTo.SelectedIndex == 1)
+                {
+                    foreach (XmlNode n in l.file.kmlDoc.SelectNodes("kml/Document/StyleMap[@id='" + styleUrl + "']"))
+                        n.ParentNode.RemoveChild(n);
+                    if (x_linestyle != null)
+                        x_linestyle.ParentNode.ParentNode.RemoveChild(x_linestyle.ParentNode);
+                    if (x_areastyle != null)
+                        if(x_areastyle.ParentNode.ParentNode != null)
+                            x_areastyle.ParentNode.ParentNode.RemoveChild(x_areastyle.ParentNode);
+                };
+
+                string style = "";
+                if (ispolygon)
+                {
+                    (mo as NaviMapNet.MapPolygon).BorderColor = lineColor;
+                    (mo as NaviMapNet.MapPolygon).Width = lineWidth;
+                    (mo as NaviMapNet.MapPolygon).BodyColor = fillColor;
+                    style = "<Style id=\"" + styleUrl + "\"><LineStyle><color>" + LineAreaStyleForm.HexStyleConverter(lineColor) + "</color><width>" + lineWidth.ToString() + "</width></LineStyle><PolyStyle><color>" + LineAreaStyleForm.HexStyleConverter(fillColor) + "</color><fill>" + fill.ToString() + "</fill></PolyStyle></Style>\r\n";
+                }
+                else
+                {
+                    (mo as NaviMapNet.MapPolyLine).Color = lineColor;
+                    (mo as NaviMapNet.MapPolyLine).Width = lineWidth;
+                    style = "<Style id=\"" + styleUrl + "\"><LineStyle><color>" + LineAreaStyleForm.HexStyleConverter(lineColor) + "</color><width>" + lineWidth.ToString() + "</width></LineStyle></Style>\r\n";
+                };
+
+                l.file.kmlDoc.SelectSingleNode("kml/Document").InnerXml += style;
+                l.file.SaveKML();
+                if (lasf.ApplyTo.SelectedIndex == 0)
+                {
+                    MapViewer.DrawOnMapData();
+                    int index = objects.SelectedIndices[0];
+
+                    Image im = new Bitmap(16, 16);
+                    Graphics g = Graphics.FromImage(im);
+                    if (ispolygon)
+                    {
+                        g.FillRectangle(new SolidBrush(fillColor), 0, 0, 16, 16);
+                        g.DrawRectangle(new Pen(new SolidBrush(lineColor), 2), 0, 0, 16, 16);
+                        g.DrawString("A", new Font("Terminal", 11, FontStyle.Bold), new SolidBrush(Color.FromArgb(255 - fillColor.R, 255 - fillColor.G, 255 - fillColor.B)), 1, -1);
+                    }
+                    else
+                    {
+                        g.FillRectangle(new SolidBrush(lineColor), 0, 0, 16, 16);
+                        g.DrawString("L", new Font("Terminal", 11, FontStyle.Bold), new SolidBrush(Color.FromArgb(255 - lineColor.R, 255 - lineColor.G, 255 - lineColor.B)), 1, -1);
+                    };
+                    g.Dispose();
+                    images.Images[index] = im;
+                }
+                else
+                {
+                    int index = objects.SelectedIndices[0];
+                    laySelect_SelectedIndexChanged(sender, e);
+                    objects.Items[index].Selected = true;
+                };
+            };
+
+            lasf.Dispose();
+        }
+
+        private void selectNoneToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            objects.SelectedItems.Clear();
+            //if (objects.CheckedIndices.Count > 0)
+            //    for (int i = objects.CheckedIndices.Count - 1; i >= 0; i--)
+            //        objects.CheckedItems[i].Checked = false;
+            //objects.CheckBoxes = false;
+            mapSelect.Clear();
+            MapViewer.DrawOnMapData();
+        }
+
+        private void selectNoneToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            objects.SelectedItems.Clear();
+            //if (objects.CheckedIndices.Count > 0)
+            //    for (int i = objects.CheckedIndices.Count - 1; i >= 0; i--)
+            //        objects.CheckedItems[i].Checked = false;
+            //objects.CheckBoxes = false;
+            mapSelect.Clear();
+            MapViewer.DrawOnMapData();
+        }
+
+        private void contextMenuStrip2_Opening(object sender, CancelEventArgs e)
+        {
+            navigateToToolStripMenuItem.Enabled = xuns.Count > 0;
+            SASPlacemarkConnector sc = new SASPlacemarkConnector();
+            addNewPointToSASPlanetToolStripMenuItem.Enabled = sc.SASisOpen;
+            importDataFromOSMInsideSelectionToolStripMenuItem.Enabled = MapViewer.SelectionBoxIsVisible;
+            selectAllInAreaToolStripMenuItem.Enabled = MapViewer.SelectionBoxIsVisible && (objects.Items.Count > 0);
+            findAllPlacemarksOutsideAreaToolStripMenuItem.Enabled = MapViewer.SelectionBoxIsVisible && (objects.Items.Count > 0);
+            clearSelectionBoxToolStripMenuItem.Enabled = MapViewer.SelectionBoxIsVisible;
+        }
+
+        private void navigateToToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            int sel = -1;
+            string[] xunn = new string[xuns.Count];
+            for (int i = 0; i < xuns.Count; i++) xunn[i] = xuns[i].ToString();
+            if (System.Windows.Forms.InputBox.Show("Navigate", "Select preset:", xunn, ref sel) == DialogResult.OK)
+                MapViewer.CenterDegrees = new PointF((float)xuns[sel].lon, (float)xuns[sel].lat);
+        }
+
+        private void cHB0_Click(object sender, EventArgs e)
+        {
+            if (!objects.CheckBoxes) return;
+            if (objects.CheckedItems.Count == 0) return;
+
+            for (int i = 0; i < objects.CheckedItems.Count; i++)
+            {
+                objects.CheckedItems[i].SubItems[6].Text = "Yes";
+                objects.CheckedItems[i].Font = new Font(objects.CheckedItems[i].Font, FontStyle.Strikeout);
+                //objects.SelectedItems[0].SubItems[6].Text = (objects.SelectedItems[0].SubItems[6].Text == "Yes") ? "" : "Yes";
+                //if (objects.SelectedItems[0].SubItems[6].Text == "Yes")
+                //    objects.SelectedItems[0].Font = new Font(objects.SelectedItems[0].Font, FontStyle.Strikeout);
+                //else
+                //    objects.SelectedItems[0].Font = new Font(objects.SelectedItems[0].Font, FontStyle.Regular);
+            };
+
+            CheckMarked();
+        }
+
+        private void cHB1_Click(object sender, EventArgs e)
+        {
+            if (!objects.CheckBoxes) return;
+            if (objects.CheckedItems.Count == 0) return;
+            if (laySelect.Items.Count < 2) return;
+
+            string[] layers = new string[laySelect.Items.Count];
+            for (int i = 0; i < laySelect.Items.Count; i++)
+                layers[i] = laySelect.Items[i].ToString();
+
+            int new_ind = laySelect.SelectedIndex;
+            if (System.Windows.Forms.InputBox.Show("Move Placemarks", "Select Layer:", layers, ref new_ind) != DialogResult.OK) return;
+            if (new_ind == laySelect.SelectedIndex) return;
+
+            if (MessageBox.Show("Move " + objects.CheckedItems.Count.ToString() + " placemark(s) to layer:\r\n" + parent.kmzLayers.Items[new_ind].ToString(), "Move placemarks", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.No) return;
+
+            int[] pla = new int[3];
+            KMLayer l_old = (KMLayer)parent.kmzLayers.Items[laySelect.SelectedIndex];
+            KMLayer l_new = (KMLayer)parent.kmzLayers.Items[new_ind];
+            for (int i = objects.CheckedItems.Count - 1; i >= 0 ; i--)
+            {
+                string XPath = objects.CheckedItems[i].SubItems[7].Text;
+                string indx = XPath.Substring(XPath.IndexOf("["));
+                XPath = XPath.Remove(XPath.IndexOf("["));
+                int ind = int.Parse(indx.Substring(1, indx.Length - 2));
+                XmlNode xn = l_old.file.kmlDoc.SelectNodes("kml/Document/Folder")[l_old.id];
+                xn = xn.SelectNodes(XPath)[ind].ParentNode.ParentNode;
+                if (xn.Name == "outerBoundaryIs") // polygon
+                {
+                    xn = xn.ParentNode.ParentNode;
+                    pla[2]++;
+                }
+                else
+                {
+                    if (xn.SelectSingleNode("Point") != null) pla[0]++;
+                    if (xn.SelectSingleNode("LineString") != null) pla[1]++;
+                };
+                xn = xn.ParentNode.RemoveChild(xn);
+
+                if (l_old.file == l_new.file)
+                    l_new.file.kmlDoc.SelectNodes("kml/Document/Folder")[l_new.id].AppendChild(xn);
+                else
+                {
+                    // copy styles //
+                    string styleUrl = "";
+                    if (xn.SelectSingleNode("styleUrl") != null) styleUrl = xn.SelectSingleNode("styleUrl").ChildNodes[0].Value;
+                    if (styleUrl.IndexOf("#") == 0) styleUrl = styleUrl.Remove(0, 1);
+
+                    if (styleUrl != "")
+                    {
+                        string firstsid = styleUrl;
+                        XmlNodeList pk = l_old.file.kmlDoc.SelectNodes("kml/Document/StyleMap[@id='" + styleUrl + "']");
+                        if (pk.Count > 0) // copy style map
+                        {
+                            if (l_new.file.kmlDoc.SelectNodes("kml/Document/StyleMap[@id='" + styleUrl + "']").Count == 0)
+                                l_new.file.kmlDoc.SelectSingleNode("kml/Document").InnerXml += pk[0].OuterXml;
+                        };
+                        pk = l_old.file.kmlDoc.SelectNodes("kml/Document/StyleMap[@id='" + styleUrl + "']/Pair/key");
+                        if (pk.Count > 0)
+                            for (int n = 0; n < pk.Count; n++)
+                            {
+                                XmlNode cn = pk[n];
+                                if ((cn.ChildNodes[0].Value != "normal") && (n > 0)) continue;
+                                if (cn.ParentNode.SelectSingleNode("styleUrl") == null) continue;
+                                firstsid = cn.ParentNode.SelectSingleNode("styleUrl").ChildNodes[0].Value;
+                                if (firstsid.IndexOf("#") == 0) firstsid = firstsid.Remove(0, 1);                                
+                            };
+                        try // copy style
+                        {                            
+                            XmlNode nts = l_old.file.kmlDoc.SelectSingleNode("kml/Document/Style[@id='" + firstsid + "']");
+                            if (l_new.file.kmlDoc.SelectNodes("kml/Document/StyleMap[@id='" + firstsid + "']").Count == 0)
+                                l_new.file.kmlDoc.SelectSingleNode("kml/Document").InnerXml += nts.OuterXml;
+                        }
+                        catch { };
+                        try // copy icons
+                        {
+                            XmlNode nts = l_old.file.kmlDoc.SelectSingleNode("kml/Document/Style[@id='" + firstsid + "']/IconStyle/Icon/href");
+                            string href = nts.ChildNodes[0].Value;
+                            if (!String.IsNullOrEmpty(href))
+                            {
+                                href = href.Replace("/", @"\");
+                                System.IO.File.Copy(l_old.file.tmp_file_dir + href, l_new.file.tmp_file_dir + href, false);
+                            };
+                        }
+                        catch { };
+                    };
+                    /////////////////
+                    l_new.file.kmlDoc.SelectNodes("kml/Document/Folder")[l_new.id].InnerXml += xn.OuterXml;                    
+                };
+            };
+            l_old.file.SaveKML();
+            if (l_old.file != l_new.file)
+                l_new.file.SaveKML();            
+            laySelect.Items[new_ind] = l_new.ToString();
+            laySelect.Items[laySelect.SelectedIndex] = l_old.ToString();
+            l_new.placemarks += pla[0] + pla[1] + pla[2];
+            l_new.points += pla[0];
+            l_new.lines += pla[1];
+            l_new.areas += pla[2];
+            l_old.placemarks -= pla[0] + pla[1] + pla[2];
+            l_old.points -= pla[0];
+            l_old.lines -= pla[1];
+            l_old.areas -= pla[2];            
+
+            laySelect.Items[laySelect.SelectedIndex] = l_old.ToString();
+            laySelect.Items[new_ind] = l_new.ToString();
+            parent.Refresh();
+        }
+
+        private void cHB2_Click(object sender, EventArgs e)
+        {
+            if (!objects.CheckBoxes) return;
+            if (objects.CheckedItems.Count == 0) return;
+
+            for (int i = 0; i < objects.CheckedItems.Count; i++)
+            {
+                objects.CheckedItems[i].SubItems[6].Text = "";
+                objects.CheckedItems[i].Font = new Font(objects.CheckedItems[i].Font, FontStyle.Regular);
+                //objects.SelectedItems[0].SubItems[6].Text = (objects.SelectedItems[0].SubItems[6].Text == "Yes") ? "" : "Yes";
+                //if (objects.SelectedItems[0].SubItems[6].Text == "Yes")
+                //    objects.SelectedItems[0].Font = new Font(objects.SelectedItems[0].Font, FontStyle.Strikeout);
+                //else
+                //    objects.SelectedItems[0].Font = new Font(objects.SelectedItems[0].Font, FontStyle.Regular);
+            };
+
+            CheckMarked();
+        }
+
+        private void cHB3_Click(object sender, EventArgs e)
+        {
+            if (!objects.CheckBoxes) return;
+            if (objects.CheckedItems.Count == 0) return;
+
+            for (int i = 0; i < objects.CheckedItems.Count; i++)
+            {
+                objects.CheckedItems[i].SubItems[6].Text = (objects.CheckedItems[i].SubItems[6].Text == "Yes") ? "" : "Yes";
+                if (objects.CheckedItems[i].SubItems[6].Text == "Yes")
+                    objects.CheckedItems[i].Font = new Font(objects.CheckedItems[i].Font, FontStyle.Strikeout);
+                else
+                    objects.CheckedItems[i].Font = new Font(objects.CheckedItems[i].Font, FontStyle.Regular);
+            };
+
+            CheckMarked();
+        }
+
+        private void checkAllToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (objects.Items.Count == 0) return;
+            objects.CheckBoxes = true;
+            for (int i = 0; i < objects.Items.Count; i++)
+                objects.Items[i].Checked = true;
+        }
+
+        private void checkNoneToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (objects.Items.Count == 0) return;
+            objects.CheckBoxes = false;
+            for (int i = 0; i < objects.Items.Count; i++)
+                objects.Items[i].Checked = false;
+        }
+
+        private void inverseCheckedAndNotToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (objects.Items.Count == 0) return;
+            objects.CheckBoxes = true;
+            for (int i = 0; i < objects.Items.Count; i++)
+                objects.Items[i].Checked = !objects.Items[i].Checked;
+            if (objects.CheckedIndices.Count == 0)
+                objects.CheckBoxes = false;
+        }
+
+        private void cHBDM_Click(object sender, EventArgs e)
+        {
+            if (objects.Items.Count == 0) return;
+
+            int marked = 0;
+            for (int i = 0; i < objects.Items.Count; i++)
+                if (objects.Items[i].SubItems[6].Text == "Yes")
+                    marked++;
+
+            if (marked == 0) return;
+
+            if (marked > 0)
+            {
+                if(MessageBox.Show(String.Format("{0} placemark(s) marked as Deleted!\r\nDo you want to delete them in source layer?", marked), "Delete placemarks", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question)!=DialogResult.Yes)
+                    return;
+            };
+
+            int[] pla = new int[3];
+            KMLayer l = (KMLayer)parent.kmzLayers.Items[laySelect.SelectedIndex];
+            int pDel = 0;
+            for (int i = objects.Items.Count - 1; i >= 0; i--)
+                if (objects.Items[i].SubItems[6].Text == "Yes")
+                {
+                    string XPath = objects.Items[i].SubItems[7].Text;
+                    string indx = XPath.Substring(XPath.IndexOf("["));
+                    XPath = XPath.Remove(XPath.IndexOf("["));
+                    int ind = int.Parse(indx.Substring(1, indx.Length - 2));
+                    XmlNode xn = l.file.kmlDoc.SelectNodes("kml/Document/Folder")[l.id];
+                    xn = xn.SelectNodes(XPath)[ind].ParentNode.ParentNode;
+                    if (xn.Name == "outerBoundaryIs") // polygon
+                    {
+                        xn = xn.ParentNode.ParentNode;
+                        pla[2]++;
+                    }
+                    else
+                    {
+                        if (xn.SelectSingleNode("Point") != null) pla[0]++;
+                        if (xn.SelectSingleNode("LineString") != null) pla[1]++;
+                    };
+                    xn = xn.ParentNode.RemoveChild(xn);
+                    pDel++;
+                };
+            l.file.SaveKML();
+            l.placemarks -= pDel;
+            l.points -= pla[0];
+            l.lines -= pla[1];
+            l.areas -= pla[2];
+            objects.Items.Clear();
+            laySelect.Items[laySelect.SelectedIndex] = l.ToString();
+            parent.Refresh();
+        }
+
+        private void cHBDC_Click(object sender, EventArgs e)
+        {
+            if (!objects.CheckBoxes) return;
+            if (objects.CheckedItems.Count == 0) return;
+
+            if (MessageBox.Show(String.Format("{0} placemark(s) marked as Deleted!\r\nDo you want to delete them in source layer?", objects.CheckedItems.Count), "Delete placemarks", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question) != DialogResult.Yes)
+                return;
+
+            int[] pla = new int[3];
+            KMLayer l = (KMLayer)parent.kmzLayers.Items[laySelect.SelectedIndex];
+            for (int i = objects.CheckedItems.Count - 1; i >= 0; i--)
+            {
+                string XPath = objects.CheckedItems[i].SubItems[7].Text;
+                string indx = XPath.Substring(XPath.IndexOf("["));
+                XPath = XPath.Remove(XPath.IndexOf("["));
+                int ind = int.Parse(indx.Substring(1, indx.Length - 2));
+                XmlNode xn = l.file.kmlDoc.SelectNodes("kml/Document/Folder")[l.id];
+                xn = xn.SelectNodes(XPath)[ind].ParentNode.ParentNode;
+                if (xn.Name == "outerBoundaryIs") // polygon
+                {
+                    xn = xn.ParentNode.ParentNode;
+                    pla[2]++;
+                }
+                else
+                {
+                    if (xn.SelectSingleNode("Point") != null) pla[0]++;
+                    if (xn.SelectSingleNode("LineString") != null) pla[1]++;
+                };
+                xn = xn.ParentNode.RemoveChild(xn);
+            };
+            l.file.SaveKML();
+            l.placemarks -= pla[0] + pla[1] + pla[2];
+            l.points -= pla[0];
+            l.lines -= pla[1];
+            l.areas -= pla[2];
+            objects.Items.Clear();
+            laySelect.Items[laySelect.SelectedIndex] = l.ToString();
+            parent.Refresh();
+        }
+
+        private void RenameObject(int i, string text, bool saveKML)
+        {
+            if (i < 0) return;
+            if (i >= objects.Items.Count) return;
+
+            objects.Items[i].SubItems[0].Text = text;
+
+            KMLayer l = (KMLayer)parent.kmzLayers.Items[laySelect.SelectedIndex];
+            string XPath = objects.Items[i].SubItems[7].Text;
+            string indx = XPath.Substring(XPath.IndexOf("["));
+            XPath = XPath.Remove(XPath.IndexOf("["));
+            int ind = int.Parse(indx.Substring(1, indx.Length - 2));
+            XmlNode xf = l.file.kmlDoc.SelectNodes("kml/Document/Folder")[l.id];
+            XmlNode xn = xf.SelectNodes(XPath)[ind].ParentNode.ParentNode.SelectSingleNode("name");
+            if (xn == null)
+                xn = xf.SelectNodes(XPath)[ind].ParentNode.ParentNode.ParentNode.ParentNode.SelectSingleNode("name");
+
+            objects.Items[i].SubItems[0].Text = text;
+            xn.ChildNodes[0].Value = text;
+            NaviMapNet.MapObject mo = mapContent[objects.SelectedIndices[0]];
+            mo.Name = text;
+            if(saveKML)
+                l.file.SaveKML();
+        }
+
+        private FindReplaceDlg frd;
+        private void ReplaceALL_Click(object sender, EventArgs e)
+        {
+            if (objects.Items.Count == 0) return;
+            if (frd.Find == "") return;
+            if (frd.Replace == "") return;
+            if ((objects.CheckedItems.Count == 0) && frd.CheckedOnly) return;
+
+            string tts = frd.Find;
+            if (frd.CaseIgnore) tts = tts.ToLower();
+
+            int c = 0;
+            for (int i = 0; i < objects.Items.Count; i++)
+            {
+                if (frd.CheckedOnly && (!objects.Items[i].Checked)) continue;
+                string text = objects.Items[i].Text;
+                if (frd.CaseIgnore) text = text.ToLower();
+                if (text.Contains(tts))
+                {
+                    int index = -1;
+                    while ((index = text.IndexOf(tts)) >= 0)
+                    {
+                        text = text.Remove(index, tts.Length);
+                        text = text.Insert(index, frd.Replace);
+                    };
+                    RenameObject(i, text, false);
+                    c++;
+                };
+            };
+            if (c > 0) ((KMLayer)parent.kmzLayers.Items[laySelect.SelectedIndex]).file.SaveKML();
+            MessageBox.Show(c.ToString() + " placemarks replaced", "Find & Replace", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void ReplaceButton_Click(object sender, EventArgs e)
+        {
+            if (objects.Items.Count == 0) return;
+            if (frd.Find == "") return;
+            if (frd.Replace == "") return;
+            if ((objects.CheckedItems.Count == 0) && frd.CheckedOnly) return;
+            if (frd.currentIndex < 0) return;
+            if (frd.currentIndex >= objects.Items.Count) return;
+            
+            string tts = frd.Find;
+            if (frd.CaseIgnore) tts = tts.ToLower();
+
+            int i = frd.currentIndex;
+            if (frd.CheckedOnly && (!objects.Items[i].Checked)) return;
+
+            string text = objects.Items[i].Text;
+            if (frd.CaseIgnore) text = text.ToLower();
+            if (text.Contains(tts))
+            {
+                int index = -1;
+                while((index = text.IndexOf(tts)) >= 0)
+                {
+                    text = text.Remove(index, tts.Length);
+                    text = text.Insert(index, frd.Replace);
+                };
+                RenameObject(i, text, true);
+            };
+        }
+
+        private void ReplaceFind_Click(object sender, EventArgs e)
+        {
+            if (objects.Items.Count == 0) return;
+            if (frd.Find == "") return;
+            if (frd.Replace == "") return;
+            if ((objects.CheckedItems.Count == 0) && frd.CheckedOnly) return;
+            if (frd.currentIndex < 0) return;
+            if (frd.currentIndex >= objects.Items.Count) return;
+
+            ReplaceButton_Click(sender, e);
+            FindButton_Click(sender, e);
+        }
+
+        private void FindButton_Click(object sender, EventArgs e)
+        {
+            if (objects.Items.Count == 0) return;
+            if (frd.Find == "") return;
+            if((objects.CheckedItems.Count == 0) && frd.CheckedOnly) return;
+
+            int index = frd.currentIndex;
+            string tts = frd.Find;
+            if (frd.CaseIgnore) tts = tts.ToLower();
+
+            if (frd.Down)
+            {
+                frd.Enabled = false;
+                index++;
+                
+                if (index < (objects.Items.Count - 1))
+                    for (int i = index; i < objects.Items.Count; i++)
+                    {
+                        if (frd.CheckedOnly && (!objects.Items[i].Checked)) continue;
+                        string text = objects.Items[i].Text;
+                        if(((byte)frd.CustomData) == 2)
+                            if (mapContent[i].UserData != null)
+                                text = mapContent[i].UserData.ToString();
+                        if (((byte)frd.CustomData) == 1)
+                            if (mapContent[i].UserData != null)
+                                text += mapContent[i].UserData.ToString();
+                        if (frd.CaseIgnore) text = text.ToLower();
+                        if (text.Contains(tts))
+                        {
+                            objects.Items[i].Selected = true;
+                            objects.Items[i].EnsureVisible();
+                            frd.currentIndex = i;
+                            frd.Enabled = true;
+                            return;
+                        };
+                    };
+                if(index >= 0)
+                    for (int i = 0; (i <= index) && (i < objects.Items.Count); i++)
+                    {
+                        if (frd.CheckedOnly && (!objects.Items[i].Checked)) continue;
+                        string text = objects.Items[i].Text;
+                        if (((byte)frd.CustomData) == 2)
+                            if (mapContent[i].UserData != null)
+                                text = mapContent[i].UserData.ToString();
+                        if (((byte)frd.CustomData) == 1)
+                            if (mapContent[i].UserData != null)
+                                text += mapContent[i].UserData.ToString();
+                        if (frd.CaseIgnore) text = text.ToLower();
+                        if (text.Contains(tts))
+                        {
+                            objects.Items[i].Selected = true;
+                            objects.Items[i].EnsureVisible();
+                            frd.currentIndex = i;
+                            frd.Enabled = true;
+                            return;
+                        };
+                    };
+                frd.Enabled = true;
+            };
+            if (frd.Up)
+            {
+                frd.Enabled = false;
+                index--;
+                if (index < 0) index = objects.Items.Count - 1;
+                if (index >= 0)
+                    for (int i = index; i >= 0; i--)
+                    {
+                        if (frd.CheckedOnly && (!objects.Items[i].Checked)) continue;
+                        string text = objects.Items[i].Text;
+                        if (((byte)frd.CustomData) == 2)
+                            if (mapContent[i].UserData != null)
+                                text = mapContent[i].UserData.ToString();
+                        if (((byte)frd.CustomData) == 1)
+                            if (mapContent[i].UserData != null)
+                                text += mapContent[i].UserData.ToString();
+                        if (frd.CaseIgnore) text = text.ToLower();
+                        if (text.Contains(tts))
+                        {
+                            objects.Items[i].Selected = true;
+                            objects.Items[i].EnsureVisible();
+                            frd.currentIndex = i;
+                            frd.Enabled = true;
+                            return;
+                        };
+                    };
+                if (index < (objects.Items.Count - 1))
+                    for (int i = objects.Items.Count - 1; i >= index; i--)
+                    {
+                        if (frd.CheckedOnly && (!objects.Items[i].Checked)) continue;
+                        string text = objects.Items[i].Text;
+                        if (((byte)frd.CustomData) == 2)
+                            if (mapContent[i].UserData != null)
+                                text = mapContent[i].UserData.ToString();
+                        if (((byte)frd.CustomData) == 1)
+                            if (mapContent[i].UserData != null)
+                                text += mapContent[i].UserData.ToString();
+                        if (frd.CaseIgnore) text = text.ToLower();
+                        if (text.Contains(tts))
+                        {
+                            objects.Items[i].Selected = true;
+                            objects.Items[i].EnsureVisible();
+                            frd.currentIndex = i;
+                            frd.Enabled = true;
+                            return;
+                        };
+                    };
+                frd.Enabled = true;
+            };
+        }
+
+        private void FF_Focus(object sender, EventArgs e)
+        {
+            if (objects.SelectedIndices.Count > 0)
+                frd.currentIndex = objects.SelectedIndices[0];
+        }
+
+        private void FRB_Click(object sender, EventArgs e)
+        {
+            if (objects.Items.Count == 0) return;
+
+            if (frd != null)
+            {
+                frd.Dispose();
+                frd = null;
+            };
+            if (frd == null)
+            {
+                frd = new FindReplaceDlg();
+                frd.FindOnly = false;
+                frd.CustomData = (byte)3; // replace
+                frd.Text = "Find & Replace Placemark Name";
+                frd.onFind += new EventHandler(FindButton_Click);                
+                frd.onReplace += new EventHandler(ReplaceButton_Click);
+                frd.onReplaceFind += new EventHandler(ReplaceFind_Click);
+                frd.onReplaceAll += new EventHandler(ReplaceALL_Click);
+                frd.onFocus += new EventHandler(FF_Focus);
+            };
+            frd.currentIndex = -1;
+            if (objects.SelectedIndices.Count > 0)
+                frd.currentIndex = objects.SelectedIndices[0];
+            frd.Left = this.Left + 100;
+            frd.Top = this.Top + 100;
+            frd.Show(this);            
+        }
+
+        private void FRBD_Click(object sender, EventArgs e)
+        {
+            if (objects.Items.Count == 0) return;
+
+            if (frd != null)
+            {
+                frd.Dispose();
+                frd = null;
+            };
+            if (frd == null)
+            {
+                frd = new FindReplaceDlg();
+                frd.FindOnly = true;
+                frd.CustomData = (byte)2; // find in desc
+                frd.Text = "Find Text in Placemark Description";
+                frd.onFind += new EventHandler(FindButton_Click);
+                frd.onReplace += new EventHandler(ReplaceButton_Click);
+                frd.onReplaceFind += new EventHandler(ReplaceFind_Click);
+                frd.onReplaceAll += new EventHandler(ReplaceALL_Click);
+                frd.onFindAll += new EventHandler(FindAll_Click);
+                frd.onFocus += new EventHandler(FF_Focus);
+            };
+            frd.currentIndex = -1;
+            if (objects.SelectedIndices.Count > 0)
+                frd.currentIndex = objects.SelectedIndices[0];
+            frd.Left = this.Left + 100;
+            frd.Top = this.Top + 100;
+            frd.Show(this);            
+        }
+
+        private void FRBN_Click(object sender, EventArgs e)
+        {
+            if (objects.Items.Count == 0) return;
+
+            if (frd != null)
+            {
+                frd.Dispose();
+                frd = null;
+            };
+            if (frd == null)
+            {
+                frd = new FindReplaceDlg();
+                frd.FindOnly = true;
+                frd.CustomData = (byte)0; // find in name
+                frd.Text = "Find Text in Placemark Name";
+                frd.onFind += new EventHandler(FindButton_Click);
+                frd.onReplace += new EventHandler(ReplaceButton_Click);
+                frd.onReplaceFind += new EventHandler(ReplaceFind_Click);
+                frd.onReplaceAll += new EventHandler(ReplaceALL_Click);
+                frd.onFindAll += new EventHandler(FindAll_Click);
+                frd.onFocus += new EventHandler(FF_Focus);
+            };
+            frd.currentIndex = -1;
+            if (objects.SelectedIndices.Count > 0)
+                frd.currentIndex = objects.SelectedIndices[0];
+            frd.Left = this.Left + 100;
+            frd.Top = this.Top + 100;
+            frd.Show(this);            
+        }
+
+        private void FRBA_Click(object sender, EventArgs e)
+        {
+            if (objects.Items.Count == 0) return;
+
+            if (frd != null)
+            {
+                frd.Dispose();
+                frd = null;
+            };
+            if (frd == null)
+            {
+                frd = new FindReplaceDlg();
+                frd.FindOnly = true;
+                frd.CustomData = (byte)1; // find in all
+                frd.Text = "Find Text in Placemark Name & Description";
+                frd.onFind += new EventHandler(FindButton_Click);
+                frd.onReplace += new EventHandler(ReplaceButton_Click);
+                frd.onReplaceFind += new EventHandler(ReplaceFind_Click);
+                frd.onReplaceAll += new EventHandler(ReplaceALL_Click);
+                frd.onFindAll += new EventHandler(FindAll_Click);
+                frd.onFocus += new EventHandler(FF_Focus);
+            };
+            frd.currentIndex = -1;
+            if (objects.SelectedIndices.Count > 0)
+                frd.currentIndex = objects.SelectedIndices[0];
+            frd.Left = this.Left + 100;
+            frd.Top = this.Top + 100;
+            frd.Show(this);            
+        }
+
+        private void searchToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            FRBN_Click(sender, e);
+        }
+
+        private void exportToSASPlanetToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (objects.SelectedItems.Count == 0) return;
+            SASPlacemarkConnector sc = new SASPlacemarkConnector();
+            if (!sc.SASisOpen) return;
+            NaviMapNet.MapPoint mp = (NaviMapNet.MapPoint)mapContent[objects.SelectedIndices[0]];
+            if(sc.Visible)
+                sc.SetPlacemark(mp.Name, mp.Points[0].Y, mp.Points[0].X);
+            else
+                sc.AddPlacemark(mp.Name, mp.Points[0].Y, mp.Points[0].X);
+        }
+
+        private void importFromSASPlanetToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SASPlacemarkConnector sc = new SASPlacemarkConnector();
+            if (!sc.SASisOpen) return;
+            if (!sc.Visible) return;
+            PointD ll = sc.LatLon;
+            if (ll.IsEmpty) return;
+
+            string nam = sc.Name;
+            if (nam == null) return;
+
+            KMLayer l = (KMLayer)parent.kmzLayers.Items[laySelect.SelectedIndex];
+            XmlNode xf = l.file.kmlDoc.SelectNodes("kml/Document/Folder")[l.id];
+
+            string style = "#none";
+            XmlNode st = null;
+            if (objects.SelectedIndices.Count > 0)
+            {
+                string XPath = objects.SelectedItems[0].SubItems[7].Text;
+                string indx = XPath.Substring(XPath.IndexOf("["));
+                XPath = XPath.Remove(XPath.IndexOf("["));
+                int ind = int.Parse(indx.Substring(1, indx.Length - 2));
+                st = xf.SelectNodes(XPath)[ind].ParentNode.ParentNode.SelectSingleNode("styleUrl");
+                if ((st != null) && (st.ChildNodes.Count > 0))
+                    style = st.ChildNodes[0].Value;
+            };
+
+            XmlNode el = l.file.kmlDoc.CreateElement("Placemark");
+            el.AppendChild(l.file.kmlDoc.CreateElement("name"));
+            el.AppendChild(l.file.kmlDoc.CreateElement("styleUrl").AppendChild(l.file.kmlDoc.CreateTextNode(style)).ParentNode);
+            el.AppendChild(l.file.kmlDoc.CreateElement("Point").AppendChild(l.file.kmlDoc.CreateElement("coordinates")).ParentNode);            
+            el.AppendChild(l.file.kmlDoc.CreateElement("description"));            
+            st = el.SelectSingleNode("styleUrl");
+            XmlNode xy = el.SelectSingleNode("Point/coordinates");
+            XmlNode xn = el.SelectSingleNode("name");
+            XmlNode xd = el.SelectSingleNode("description");
+
+            string x = ll.X.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            string y = ll.Y.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            string desc = "";
+            if ((xd != null) && (xd.ChildNodes.Count > 0)) desc = xd.ChildNodes[0].Value;
+            string dw = desc;
+
+            if (InputXY(true, ref nam, ref y, ref x, ref desc, ref style) == DialogResult.OK)
+            {
+                bool ch = false;
+                if (!String.IsNullOrEmpty(nam)) ch = true;
+                if (!String.IsNullOrEmpty(desc)) ch = true;
+                x = x.Trim().Replace(",", ".");
+                y = y.Trim().Replace(",", ".");
+                if (!String.IsNullOrEmpty(x)) ch = true;
+                if (!String.IsNullOrEmpty(y)) ch = true;
+                if (ch)
+                {
+                    xn.AppendChild(l.file.kmlDoc.CreateTextNode(nam));
+                    xd.AppendChild(l.file.kmlDoc.CreateTextNode(desc));
+                    xy.AppendChild(l.file.kmlDoc.CreateTextNode(String.Format("{0},{1},0", x, y)));
+                    st.ChildNodes[0].Value = style;
+                    xf.AppendChild(el);
+
+                    l.file.SaveKML();
+                    l.placemarks++;
+                    l.points++;
+                    parent.Refresh();
+                    laySelect.Items[laySelect.SelectedIndex] = l.ToString();
+                    if (objects.Items.Count > 0)
+                        objects.Items[objects.Items.Count - 1].Selected = true;
+                };
+            };
+        }
+
+        private void addNewPointToSASPlanetToolStripMenuItem_Click(object sender, EventArgs e)
+        {            
+            SASPlacemarkConnector sc = new SASPlacemarkConnector();
+            PointF click = MapViewer.MouseDownDegrees;
+            if (!sc.SASisOpen) return;
+            if (sc.Visible)
+                sc.SetPlacemark("Map Click", click.Y, click.X);
+            else
+                sc.AddPlacemark("Map Click", click.Y, click.X);
+        }
+
+        private void cHBDS_Click(object sender, EventArgs e)
+        {
+            if (objects.CheckedItems.Count == 0) return;
+            SASPlacemarkConnector sc = new SASPlacemarkConnector();
+            if (!sc.SASisOpen) return;
+
+            if (MessageBox.Show("Copy " + objects.CheckedItems.Count.ToString() + " placemark(s) to SASPlanet?", "Copy placemarks", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.No) return;
+
+            int p = 0;
+            for (int i = 0; i < objects.CheckedIndices.Count; i++)                
+            {
+                NaviMapNet.MapPoint mp = (NaviMapNet.MapPoint)mapContent[objects.CheckedIndices[i]];
+                if(!(mp is NaviMapNet.MapPoint)) continue;
+                p++;
+                if (sc.Visible)
+                {
+                    sc.SetPlacemark(mp.Name, mp.Points[0].Y, mp.Points[0].X);
+                    System.Threading.Thread.Sleep(100);
+                    sc.ClickOk();
+                }
+                else
+                {
+                    sc.AddPlacemark(mp.Name, mp.Points[0].Y, mp.Points[0].X);
+                    System.Threading.Thread.Sleep(100);
+                    sc.ClickOk();
+                };
+                System.Threading.Thread.Sleep(200);
+            };
+            MessageBox.Show("Copied " + p.ToString() + " points to SASPlanet", "Copy placemarks", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void selectAllInAreaToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (!MapViewer.SelectionBoxIsVisible) return;
+            if (objects.Items.Count == 0) return;
+
+            NaviMapNet.MapObject[] objs = mapContent.Select(MapViewer.SelectionBoundsRectDegrees);
+            if((objs != null) && (objs.Length > 0))
+            {
+                objects.CheckBoxes = true;
+                for (int i = 0; i < objs.Length; i++)
+                    objects.Items[objs[i].Index].Checked = true;
+            };
+        }
+
+        private void findAllPlacemarksOutsideAreaToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (!MapViewer.SelectionBoxIsVisible) return;
+            if (objects.Items.Count == 0) return;            
+
+            NaviMapNet.MapObject[] objs = mapContent.Select(MapViewer.SelectionBoundsRectDegrees);
+            List<int> ids = new List<int>();
+            if ((objs != null) && (objs.Length > 0))
+            {
+                objects.CheckBoxes = true;
+                for (int i = 0; i < objs.Length; i++)
+                    ids.Add(objs[i].Index);                
+            };
+            for (int i = 0; i < objects.Items.Count; i++)
+                if (ids.IndexOf(i) < 0)
+                    objects.Items[i].Checked = true;
+        }
+
+        private void clearSelectionBoxToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            MapViewer.ClearSelectionBox();
+        }
+
+        private int prev_c = 0;
+        private void UpdateCheckedAndMarked(bool update)
+        {
+            bool up = update;
+
+            if (prev_c != objects.CheckedIndices.Count)
+            {
+                prev_c = objects.CheckedIndices.Count;
+                up = true;
+            };
+
+            if (!up) return;
+            NCB.Enabled = prev_c > 0;
+            NDB.Enabled = prev_m > 0;
+
+            if ((prev_m == 0) && (prev_c == 0))
+                status.Text = "";
+            else
+                status.Text = String.Format("Marked to delete {0}/{2} objects\r\nChecked {1}/{2} objects\r\n", prev_m, prev_c, objects.Items.Count);
+
+            status.SelectionStart = status.TextLength;
+            status.ScrollToCaret();
+        }
+
+        private void objects_ItemChecked(object sender, ItemCheckedEventArgs e)
+        {
+            UpdateCheckedAndMarked(false);
+        }
+
+        private void NCB_Click(object sender, EventArgs e)
+        {
+            if (objects.Items.Count == 0) return;
+            
+            int si = -1;
+            if (objects.SelectedIndices.Count > 0)
+                si = objects.SelectedIndices[0];
+
+            si++;
+
+            if(si < objects.Items.Count)
+                for(int i = si; i<objects.Items.Count;i++)
+                    if (objects.Items[i].Checked)
+                    {
+                        objects.Items[i].Selected = true;
+                        objects.Items[i].EnsureVisible();
+                        return;
+                    };
+
+            for (int i = 0; i <= si; i++)
+            {
+                if (objects.Items[i].Checked)
                 {
                     objects.Items[i].Selected = true;
                     objects.Items[i].EnsureVisible();
-                    break;
+                    return;
                 };
+            };
         }
+
+        private void NDB_Click(object sender, EventArgs e)
+        {
+            if (objects.Items.Count == 0) return;
+
+            int si = -1;
+            if (objects.SelectedIndices.Count > 0)
+                si = objects.SelectedIndices[0];
+
+            si++;
+
+            if (si < objects.Items.Count)
+                for (int i = si; i < objects.Items.Count; i++)
+                    if (objects.Items[i].SubItems[6].Text == "Yes")
+                    {
+                        objects.Items[i].Selected = true;
+                        objects.Items[i].EnsureVisible();
+                        return;
+                    };
+
+            for (int i = 0; i <= si; i++)
+            {
+                if (objects.Items[i].SubItems[6].Text == "Yes")
+                {
+                    objects.Items[i].Selected = true;
+                    objects.Items[i].EnsureVisible();
+                    return;
+                };
+            };
+        }
+
+        private void FindAll_Click(object sender, EventArgs e)
+        {
+            if (objects.Items.Count == 0) return;
+            if (frd.Find == "") return;
+
+            int index = frd.currentIndex;
+            string tts = frd.Find;
+            if (frd.CaseIgnore) tts = tts.ToLower();
+
+            frd.Enabled = false;
+            int first_index = -1;
+            for (int i = 0; i < objects.Items.Count; i++)
+            {                
+                string text = objects.Items[i].Text;
+                if (((byte)frd.CustomData) == 2)
+                    if (mapContent[i].UserData != null)
+                        text = mapContent[i].UserData.ToString();
+                if (((byte)frd.CustomData) == 1)
+                    if (mapContent[i].UserData != null)
+                        text += mapContent[i].UserData.ToString();
+                if (frd.CaseIgnore) text = text.ToLower();
+                if (text.Contains(tts))
+                {
+                    if (first_index < 0) first_index = i;
+                    objects.Items[i].Checked = true;
+                    objects.CheckBoxes = true;
+                };
+            };
+            if (first_index >= 0)
+            {
+                objects.Items[first_index].Selected = true;
+                objects.Items[first_index].EnsureVisible();
+            };
+            frd.Enabled = true;                     
+        }
+
+        private void cHBNIL_Click(object sender, EventArgs e)
+        {
+            if (objects.CheckedIndices.Count == 0) return;
+
+            /////////////
+
+            if (parent.mapIcons == null)
+                parent.mapIcons = new MapIcons();
+            DialogResult dr = parent.mapIcons.ShowDialog();
+            if (dr == DialogResult.Ignore)
+                changeIconToolStripMenuItem_Click(sender, e);
+            if (dr != DialogResult.OK) return;            
+
+            KMLayer l = (KMLayer)parent.kmzLayers.Items[laySelect.SelectedIndex];
+            XmlNode xf = l.file.kmlDoc.SelectNodes("kml/Document/Folder")[l.id];
+
+            string style = "new_" + DateTime.UtcNow.ToString("HHmmss");
+            string href = "images/" + style + ".png";
+            style2image.Add("#" + style, href);
+
+            ImageMagick.MagickImage im = new ImageMagick.MagickImage((Bitmap)parent.mapIcons.SelectedImage);
+            if ((im.Width > 32) || (im.Height > 32))
+            {
+                im.Resize(32, 32);
+                MapIcons.SaveIcon(im, l.file.tmp_file_dir + href.Replace("/", @"\"));
+            }
+            else
+                MapIcons.SaveIcon(parent.mapIcons.SelectedImageArr, l.file.tmp_file_dir + href.Replace("/", @"\"));
+            images.Images.Add("images/" + style + ".png", im.ToBitmap());
+            im.Dispose();
+            XmlNode ssd = l.file.kmlDoc.SelectSingleNode("kml/Document"); //Style[@id='" + firstsid + "']/IconStyle/Icon/href");
+            ssd = ssd.AppendChild(l.file.kmlDoc.CreateElement("Style"));
+            XmlAttribute attr = l.file.kmlDoc.CreateAttribute("id");
+            attr.Value = style;
+            ssd.Attributes.Append(attr);
+            ssd = ssd.AppendChild(l.file.kmlDoc.CreateElement("IconStyle"));
+            ssd = ssd.AppendChild(l.file.kmlDoc.CreateElement("Icon"));
+            ssd = ssd.AppendChild(l.file.kmlDoc.CreateElement("href"));
+            ssd.AppendChild(l.file.kmlDoc.CreateTextNode(href));
+            style = "#" + style;
+
+            /////////////
+            wbf.Show("Change Style", "Wait, applying changes ... ");
+            for (int i = 0; i < objects.CheckedIndices.Count; i++)
+            {
+                NaviMapNet.MapObject mo = mapContent[objects.CheckedIndices[i]];
+                if (!(mo is NaviMapNet.MapPoint)) continue;
+
+                string XPath = objects.CheckedItems[i].SubItems[7].Text;
+                string indx = XPath.Substring(XPath.IndexOf("["));
+                XPath = XPath.Remove(XPath.IndexOf("["));
+                int ind = int.Parse(indx.Substring(1, indx.Length - 2));
+                XmlNode st = xf.SelectNodes(XPath)[ind].ParentNode.ParentNode.SelectSingleNode("styleUrl");
+                if ((st != null) && (st.ChildNodes.Count > 0))
+                    st.ChildNodes[0].Value = style;
+                else
+                {
+                    if (st == null)
+                        st = xf.SelectNodes(XPath)[ind].ParentNode.ParentNode.AppendChild(l.file.kmlDoc.CreateElement("styleUrl"));
+                    st.AppendChild(l.file.kmlDoc.CreateTextNode(style));
+                };                
+                mo.Img = images.Images[style2image[style]];
+                objects.CheckedItems[i].ImageIndex = images.Images.IndexOfKey(style2image[style]);                
+            };
+            wbf.Hide();
+            l.file.SaveKML();
+            MapViewer.DrawOnMapData();
+        }
+
+        private void cHBNIF_Click(object sender, EventArgs e)
+        {
+            if (objects.CheckedIndices.Count == 0) return;
+
+            /////////////
+
+            OpenFileDialog ofd = new OpenFileDialog();
+            ofd.Title = "Select Image";
+            ofd.DefaultExt = ".png";
+            ofd.Filter = "Image Files (*.png;*.jpg;*.jpeg;*.gif)|*.png;*.jpg;*.jpeg;*.gif";
+            if (ofd.ShowDialog() != DialogResult.OK)
+            {
+                ofd.Dispose();
+                return;
+            };            
+
+            KMLayer l = (KMLayer)parent.kmzLayers.Items[laySelect.SelectedIndex];
+            XmlNode xf = l.file.kmlDoc.SelectNodes("kml/Document/Folder")[l.id];
+
+            string style = "new_" + DateTime.UtcNow.ToString("HHmmss");
+            string href = "images/" + style + ".png";
+            style2image.Add("#" + style, href);
+
+            ImageMagick.MagickImage im = new ImageMagick.MagickImage(ofd.FileName);
+            ofd.Dispose();
+            if ((im.Width > 32) || (im.Height > 32))
+            {
+                im.Resize(32, 32);
+                MapIcons.SaveIcon(im, l.file.tmp_file_dir + href.Replace("/", @"\"));
+            }
+            else
+                MapIcons.SaveIcon(ofd.FileName, l.file.tmp_file_dir + href.Replace("/", @"\"));
+            images.Images.Add("images/" + style + ".png", im.ToBitmap());
+            im.Dispose();
+            XmlNode ssd = l.file.kmlDoc.SelectSingleNode("kml/Document"); //Style[@id='" + firstsid + "']/IconStyle/Icon/href");
+            ssd = ssd.AppendChild(l.file.kmlDoc.CreateElement("Style"));
+            XmlAttribute attr = l.file.kmlDoc.CreateAttribute("id");
+            attr.Value = style;
+            ssd.Attributes.Append(attr);
+            ssd = ssd.AppendChild(l.file.kmlDoc.CreateElement("IconStyle"));
+            ssd = ssd.AppendChild(l.file.kmlDoc.CreateElement("Icon"));
+            ssd = ssd.AppendChild(l.file.kmlDoc.CreateElement("href"));
+            ssd.AppendChild(l.file.kmlDoc.CreateTextNode(href));
+            style = "#" + style;
+
+            /////////////
+            /////////////
+            wbf.Show("Change Style", "Wait, applying changes ... ");
+            for (int i = 0; i < objects.CheckedIndices.Count; i++)
+            {
+                NaviMapNet.MapObject mo = mapContent[objects.SelectedIndices[0]];
+                if (!(mo is NaviMapNet.MapPoint)) continue;
+
+                string XPath = objects.CheckedItems[i].SubItems[7].Text;
+                string indx = XPath.Substring(XPath.IndexOf("["));
+                XPath = XPath.Remove(XPath.IndexOf("["));
+                int ind = int.Parse(indx.Substring(1, indx.Length - 2));
+                XmlNode st = xf.SelectNodes(XPath)[ind].ParentNode.ParentNode.SelectSingleNode("styleUrl");
+                if ((st != null) && (st.ChildNodes.Count > 0))
+                    st.ChildNodes[0].Value = style;
+                else
+                {
+                    if (st == null)
+                        st = xf.SelectNodes(XPath)[ind].ParentNode.ParentNode.AppendChild(l.file.kmlDoc.CreateElement("styleUrl"));
+                    st.AppendChild(l.file.kmlDoc.CreateTextNode(style));
+                };                
+                mo.Img = images.Images[style2image[style]];
+                objects.CheckedItems[i].ImageIndex = images.Images.IndexOfKey(style2image[style]);                
+            };
+            wbf.Hide();
+            l.file.SaveKML();
+            MapViewer.DrawOnMapData();
+        }
+
+        private void cHBNIP_Click(object sender, EventArgs e)
+        {
+            if (objects.CheckedIndices.Count == 0) return;
+
+            LineAreaStyleForm lasf = new LineAreaStyleForm();
+            lasf.LColor.Text = LineAreaStyleForm.HexConverter(lasf.LBColor.BackColor = Color.Blue);
+            lasf.AColor.Text = LineAreaStyleForm.HexConverter(lasf.ABColor.BackColor = Color.Red);
+            lasf.AFill.SelectedIndex = 0;
+            lasf.ApplyTo.SelectedIndex = 1;
+            lasf.ApplyTo.Enabled = false;
+            if (lasf.ShowDialog() != DialogResult.OK)
+            {
+                lasf.Dispose();
+                return;
+            };
+
+            /////////////
+            wbf.Show("Change Style", "Wait, applying changes ... ");
+
+            Color lineColor = Color.FromArgb((int)((float)lasf.LOpacity.Value / 100f * 255f), lasf.LBColor.BackColor);
+            int lineWidth = (int)lasf.LWidth.Value;
+            Color fillColor = Color.FromArgb((int)((float)lasf.AOpacity.Value / 100f * 255f), lasf.ABColor.BackColor);
+            int fill = lasf.AFill.SelectedIndex;
+            lasf.Dispose();
+
+            Image iml = new Bitmap(16, 16);
+            Image ima = new Bitmap(16, 16);
+            {
+                Graphics g = Graphics.FromImage(iml);
+                g.FillRectangle(new SolidBrush(lineColor), 0, 0, 16, 16);
+                g.DrawString("L", new Font("Terminal", 11, FontStyle.Bold), new SolidBrush(Color.FromArgb(255 - lineColor.R, 255 - lineColor.G, 255 - lineColor.B)), 1, -1);
+                g.Dispose();
+            };
+            {
+                Graphics g = Graphics.FromImage(ima);
+                g.FillRectangle(new SolidBrush(fillColor), 0, 0, 16, 16);
+                g.DrawRectangle(new Pen(new SolidBrush(lineColor), 2), 0, 0, 16, 16);
+                g.DrawString("A", new Font("Terminal", 11, FontStyle.Bold), new SolidBrush(Color.FromArgb(255 - fillColor.R, 255 - fillColor.G, 255 - fillColor.B)), 1, -1);
+                g.Dispose();
+            };
+            images.Images.Add(iml);
+            images.Images.Add(ima);
+
+            KMLayer l = (KMLayer)parent.kmzLayers.Items[laySelect.SelectedIndex];
+            string styleUrl = "newStyle" + DateTime.UtcNow.ToString("HHmmss");
+            string style = "<Style id=\"" + styleUrl + "\"><LineStyle><color>" + LineAreaStyleForm.HexStyleConverter(lineColor) + "</color><width>" + lineWidth.ToString() + "</width></LineStyle><PolyStyle><color>" + LineAreaStyleForm.HexStyleConverter(fillColor) + "</color><fill>" + fill.ToString() + "</fill></PolyStyle></Style>\r\n";
+            l.file.kmlDoc.SelectSingleNode("kml/Document").InnerXml += style;
+
+            for (int i = 0; i < objects.CheckedIndices.Count; i++)
+            {
+                if (objects.CheckedItems[i].SubItems[1].Text == "Point") continue;
+
+                bool ispolygon = false;
+
+                string XPath = objects.CheckedItems[i].SubItems[7].Text;
+                string indx = XPath.Substring(XPath.IndexOf("["));
+                XPath = XPath.Remove(XPath.IndexOf("["));
+                int ind = int.Parse(indx.Substring(1, indx.Length - 2));
+                XmlNode x_folder = l.file.kmlDoc.SelectNodes("kml/Document/Folder")[l.id];
+
+                XmlNode x_placemark = x_folder.SelectNodes(XPath)[ind].ParentNode.ParentNode;
+                if (x_placemark.Name == "outerBoundaryIs")
+                {
+                    x_placemark = x_placemark.ParentNode.ParentNode;
+                    ispolygon = true;
+                };
+
+                foreach (XmlNode n in x_placemark.SelectNodes("styleUrl"))
+                    n.ParentNode.RemoveChild(n);
+                foreach (XmlNode n in x_placemark.SelectNodes("Style"))
+                    n.ParentNode.RemoveChild(n);
+
+                XmlNode x_style = l.file.kmlDoc.CreateElement("styleUrl");
+                x_style.AppendChild(l.file.kmlDoc.CreateTextNode("#" + styleUrl));
+                x_placemark.AppendChild(x_style);
+
+                NaviMapNet.MapObject mo = mapContent[objects.CheckedIndices[i]];
+                if (ispolygon)
+                {
+                    objects.CheckedItems[i].ImageIndex = images.Images.Count - 1;
+                    (mo as NaviMapNet.MapPolygon).BorderColor = lineColor;
+                    (mo as NaviMapNet.MapPolygon).Width = lineWidth;
+                    (mo as NaviMapNet.MapPolygon).BodyColor = fillColor;
+                }
+                else
+                {
+                    objects.CheckedItems[i].ImageIndex = images.Images.Count - 2;
+                    (mo as NaviMapNet.MapPolyLine).Color = lineColor;
+                    (mo as NaviMapNet.MapPolyLine).Width = lineWidth;
+                };
+            };
+            wbf.Hide();
+            l.file.SaveKML();
+            //laySelect_SelectedIndexChanged(sender, e);
+            MapViewer.DrawOnMapData();
+        }
+
+        private void cHB0A_Click(object sender, EventArgs e)
+        {
+            if (objects.Items.Count == 0) return;
+
+            for (int i = 0; i < objects.Items.Count; i++)
+            {
+                if (objects.Items[i].Checked) continue;
+                objects.Items[i].SubItems[6].Text = "Yes";
+                objects.Items[i].Font = new Font(objects.Items[i].Font, FontStyle.Strikeout);
+            };
+
+            CheckMarked();
+        }
+
+        private void cHB2A_Click(object sender, EventArgs e)
+        {
+            if (objects.Items.Count == 0) return;
+
+            for (int i = 0; i < objects.Items.Count; i++)
+            {
+                if (objects.Items[i].Checked) continue;
+                objects.Items[i].SubItems[6].Text = "";
+                objects.Items[i].Font = new Font(objects.Items[i].Font, FontStyle.Regular);
+            };
+
+            CheckMarked();
+        }
+
+        private void cHB3A_Click(object sender, EventArgs e)
+        {
+            if (objects.Items.Count == 0) return;
+
+            for (int i = 0; i < objects.Items.Count; i++)
+            {
+                if (objects.Items[i].Checked) continue;
+                objects.Items[i].SubItems[6].Text = (objects.Items[i].SubItems[6].Text == "Yes") ? "" : "Yes";
+                if (objects.Items[i].SubItems[6].Text == "Yes")
+                    objects.Items[i].Font = new Font(objects.Items[i].Font, FontStyle.Strikeout);
+                else
+                    objects.Items[i].Font = new Font(objects.Items[i].Font, FontStyle.Regular);
+            };
+
+            CheckMarked();
+        }
+
+        private void NBC0_Click(object sender, EventArgs e)
+        {
+            if (objects.Items.Count == 0) return;
+
+            for (int i = 0; i < objects.Items.Count; i++)
+            {
+                if (objects.Items[i].SubItems[6].Text == "Yes")
+                {
+                    objects.CheckBoxes = true;
+                    objects.Items[i].Checked = true;
+                };
+            };
+        }
+
+        private void NBC1_Click(object sender, EventArgs e)
+        {
+            if (objects.Items.Count == 0) return;
+
+            for (int i = 0; i < objects.Items.Count; i++)
+            {
+                if (objects.Items[i].SubItems[6].Text != "Yes")
+                {
+                    objects.CheckBoxes = true;
+                    objects.Items[i].Checked = true;
+                };
+            };
+        }
+
+        private void NBC2_Click(object sender, EventArgs e)
+        {
+            if (objects.Items.Count == 0) return;
+
+            for (int i = 0; i < objects.Items.Count; i++)
+            {
+                if (objects.Items[i].SubItems[6].Text == "Yes")
+                    objects.Items[i].Checked = false;
+            };
+            if (objects.CheckedIndices.Count == 0)
+                objects.CheckBoxes = false;
+        }
+
+        private void NBC3_Click(object sender, EventArgs e)
+        {
+            if (objects.Items.Count == 0) return;
+
+            for (int i = 0; i < objects.Items.Count; i++)
+            {
+                if (objects.Items[i].SubItems[6].Text != "Yes")
+                    objects.Items[i].Checked = false;
+            };
+            if (objects.CheckedIndices.Count == 0)
+                objects.CheckBoxes = false;
+        }
+
+        private void NBC4_Click(object sender, EventArgs e)
+        {
+            if (objects.Items.Count == 0) return;
+
+            for (int i = 0; i < objects.Items.Count; i++)
+            {
+                if (objects.Items[i].SubItems[6].Text == "Yes")
+                {
+                    if (objects.Items[i].Checked)
+                        objects.Items[i].Checked = false;
+                    else
+                    {
+                        objects.CheckBoxes = true;
+                        objects.Items[i].Checked = true;
+                    };
+                };
+            };
+            if (objects.CheckedIndices.Count == 0)
+                objects.CheckBoxes = false;
+        }
+
+        private void NBC5_Click(object sender, EventArgs e)
+        {
+            if (objects.Items.Count == 0) return;
+
+            for (int i = 0; i < objects.Items.Count; i++)
+            {
+                if (objects.Items[i].SubItems[6].Text != "Yes")
+                {
+                    if (objects.Items[i].Checked)
+                        objects.Items[i].Checked = false;
+                    else
+                    {
+                        objects.CheckBoxes = true;
+                        objects.Items[i].Checked = true;
+                    };
+                };
+            };
+            if (objects.CheckedIndices.Count == 0)
+                objects.CheckBoxes = false;
+        }
+
+        private void checkCopiesToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            if (objects.Items.Count == 0) return;
+
+            Hashtable htXY = new Hashtable();
+            Hashtable htNM = new Hashtable();
+
+            for (int i = 0; i < objects.Items.Count; i++)
+            {
+                string simByXY = objects.Items[i].SubItems[4].Text;
+                string simByNM = objects.Items[i].SubItems[5].Text;
+
+                if (simByXY != "")
+                {
+                    object oXY = htXY[simByXY];
+                    if (oXY == null) htXY.Add(simByXY, oXY = new List<int>());
+                    List<int> list = (List<int>)oXY;
+                    list.Add(i);
+                };
+
+                if (simByNM != "")
+                {
+                    object oXY = htNM[simByNM];
+                    if (oXY == null) htNM.Add(simByNM, oXY = new List<int>());
+                    List<int> list = (List<int>)oXY;
+                    list.Add(i);
+                };
+            };
+
+            int sxy = 0;
+            foreach (string key in htXY.Keys)
+            {
+                List<int> list = (List<int>)htXY[key];
+                if (list.Count < 2) continue;
+                for (int i = 1; i < list.Count; i++)
+                {
+                    objects.CheckBoxes = true;
+                    objects.Items[list[i]].Checked = true;
+                    sxy++;
+                };
+            };
+
+            int snm = 0;
+            foreach (string key in htNM.Keys)
+            {
+                List<int> list = (List<int>)htNM[key];
+                if (list.Count < 2) continue;
+                for (int i = 1; i < list.Count; i++)
+                {
+                    objects.CheckBoxes = true;
+                    objects.Items[list[i]].Checked = true;
+                    snm++;
+                };
+            };
+
+            if (sxy > 0) status.Text += "Checked " + sxy.ToString() + " copies by Coordinates\r\n";
+            if (snm > 0) status.Text += "Checked " + snm.ToString() + " copies by Name\r\n";
+            status.SelectionStart = status.TextLength;
+            status.ScrollToCaret();
+        }
+
+        private void uncheckCopiesToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            if (objects.Items.Count == 0) return;
+
+            Hashtable htXY = new Hashtable();
+            Hashtable htNM = new Hashtable();
+
+            for (int i = 0; i < objects.Items.Count; i++)
+            {
+                string simByXY = objects.Items[i].SubItems[4].Text;
+                string simByNM = objects.Items[i].SubItems[5].Text;
+
+                if (simByXY != "")
+                {
+                    object oXY = htXY[simByXY];
+                    if (oXY == null) htXY.Add(simByXY, oXY = new List<int>());
+                    List<int> list = (List<int>)oXY;
+                    list.Add(i);
+                };
+
+                if (simByNM != "")
+                {
+                    object oXY = htNM[simByNM];
+                    if (oXY == null) htNM.Add(simByNM, oXY = new List<int>());
+                    List<int> list = (List<int>)oXY;
+                    list.Add(i);
+                };
+            };
+
+            int sxy = 0;
+            foreach (string key in htXY.Keys)
+            {
+                List<int> list = (List<int>)htXY[key];
+                if (list.Count < 2) continue;
+                for (int i = 1; i < list.Count; i++)
+                {
+                    objects.Items[list[i]].Checked = false;
+                    sxy++;
+                };
+            };
+
+            int snm = 0;
+            foreach (string key in htNM.Keys)
+            {
+                List<int> list = (List<int>)htNM[key];
+                if (list.Count < 2) continue;
+                for (int i = 1; i < list.Count; i++)
+                {
+                    objects.Items[list[i]].Checked = false;
+                    snm++;
+                };
+            };
+
+            if (sxy > 0) status.Text += "Uncheck " + sxy.ToString() + " copies by Coordinates\r\n";
+            if (snm > 0) status.Text += "Uncheck " + snm.ToString() + " copies by Name\r\n";
+            status.SelectionStart = status.TextLength;
+            status.ScrollToCaret();
+        }
+
+        private void toolStripButton1_Click(object sender, EventArgs e)
+        {
+            // 4 - XY
+            // 5 - Name
+
+            if (objects.Items.Count == 0) return;
+
+            int si = -1;
+            string search_text = "";
+            if (objects.SelectedIndices.Count > 0)
+            {
+                if (objects.SelectedIndices.Count > 0)
+                {
+                    if (!String.IsNullOrEmpty(objects.SelectedItems[0].SubItems[4].Text))
+                    {
+                        search_text = objects.SelectedItems[0].SubItems[4].Text;
+                        si = objects.SelectedIndices[0] + 1;
+                    };                    
+                };
+            };
+            if(si < 0)
+            {
+                for (int i = 0; i < objects.Items.Count; i++)
+                    if (!String.IsNullOrEmpty(objects.Items[i].SubItems[4].Text))
+                    {
+                        si = i;
+                        search_text = objects.Items[i].SubItems[4].Text;
+                        break;
+                    };
+                if (si < 0) return;
+            };                
+
+            if (si < objects.Items.Count)
+                for (int i = si; i < objects.Items.Count; i++)
+                    if (objects.Items[i].SubItems[4].Text == search_text)
+                    {
+                        objects.Items[i].Selected = true;
+                        objects.Items[i].EnsureVisible();
+                        return;
+                    };
+
+            for (int i = 0; i <= si; i++)
+            {
+                if (objects.Items[i].SubItems[4].Text == search_text)
+                {
+                    objects.Items[i].Selected = true;
+                    objects.Items[i].EnsureVisible();
+                    return;
+                }
+            };
+        }
+
+        private void toolStripButton2_Click(object sender, EventArgs e)
+        {
+            // 4 - XY
+            // 5 - Name
+
+            if (objects.Items.Count == 0) return;
+
+            int si = -1;
+            string search_text = "";
+            if (objects.SelectedIndices.Count > 0)
+            {
+                if (!String.IsNullOrEmpty(objects.SelectedItems[0].SubItems[5].Text))
+                {
+                    search_text = objects.SelectedItems[0].SubItems[5].Text;
+                    si = objects.SelectedIndices[0] + 1;
+                };
+            };
+            if (si < 0)
+            {
+                for (int i = 0; i < objects.Items.Count; i++)
+                    if (!String.IsNullOrEmpty(objects.Items[i].SubItems[5].Text))
+                    {
+                        si = i;
+                        search_text = objects.Items[i].SubItems[5].Text;
+                        break;
+                    };
+                if (si < 0) return;
+            };
+
+            if (si < objects.Items.Count)
+                for (int i = si; i < objects.Items.Count; i++)
+                    if (objects.Items[i].SubItems[5].Text == search_text)
+                    {
+                        objects.Items[i].Selected = true;
+                        objects.Items[i].EnsureVisible();
+                        return;
+                    };
+
+            for (int i = 0; i <= si; i++)
+            {
+                if (objects.Items[i].SubItems[5].Text == search_text)
+                {
+                    objects.Items[i].Selected = true;
+                    objects.Items[i].EnsureVisible();
+                    return;
+                }
+            };
+        }
+
+        private void byNameAndCoordinatesforSelectedToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (objects.SelectedItems.Count == 0) return;
+            int dist = 2;
+            if (System.Windows.Forms.InputBox.Show("Distance", "Max distance in meters:", ref dist, 0, 9999) == DialogResult.OK)
+                FindCopies(objects.SelectedIndices[0], true, true, dist);
+        }
+
+        private void byNameAndCoordinatesforAllToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            int dist = 2;
+            if (System.Windows.Forms.InputBox.Show("Distance", "Max distance in meters:", ref dist, 0, 9999) == DialogResult.OK)
+                FindCopies(-1, true, true, dist);
+        }
+
+        private void importDataFromOSMInsideSelectionToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            double[] minmax = MapViewer.SelectionBoundsMinMaxDegrees;
+            this.Close();
+            parent.ImportZoneFromOSM(minmax);
+        }
+
+        private void removeDescriptionToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (objects.CheckedIndices.Count == 0) return;
+
+            KMLayer l = (KMLayer)parent.kmzLayers.Items[laySelect.SelectedIndex];
+            XmlNode xf = l.file.kmlDoc.SelectNodes("kml/Document/Folder")[l.id];
+
+            wbf.Show("Remove description", "Wait, applying changes ... ");
+            for (int i = 0; i < objects.CheckedIndices.Count; i++)
+            {
+                string XPath = objects.CheckedItems[i].SubItems[7].Text;
+                string indx = XPath.Substring(XPath.IndexOf("["));
+                XPath = XPath.Remove(XPath.IndexOf("["));
+                int ind = int.Parse(indx.Substring(1, indx.Length - 2));                
+                XmlNode xd = xf.SelectNodes(XPath)[ind].ParentNode.ParentNode.SelectSingleNode("description");
+                if (xd == null)
+                    xd = xf.SelectNodes(XPath)[ind].ParentNode.ParentNode.ParentNode.ParentNode.SelectSingleNode("description");
+                string desc = "";
+                if ((xd != null) && (xd.ChildNodes.Count > 0)) desc = xd.ChildNodes[0].Value;
+                desc = "";
+                if (xd != null)
+                    xd.RemoveAll();
+                else
+                {
+                    xd = l.file.kmlDoc.CreateElement("description");
+                    xf.SelectNodes(XPath)[ind].ParentNode.ParentNode.AppendChild(xd);
+                };
+                xd.AppendChild(l.file.kmlDoc.CreateTextNode(desc));
+                NaviMapNet.MapObject mo = mapContent[objects.CheckedIndices[i]];
+                mo.UserData = desc;
+            };
+            textBox1.Text = "";
+            wbf.Hide();
+            l.file.SaveKML();
+        }
+
+        private void removeOSMSpecifiedTagsFromDescriptionToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (objects.CheckedIndices.Count == 0) return;
+
+            string egex = @"(tag_[\w\-_]+\=[^\r\n]*)|(name:[^(ru|en)]+\=[^\r\n]*)";
+            if(InputBox.QueryRegexBox("Remove OSM tags from Description", "Pattern to delete:", "Test text here:", ref egex)!=DialogResult.OK)
+                return;
+
+            KMLayer l = (KMLayer)parent.kmzLayers.Items[laySelect.SelectedIndex];
+            XmlNode xf = l.file.kmlDoc.SelectNodes("kml/Document/Folder")[l.id];
+
+            wbf.Show("Remove description", "Wait, applying changes ... ");
+            for (int i = 0; i < objects.CheckedIndices.Count; i++)
+            {
+                string XPath = objects.CheckedItems[i].SubItems[7].Text;
+                string indx = XPath.Substring(XPath.IndexOf("["));
+                XPath = XPath.Remove(XPath.IndexOf("["));
+                int ind = int.Parse(indx.Substring(1, indx.Length - 2));
+                XmlNode xd = xf.SelectNodes(XPath)[ind].ParentNode.ParentNode.SelectSingleNode("description");
+                if (xd == null)
+                    xd = xf.SelectNodes(XPath)[ind].ParentNode.ParentNode.ParentNode.ParentNode.SelectSingleNode("description");
+                string desc = "";
+                if ((xd != null) && (xd.ChildNodes.Count > 0)) desc = xd.ChildNodes[0].Value;
+                if (!String.IsNullOrEmpty(desc))
+                {
+                    Regex eg = new Regex(egex, RegexOptions.IgnoreCase);
+                    MatchCollection mc = eg.Matches(desc);
+                    if (mc.Count > 0)
+                        for (int ii = mc.Count - 1; ii >= 0; ii--)
+                            desc = desc.Remove(mc[ii].Index, mc[ii].Length);
+                    while (desc.IndexOf("\r\n\r\n") >= 0) desc = desc.Replace("\r\n\r\n", "\r\n");
+                    while (desc.IndexOf("\r\r") >= 0) desc = desc.Replace("\r\r", "\r");
+                    while (desc.IndexOf("\n\n") >= 0) desc = desc.Replace("\n\n", "\n");
+                    if (desc.IndexOf("\r\n") == 0) desc = desc.Remove(0, 2);
+                    if (desc.IndexOf("\r") == 0) desc = desc.Remove(0, 1);
+                    if (desc.IndexOf("\n") == 0) desc = desc.Remove(0, 1);
+                    desc = desc.Trim();
+                };
+                if (xd != null)
+                    xd.RemoveAll();
+                else
+                {
+                    xd = l.file.kmlDoc.CreateElement("description");
+                    xf.SelectNodes(XPath)[ind].ParentNode.ParentNode.AppendChild(xd);
+                };
+                xd.AppendChild(l.file.kmlDoc.CreateTextNode(desc));
+                NaviMapNet.MapObject mo = mapContent[objects.CheckedIndices[i]];
+                mo.UserData = desc;
+            };
+            textBox1.Text = "";
+            wbf.Hide();
+            l.file.SaveKML();
+        }
+
+        private void checkPointsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (objects.Items.Count == 0) return;
+            objects.CheckBoxes = true;
+            for (int i = 0; i < objects.Items.Count; i++)
+                if(objects.Items[i].SubItems[1].Text.StartsWith("Point"))
+                    objects.Items[i].Checked = true;
+        }
+
+        private void checkLinesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (objects.Items.Count == 0) return;
+            objects.CheckBoxes = true;
+            for (int i = 0; i < objects.Items.Count; i++)
+                if (objects.Items[i].SubItems[1].Text.StartsWith("Line"))
+                    objects.Items[i].Checked = true;
+        }
+
+        private void checkPolygonsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (objects.Items.Count == 0) return;
+            objects.CheckBoxes = true;
+            for (int i = 0; i < objects.Items.Count; i++)
+                if (objects.Items[i].SubItems[1].Text.StartsWith("Polygon"))
+                    objects.Items[i].Checked = true;
+        }
+
+        private void exPOlToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (objects.SelectedItems.Count == 0) return;
+            if (objects.SelectedItems[0].SubItems[1].Text == "Point") return;
+            if (objects.SelectedItems[0].SubItems[1].Text.StartsWith("Line"))
+            {
+                NaviMapNet.MapObject mo = mapContent[objects.SelectedIndices[0]];
+                if (!(mo is NaviMapNet.MapPolyLine)) return;
+                KMZRebuilederForm.waitBox.Show("Wait", "Loading map...");
+                PolyCreator pc = new PolyCreator(this.parent, this.wbf, mo.Points, false);
+                KMZRebuilder.KMZRebuilederForm.waitBox.Hide();
+                this.Hide();
+                pc.ShowDialog();
+                this.Show();
+                pc.Dispose();
+                return;
+            };
+            if (objects.SelectedItems[0].SubItems[1].Text.StartsWith("Polygon"))
+            {
+                NaviMapNet.MapObject mo = mapContent[objects.SelectedIndices[0]];
+                if (!(mo is NaviMapNet.MapPolygon)) return;                
+                KMZRebuilederForm.waitBox.Show("Wait", "Loading map...");
+                PolyCreator pc = new PolyCreator(this.parent, this.wbf, mo.Points, true);
+                KMZRebuilder.KMZRebuilederForm.waitBox.Hide();
+                this.Hide();
+                pc.ShowDialog();
+                this.Show();
+                pc.Dispose();
+                return;
+            };
+        }
+
+        private void savePolyToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (objects.SelectedItems.Count == 0) return;
+            if (objects.SelectedItems[0].SubItems[1].Text == ("Point")) return;
+            if (objects.SelectedItems[0].SubItems[1].Text.StartsWith("Line"))
+            {
+                NaviMapNet.MapObject mo = mapContent[objects.SelectedIndices[0]];
+                if (!(mo is NaviMapNet.MapPolyLine)) return;
+                int in_dist = 2500;
+                if(InputBox.Show("Convert Line to Polygon", "Enter buffer size in meters:", ref in_dist, 100, 10000) != DialogResult.OK) return;
+                PolyLineBuffer.PolyLineBufferCreator.PolyResult pr = PolyLineBuffer.PolyLineBufferCreator.GetLineBufferPolygon(mo.Points, 2500, true, true, PolyLineBuffer.PolyLineBufferCreator.GeographicDistFunc, 0);
+                PolyCreator.SavePoly2File(pr.polygon);
+            };
+            if (objects.SelectedItems[0].SubItems[1].Text.StartsWith("Polygon"))
+            {
+                NaviMapNet.MapObject mo = mapContent[objects.SelectedIndices[0]];
+                if (!(mo is NaviMapNet.MapPolygon)) return;
+                PolyCreator.SavePoly2File(mo.Points);
+            };
+        }
+
+        private void interpolateToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (objects.SelectedItems.Count == 0) return;
+            if (objects.SelectedItems[0].SubItems[1].Text == ("Point")) return;
+            NaviMapNet.MapObject mo = mapContent[objects.SelectedIndices[0]];
+            if (mo.Points.Length < 3) return;
+            this.wbf.Show("Wait", "Loading map...");
+            InterLessForm pc = new InterLessForm(this.parent, this.wbf);
+            pc.loadroute(mo.Points);
+            pc.loadbutton.Enabled = false;
+            this.wbf.Hide();
+            this.Hide();
+            PointF[] res;
+            pc.ShowDialogCallBack(out res);
+            pc.Dispose();
+            this.Show();
+            if ((res != null) && (res.Length > 1))
+            {
+                mo.Points = res;
+                KMLayer l = (KMLayer)parent.kmzLayers.Items[laySelect.SelectedIndex];
+                string XPath = objects.SelectedItems[0].SubItems[7].Text;
+                string indx = XPath.Substring(XPath.IndexOf("["));
+                XPath = XPath.Remove(XPath.IndexOf("["));
+                int ind = int.Parse(indx.Substring(1, indx.Length - 2));
+                XmlNode x_folder = l.file.kmlDoc.SelectNodes("kml/Document/Folder")[l.id];
+                XmlNode x_placemark = x_folder.SelectNodes(XPath)[ind].ParentNode.ParentNode;
+                XmlNode x_coord = null;
+                if ((mo is NaviMapNet.MapPolyLine))
+                    x_coord = x_placemark.SelectNodes("LineString/coordinates")[0];
+                if ((mo is NaviMapNet.MapPolygon))
+                {
+                    x_coord = x_placemark.SelectNodes("outerBoundaryIs/LinearRing/coordinates")[0];
+                    if(x_coord == null)
+                        x_coord = x_placemark.SelectNodes("LinearRing/coordinates")[0];
+                };
+                if (x_coord != null)
+                {
+                    string txc = "";
+                    foreach (PointF p in res)
+                    {
+                        if (txc.Length > 0) txc += " ";
+                        txc += String.Format(System.Globalization.CultureInfo.InvariantCulture, "{0},{1},0", p.X, p.Y);
+                    };
+                    x_coord.ChildNodes[0].Value = txc;
+                    l.file.SaveKML();
+                    if (mapSelect.ObjectsCount > 0)
+                    {
+                        mapSelect.Clear();
+                        SelectOnMap(mo.Index);
+                    };
+                    if ((mo is NaviMapNet.MapPolyLine))
+                        objects.SelectedItems[0].SubItems[1].Text = "Line (" + res.Length.ToString() + " points)";
+                    if ((mo is NaviMapNet.MapPolygon))
+                        objects.SelectedItems[0].SubItems[1].Text = "Polygon (" + res.Length.ToString() + " points)";
+                    MapViewer.DrawOnMapData();                    
+                };
+            };
+        }
+
+        private void openInTrackSplitterToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (objects.SelectedItems.Count == 0) return;
+            if (!objects.SelectedItems[0].SubItems[1].Text.StartsWith("Line")) return;
+            NaviMapNet.MapObject mo = mapContent[objects.SelectedIndices[0]];
+            if (mo.Points.Length < 3) return;
+            this.wbf.Show("Wait", "Loading map...");
+            TrackSplitter pc = new TrackSplitter(this.parent, this.wbf);
+            pc.loadroute(mo.Points);
+            this.wbf.Hide();
+            this.Hide();
+            pc.ShowDialog();
+            pc.Dispose();
+            this.Show();
+        }
+
+        private void inverseLineDirectionToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (objects.SelectedItems.Count == 0) return;
+            if (!objects.SelectedItems[0].SubItems[1].Text.StartsWith("Line")) return;
+            
+            NaviMapNet.MapObject mo = mapContent[objects.SelectedIndices[0]];
+            if (mo.Points.Length < 3) return;
+
+            if (MessageBox.Show("Do you want to Invertse `" + mo.Name + "`", "Inverse Line Start/Stop", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.No) return;
+
+            List<PointF> points = new List<PointF>();
+            points.AddRange(mo.Points);
+            points.Reverse();
+            mo.Points = points.ToArray();
+
+            //SAVE
+            {
+                KMLayer l = (KMLayer)parent.kmzLayers.Items[laySelect.SelectedIndex];
+                string XPath = objects.SelectedItems[0].SubItems[7].Text;
+                string indx = XPath.Substring(XPath.IndexOf("["));
+                XPath = XPath.Remove(XPath.IndexOf("["));
+                int ind = int.Parse(indx.Substring(1, indx.Length - 2));
+                XmlNode x_folder = l.file.kmlDoc.SelectNodes("kml/Document/Folder")[l.id];
+                XmlNode x_placemark = x_folder.SelectNodes(XPath)[ind].ParentNode.ParentNode;
+                XmlNode x_coord = null;
+                if ((mo is NaviMapNet.MapPolyLine))
+                {
+                    x_coord = x_placemark.SelectNodes("LineString/coordinates")[0];
+                    string txc = "";
+                    foreach (PointF p in points)
+                    {
+                        if (txc.Length > 0) txc += " ";
+                        txc += String.Format(System.Globalization.CultureInfo.InvariantCulture, "{0},{1},0", p.X, p.Y);
+                    };
+                    x_coord.ChildNodes[0].Value = txc;
+                    l.file.SaveKML();
+                };
+            };
+        }
+
+        private void getCRCOfImageToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (objects.SelectedItems.Count == 0) return;
+            if (objects.SelectedItems[0].SubItems[1].Text != "Point") return;
+
+            KMLayer l = (KMLayer)parent.kmzLayers.Items[laySelect.SelectedIndex];
+            string XPath = objects.SelectedItems[0].SubItems[7].Text;
+            string indx = XPath.Substring(XPath.IndexOf("["));
+            XPath = XPath.Remove(XPath.IndexOf("["));
+            int ind = int.Parse(indx.Substring(1, indx.Length - 2));
+            XmlNode x_folder = l.file.kmlDoc.SelectNodes("kml/Document/Folder")[l.id];
+            XmlNode x_placemark = x_folder.SelectNodes(XPath)[ind].ParentNode.ParentNode;
+
+            string styleUrl = "";
+            if (x_placemark.SelectSingleNode("styleUrl") != null) styleUrl = x_placemark.SelectSingleNode("styleUrl").ChildNodes[0].Value;
+            if (styleUrl.IndexOf("#") == 0) styleUrl = styleUrl.Remove(0, 1);
+
+            XmlNode sn = null;
+            if (styleUrl != "")
+            {
+                string firstsid = styleUrl;
+                XmlNodeList pk = l.file.kmlDoc.SelectNodes("kml/Document/StyleMap[@id='" + styleUrl + "']/Pair/key");
+                if (pk.Count > 0)
+                    for (int n = 0; n < pk.Count; n++)
+                    {
+                        XmlNode cn = pk[n];
+                        if ((cn.ChildNodes[0].Value != "normal") && (n > 0)) continue;
+                        if (cn.ParentNode.SelectSingleNode("styleUrl") == null) continue;
+                        firstsid = cn.ParentNode.SelectSingleNode("styleUrl").ChildNodes[0].Value;
+                        if (firstsid.IndexOf("#") == 0) firstsid = firstsid.Remove(0, 1);
+                    };
+                try
+                {
+                    XmlNode nts = l.file.kmlDoc.SelectSingleNode("kml/Document/Style[@id='" + firstsid + "']/IconStyle/Icon/href");
+                    string href = nts.ChildNodes[0].Value;
+                    CRC32 crc = new CRC32();
+                    string cc = crc.CRC32Num(l.file.tmp_file_dir + href).ToString();
+                    InputBox.Show("CRC of Image", objects.SelectedItems[0].SubItems[0].Text + ":", cc);
+                }
+                catch 
+                {
+                    MessageBox.Show("Could not calculate CRC", "CRC of Image", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                };
+            };
+        }
+
+        private void cHBD_Click(object sender, EventArgs e)
+        {
+            if (!objects.CheckBoxes) return;
+            if (objects.CheckedItems.Count == 0) return;
+            if (laySelect.Items.Count < 2) return;
+
+            string[] layers = new string[laySelect.Items.Count];
+            for (int i = 0; i < laySelect.Items.Count; i++)
+                layers[i] = laySelect.Items[i].ToString();
+
+            int new_ind = laySelect.SelectedIndex;
+            if (System.Windows.Forms.InputBox.Show("Copy Placemarks", "Select Layer:", layers, ref new_ind) != DialogResult.OK) return;
+            if (new_ind == laySelect.SelectedIndex) return;
+
+            if (MessageBox.Show("Copy " + objects.CheckedItems.Count.ToString() + " placemark(s) to layer:\r\n" + parent.kmzLayers.Items[new_ind].ToString(), "Move placemarks", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.No) return;
+
+            int[] pla = new int[3];
+            KMLayer l_old = (KMLayer)parent.kmzLayers.Items[laySelect.SelectedIndex];
+            KMLayer l_new = (KMLayer)parent.kmzLayers.Items[new_ind];
+            for (int i = objects.CheckedItems.Count - 1; i >= 0; i--)
+            {
+                string XPath = objects.CheckedItems[i].SubItems[7].Text;
+                string indx = XPath.Substring(XPath.IndexOf("["));
+                XPath = XPath.Remove(XPath.IndexOf("["));
+                int ind = int.Parse(indx.Substring(1, indx.Length - 2));
+                XmlNode xn = l_old.file.kmlDoc.SelectNodes("kml/Document/Folder")[l_old.id];
+                xn = xn.SelectNodes(XPath)[ind].ParentNode.ParentNode;
+                if (xn.Name == "outerBoundaryIs") // polygon
+                {
+                    xn = xn.ParentNode.ParentNode;
+                    pla[2]++;
+                }
+                else
+                {
+                    if (xn.SelectSingleNode("Point") != null) pla[0]++;
+                    if (xn.SelectSingleNode("LineString") != null) pla[1]++;
+                };
+                xn = xn.Clone();
+
+                if (l_old.file == l_new.file)
+                    l_new.file.kmlDoc.SelectNodes("kml/Document/Folder")[l_new.id].AppendChild(xn);
+                else
+                {
+                    // copy styles //
+                    string styleUrl = "";
+                    if (xn.SelectSingleNode("styleUrl") != null) styleUrl = xn.SelectSingleNode("styleUrl").ChildNodes[0].Value;
+                    if (styleUrl.IndexOf("#") == 0) styleUrl = styleUrl.Remove(0, 1);
+
+                    if (styleUrl != "")
+                    {
+                        string firstsid = styleUrl;
+                        XmlNodeList pk = l_old.file.kmlDoc.SelectNodes("kml/Document/StyleMap[@id='" + styleUrl + "']");
+                        if (pk.Count > 0) // copy style map
+                        {
+                            if (l_new.file.kmlDoc.SelectNodes("kml/Document/StyleMap[@id='" + styleUrl + "']").Count == 0)
+                                l_new.file.kmlDoc.SelectSingleNode("kml/Document").InnerXml += pk[0].OuterXml;
+                        };
+                        pk = l_old.file.kmlDoc.SelectNodes("kml/Document/StyleMap[@id='" + styleUrl + "']/Pair/key");
+                        if (pk.Count > 0)
+                            for (int n = 0; n < pk.Count; n++)
+                            {
+                                XmlNode cn = pk[n];
+                                if ((cn.ChildNodes[0].Value != "normal") && (n > 0)) continue;
+                                if (cn.ParentNode.SelectSingleNode("styleUrl") == null) continue;
+                                firstsid = cn.ParentNode.SelectSingleNode("styleUrl").ChildNodes[0].Value;
+                                if (firstsid.IndexOf("#") == 0) firstsid = firstsid.Remove(0, 1);
+                            };
+                        try // copy style
+                        {
+                            XmlNode nts = l_old.file.kmlDoc.SelectSingleNode("kml/Document/Style[@id='" + firstsid + "']");
+                            if (l_new.file.kmlDoc.SelectNodes("kml/Document/StyleMap[@id='" + firstsid + "']").Count == 0)
+                                l_new.file.kmlDoc.SelectSingleNode("kml/Document").InnerXml += nts.OuterXml;
+                        }
+                        catch { };
+                        try // copy icons
+                        {
+                            XmlNode nts = l_old.file.kmlDoc.SelectSingleNode("kml/Document/Style[@id='" + firstsid + "']/IconStyle/Icon/href");
+                            string href = nts.ChildNodes[0].Value;
+                            if (!String.IsNullOrEmpty(href))
+                            {
+                                href = href.Replace("/", @"\");
+                                System.IO.File.Copy(l_old.file.tmp_file_dir + href, l_new.file.tmp_file_dir + href, false);
+                            };
+                        }
+                        catch { };
+                    };
+                    /////////////////
+                    l_new.file.kmlDoc.SelectNodes("kml/Document/Folder")[l_new.id].InnerXml += xn.OuterXml;
+                };
+            };
+            l_old.file.SaveKML();
+            if (l_old.file != l_new.file)
+                l_new.file.SaveKML();
+            laySelect.Items[new_ind] = l_new.ToString();
+            laySelect.Items[laySelect.SelectedIndex] = l_old.ToString();
+            l_new.placemarks += pla[0] + pla[1] + pla[2];
+            l_new.points += pla[0];
+            l_new.lines += pla[1];
+            l_new.areas += pla[2];
+            
+            laySelect.Items[laySelect.SelectedIndex] = l_old.ToString();
+            laySelect.Items[new_ind] = l_new.ToString();
+            parent.Refresh();
+        }
+
+        private void sba_Click(object sender, EventArgs e)
+        {
+            if (this.objects.Items.Count == 0) return;
+            KMLayer l = (KMLayer)parent.kmzLayers.Items[laySelect.SelectedIndex];
+            XmlNode x_folder = l.file.kmlDoc.SelectNodes("kml/Document/Folder")[l.id];
+            List<KeyValuePair<XmlNode, double>> placemarks = new List<KeyValuePair<XmlNode, double>>();
+            XmlNodeList nl = x_folder.SelectNodes("Placemark");
+            foreach (XmlNode n in nl)
+            {
+                placemarks.Add(new KeyValuePair<XmlNode, double>(n, 0));
+                x_folder.RemoveChild(n);
+            };
+            placemarks.Sort(PlaceMarkAtFolderSorter.Alpabetically);
+            foreach (KeyValuePair<XmlNode, double> n in placemarks)
+                x_folder.AppendChild(n.Key);
+            
+            l.file.SaveKML();            
+            objects.Items.Clear();
+            laySelect.Items[laySelect.SelectedIndex] = l.ToString();
+            parent.Refresh();
+        }
+
+        private void sbi_Click(object sender, EventArgs e)
+        {
+            if (this.objects.Items.Count == 0) return;
+            KMLayer l = (KMLayer)parent.kmzLayers.Items[laySelect.SelectedIndex];
+            XmlNode x_folder = l.file.kmlDoc.SelectNodes("kml/Document/Folder")[l.id];
+            List<KeyValuePair<XmlNode, double>> placemarks = new List<KeyValuePair<XmlNode, double>>();
+            XmlNodeList nl = x_folder.SelectNodes("Placemark");
+            foreach (XmlNode n in nl)
+            {
+                placemarks.Add(new KeyValuePair<XmlNode, double>(n, 0));
+                x_folder.RemoveChild(n);
+            };
+            placemarks.Sort(PlaceMarkAtFolderSorter.Alpabetically);
+            placemarks.Reverse();
+            foreach (KeyValuePair<XmlNode, double> n in placemarks)
+                x_folder.AppendChild(n.Key);
+
+            l.file.SaveKML();
+            objects.Items.Clear();
+            laySelect.Items[laySelect.SelectedIndex] = l.ToString();
+            parent.Refresh();
+        }
+
+        private void sbd_Click(object sender, EventArgs e)
+        {
+            if (objects.SelectedItems.Count == 0) return;
+            if (objects.Items.Count < 2) return;
+            if(!(mapContent[objects.SelectedIndices[0]] is NaviMapNet.MapPoint)) return;
+            NaviMapNet.MapPoint mp = (NaviMapNet.MapPoint)mapContent[objects.SelectedIndices[0]];
+
+            KMLayer l = (KMLayer)parent.kmzLayers.Items[laySelect.SelectedIndex];
+            XmlNode x_folder = l.file.kmlDoc.SelectNodes("kml/Document/Folder")[l.id];
+            List<KeyValuePair<XmlNode, double>> placemarks = new List<KeyValuePair<XmlNode, double>>();
+            XmlNodeList nl = x_folder.SelectNodes("Placemark");
+            foreach (XmlNode n in nl)
+            {
+                double dist = double.MaxValue;
+                XmlNode xn = n.SelectNodes("*/coordinates")[0];
+                string[] xy = xn.ChildNodes[0].Value.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+                foreach (string ln in xy)
+                {
+                    try
+                    {
+                        string[] xyz = ln.Split(new char[]{','}, StringSplitOptions.None);
+                        PointF cp = new PointF((float)double.Parse(xyz[0],System.Globalization.CultureInfo.InvariantCulture),(float)double.Parse(xyz[1],System.Globalization.CultureInfo.InvariantCulture));
+                        float d = PolyLineBuffer.PolyLineBufferCreator.GeographicDistFunc(mp.Points[0], cp);
+                        if (d < dist) dist = d;
+                    }
+                    catch { };
+                };
+                placemarks.Add(new KeyValuePair<XmlNode, double>(n, dist));
+                x_folder.RemoveChild(n);
+            };
+            placemarks.Sort(PlaceMarkAtFolderSorter.ByDistance);
+            foreach (KeyValuePair<XmlNode, double> n in placemarks)
+                x_folder.AppendChild(n.Key);
+
+            l.file.SaveKML();    
+            objects.Items.Clear();
+            laySelect.Items[laySelect.SelectedIndex] = l.ToString();
+            parent.Refresh();
+        }
+
+        private void sbls_Click(object sender, EventArgs e)
+        {
+            if (objects.SelectedItems.Count == 0) return;
+            if (objects.Items.Count < 2) return;
+            if (!(mapContent[objects.SelectedIndices[0]] is NaviMapNet.MapPolyLine)) return;
+            NaviMapNet.MapPolyLine ml = (NaviMapNet.MapPolyLine)mapContent[objects.SelectedIndices[0]];
+            SortByRoute(ml.Points, false);
+        }   
+
+        private void sbl_Click(object sender, EventArgs e)
+        {
+            if (objects.SelectedItems.Count == 0) return;
+            if (objects.Items.Count < 2) return;
+            if (!(mapContent[objects.SelectedIndices[0]] is NaviMapNet.MapPolyLine)) return;
+            NaviMapNet.MapPolyLine ml = (NaviMapNet.MapPolyLine)mapContent[objects.SelectedIndices[0]];
+            SortByRoute(ml.Points, true);
+        }
+
+        private PointF[] loadroute()
+        {
+            string filename = null;
+            OpenFileDialog ofd = new OpenFileDialog();
+            ofd.Filter = "KML, GPX & Shape files (*.kml;*.gpx;*.shp)|*.kml;*.gpx;*.shp";
+            ofd.DefaultExt = "*.kml,*.gpx";
+            if (ofd.ShowDialog() == DialogResult.OK)
+                filename = ofd.FileName;
+            ofd.Dispose();
+
+            if (String.IsNullOrEmpty(filename)) return null;
+            if (!File.Exists(filename)) return null;
+
+            System.IO.FileStream fs = new FileStream(filename, FileMode.Open, FileAccess.Read);
+            System.IO.StreamReader sr = new StreamReader(fs);
+            List<PointF> res = new List<PointF>();
+
+            if (System.IO.Path.GetExtension(filename).ToLower() == ".shp")
+            {
+                fs.Position = 32;
+                int tof = fs.ReadByte();
+                if ((tof == 3))
+                {
+                    fs.Position = 104;
+                    byte[] ba = new byte[4];
+                    fs.Read(ba, 0, ba.Length);
+                    if (BitConverter.IsLittleEndian) Array.Reverse(ba);
+                    int len = BitConverter.ToInt32(ba, 0) * 2;
+                    fs.Read(ba, 0, ba.Length);
+                    if (!BitConverter.IsLittleEndian) Array.Reverse(ba);
+                    tof = BitConverter.ToInt32(ba, 0);
+                    if ((tof == 3))
+                    {
+                        fs.Position += 32;
+                        fs.Read(ba, 0, ba.Length);
+                        if (!BitConverter.IsLittleEndian) Array.Reverse(ba);
+                        if (BitConverter.ToInt32(ba, 0) == 1)
+                        {
+                            fs.Read(ba, 0, ba.Length);
+                            if (!BitConverter.IsLittleEndian) Array.Reverse(ba);
+                            int pCo = BitConverter.ToInt32(ba, 0);
+                            fs.Read(ba, 0, ba.Length);
+                            if (!BitConverter.IsLittleEndian) Array.Reverse(ba);
+                            if (BitConverter.ToInt32(ba, 0) == 0)
+                            {
+                                ba = new byte[8];
+                                for (int i = 0; i < pCo; i++)
+                                {
+                                    PointF ap = new PointF();
+                                    fs.Read(ba, 0, ba.Length);
+                                    if (!BitConverter.IsLittleEndian) Array.Reverse(ba);
+                                    ap.X = (float)BitConverter.ToDouble(ba, 0);
+                                    fs.Read(ba, 0, ba.Length);
+                                    if (!BitConverter.IsLittleEndian) Array.Reverse(ba);
+                                    ap.Y = (float)BitConverter.ToDouble(ba, 0);
+                                    res.Add(ap);
+                                };
+                            };
+                        };
+                    };
+                };
+            };
+            if (System.IO.Path.GetExtension(filename).ToLower() == ".kml")
+            {
+                string file = sr.ReadToEnd();
+                int si = file.IndexOf("<coordinates>");
+                int ei = file.IndexOf("</coordinates>");
+                string co = file.Substring(si + 13, ei - si - 13).Trim().Replace("\r", " ").Replace("\n", " ").Replace("\t", " ");
+                string[] arr = co.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+                if ((arr != null) && (arr.Length > 0))
+                    for (int i = 0; i < arr.Length; i++)
+                    {
+                        string[] xyz = arr[i].Split(new string[] { "," }, StringSplitOptions.None);
+                        res.Add(new PointF(float.Parse(xyz[0], System.Globalization.CultureInfo.InvariantCulture), float.Parse(xyz[1], System.Globalization.CultureInfo.InvariantCulture)));
+                    };
+            };
+            if (System.IO.Path.GetExtension(filename).ToLower() == ".gpx")
+            {
+                string file = sr.ReadToEnd();
+                int si = 0;
+                int ei = 0;
+                // rtept
+                {
+                    si = file.IndexOf("<rtept", ei);
+                    if (si > 0)
+                        ei = file.IndexOf(">", si);
+                    while (si > 0)
+                    {
+                        string rtept = file.Substring(si + 7, ei - si - 7).Replace("\"", "").Replace("/", "").Trim();
+                        int ssi = rtept.IndexOf("lat=");
+                        int sse = rtept.IndexOf(" ", ssi);
+                        if (sse < 0) sse = rtept.Length;
+                        string lat = rtept.Substring(ssi + 4, sse - ssi - 4);
+                        ssi = rtept.IndexOf("lon=");
+                        sse = rtept.IndexOf(" ", ssi);
+                        if (sse < 0) sse = rtept.Length;
+                        string lon = rtept.Substring(ssi + 4, sse - ssi - 4);
+                        res.Add(new PointF(float.Parse(lon, System.Globalization.CultureInfo.InvariantCulture), float.Parse(lat, System.Globalization.CultureInfo.InvariantCulture)));
+
+                        si = file.IndexOf("<rtept", ei);
+                        if (si > 0)
+                            ei = file.IndexOf(">", si);
+                    };
+                };
+                // trkpt
+                {
+                    si = file.IndexOf("<trkpt", ei);
+                    if (si > 0)
+                        ei = file.IndexOf(">", si);
+                    while (si > 0)
+                    {
+                        string rtept = file.Substring(si + 7, ei - si - 7).Replace("\"", "").Replace("/", "").Trim();
+                        int ssi = rtept.IndexOf("lat=");
+                        int sse = rtept.IndexOf(" ", ssi);
+                        if (sse < 0) sse = rtept.Length;
+                        string lat = rtept.Substring(ssi + 4, sse - ssi - 4);
+                        ssi = rtept.IndexOf("lon=");
+                        sse = rtept.IndexOf(" ", ssi);
+                        if (sse < 0) sse = rtept.Length;
+                        string lon = rtept.Substring(ssi + 4, sse - ssi - 4);
+                        res.Add(new PointF(float.Parse(lon, System.Globalization.CultureInfo.InvariantCulture), float.Parse(lat, System.Globalization.CultureInfo.InvariantCulture)));
+
+                        si = file.IndexOf("<trkpt", ei);
+                        if (si > 0)
+                            ei = file.IndexOf(">", si);
+                    };
+                };
+            };
+            sr.Close();
+            fs.Close();
+
+            return res.ToArray();
+        }
+
+        private void sbrn_Click(object sender, EventArgs e)
+        {
+            if (objects.Items.Count < 2) return;
+            SortByRoute(loadroute(), false);
+        }
+
+        private void sbrs_Click(object sender, EventArgs e)
+        {
+            if (objects.Items.Count < 2) return;
+            SortByRoute(loadroute(), true);
+        }    
+
+        private void SortByRoute(PointF[] route, bool fromStart)
+        {
+            if (route == null) return;
+            if (route.Length < 2) return;
+            if (objects.Items.Count < 2) return;
+            if (objects.SelectedItems.Count == 0) return;
+
+            KMLayer l = (KMLayer)parent.kmzLayers.Items[laySelect.SelectedIndex];
+            XmlNode x_folder = l.file.kmlDoc.SelectNodes("kml/Document/Folder")[l.id];
+            List<KeyValuePair<XmlNode, double>> placemarks = new List<KeyValuePair<XmlNode, double>>();
+            XmlNodeList nl = x_folder.SelectNodes("Placemark");
+            foreach (XmlNode n in nl)
+            {
+                double dist = double.MaxValue;
+                XmlNode xn = n.SelectNodes("*/coordinates")[0];
+                string[] xy = xn.ChildNodes[0].Value.Trim('\n').Trim('\r').Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+                try
+                {
+                    string[] xyz = xy[0].Split(new char[] { ',' }, StringSplitOptions.None);
+                    PointF cp = new PointF((float)double.Parse(xyz[0], System.Globalization.CultureInfo.InvariantCulture), (float)double.Parse(xyz[1], System.Globalization.CultureInfo.InvariantCulture));
+                    float dfs;
+                    float d2l = PolyLineBuffer.PolyLineBufferCreator.DistanceFromPointToRoute(cp, route, PolyLineBuffer.PolyLineBufferCreator.GeographicDistFunc, out dfs);
+                    if(!fromStart) dfs = d2l;
+                    if (dfs < dist) dist = dfs;
+                }
+                catch { };
+                placemarks.Add(new KeyValuePair<XmlNode, double>(n, dist));
+                x_folder.RemoveChild(n);
+            };
+            placemarks.Sort(PlaceMarkAtFolderSorter.ByDistance);
+            foreach (KeyValuePair<XmlNode, double> n in placemarks)
+                x_folder.AppendChild(n.Key);
+
+            l.file.SaveKML();
+            objects.Items.Clear();
+            laySelect.Items[laySelect.SelectedIndex] = l.ToString();
+            parent.Refresh();
+        }
+
+        public class PlaceMarkAtFolderSorter : IComparer<KeyValuePair<XmlNode, double>>
+        {
+            private byte sType = 0; // 0 - Asc, 1 - Dist, 2 - Dist Between
+            private PlaceMarkAtFolderSorter() { }
+            public static PlaceMarkAtFolderSorter Alpabetically 
+            {
+                get
+                {
+                    PlaceMarkAtFolderSorter res = new PlaceMarkAtFolderSorter();
+                    res.sType = 0;
+                    return res;
+                }
+            }
+            public static PlaceMarkAtFolderSorter ByDistance
+            {
+                get
+                {
+                    PlaceMarkAtFolderSorter res = new PlaceMarkAtFolderSorter();
+                    res.sType = 1;
+                    return res;
+                }
+            }
+
+            public int Compare(KeyValuePair<XmlNode, double> A, KeyValuePair<XmlNode, double> B)
+            {
+                if((A.Key == null) && (B.Key == null)) return 0;
+                if (B.Key == null) return -1;
+                if (A.Key == null) return 1;                
+
+                if (sType == 0)
+                {
+                    string nameA = String.Empty;
+                    string nameB = String.Empty;
+                    try { nameA = A.Key.SelectSingleNode("name").ChildNodes[0].Value; }
+                    catch { };
+                    try { nameB = B.Key.SelectSingleNode("name").ChildNodes[0].Value; }
+                    catch { };
+                    return nameA.CompareTo(nameB);
+                }
+                else if (sType == 2)
+                {
+                    double dist = double.MaxValue;
+                    PointF pa = PointF.Empty;
+                    PointF pb = PointF.Empty;
+                    try
+                    {
+                        XmlNode xn = A.Key.SelectNodes("*/coordinates")[0];
+                        string[] xy = xn.ChildNodes[0].Value.Trim('\n').Trim('\r').Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+                        string[] xyz = xy[0].Split(new char[] { ',' }, StringSplitOptions.None);
+                        pa = new PointF((float)double.Parse(xyz[0], System.Globalization.CultureInfo.InvariantCulture), (float)double.Parse(xyz[1], System.Globalization.CultureInfo.InvariantCulture));
+                    }
+                    catch { };
+                    try
+                    {
+                        XmlNode xn = B.Key.SelectNodes("*/coordinates")[0];
+                        string[] xy = xn.ChildNodes[0].Value.Trim('\n').Trim('\r').Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+                        string[] xyz = xy[0].Split(new char[] { ',' }, StringSplitOptions.None);
+                        pb = new PointF((float)double.Parse(xyz[0], System.Globalization.CultureInfo.InvariantCulture), (float)double.Parse(xyz[1], System.Globalization.CultureInfo.InvariantCulture));
+                    }
+                    catch { };
+                    try
+                    {
+                        dist = PolyLineBuffer.PolyLineBufferCreator.GeographicDistFunc(pa, pb);
+                    }
+                    catch { };
+                    return (int)dist;
+                }
+                else
+                {
+                    return A.Value.CompareTo(B.Value);
+                };
+            }
+        }
+
+                           
+    }
+
+    public class ToolStripSpringTextBox : ToolStripTextBox
+    {
+        public bool Spring = true;
+
+        public override Size GetPreferredSize(Size constrainingSize)
+        {
+            if (!Spring)
+                return base.GetPreferredSize(constrainingSize);                
+            
+            // Use the default size if the text box is on the overflow menu
+            // or is on a vertical ToolStrip.
+            if (IsOnOverflow || Owner.Orientation == Orientation.Vertical)
+            {
+                return DefaultSize;
+            }
+
+            // Declare a variable to store the total available width as 
+            // it is calculated, starting with the display width of the 
+            // owning ToolStrip.
+            Int32 width = Owner.DisplayRectangle.Width;
+
+            // Subtract the width of the overflow button if it is displayed. 
+            if (Owner.OverflowButton.Visible)
+            {
+                width = width - Owner.OverflowButton.Width -
+                    Owner.OverflowButton.Margin.Horizontal;
+            }
+
+            // Declare a variable to maintain a count of ToolStripSpringTextBox 
+            // items currently displayed in the owning ToolStrip. 
+            Int32 springBoxCount = 0;
+
+            foreach (ToolStripItem item in Owner.Items)
+            {
+                // Ignore items on the overflow menu.
+                if (item.IsOnOverflow) continue;
+
+                if (item is ToolStripSpringTextBox)
+                {
+                    // For ToolStripSpringTextBox items, increment the count and 
+                    // subtract the margin width from the total available width.
+                    springBoxCount++;
+                    width -= item.Margin.Horizontal;
+                }
+                else
+                {
+                    // For all other items, subtract the full width from the total
+                    // available width.
+                    width = width - item.Width - item.Margin.Horizontal;
+                }
+            }
+
+            // If there are multiple ToolStripSpringTextBox items in the owning
+            // ToolStrip, divide the total available width between them. 
+            if (springBoxCount > 1) width /= springBoxCount;
+
+            // If the available width is less than the default width, use the
+            // default width, forcing one or more items onto the overflow menu.
+            if (width < DefaultSize.Width) width = DefaultSize.Width;
+
+            // Retrieve the preferred size from the base class, but change the
+            // width to the calculated width. 
+            Size size = base.GetPreferredSize(constrainingSize);
+            size.Width = width;
+            return size;
+        }
+    }
+
+    [Serializable]
+    public class XMLSaved<T>
+    {
+        public static string ToUpper(string str)
+        {
+            if (String.IsNullOrEmpty(str)) return "";
+            return str.ToUpper();
+        }
+
+        /// <summary>
+        ///     Ñîõðàíåíèå ñòðóêòóðû â ôàéë
+        /// </summary>
+        /// <param name="file">Ïîëíûé ïóòü ê ôàéëó</param>
+        /// <param name="obj">Ñòðóêòóðà</param>
+        public static void Save(string file, T obj)
+        {
+            System.Xml.Serialization.XmlSerializer xs = new System.Xml.Serialization.XmlSerializer(typeof(T));
+            System.IO.StreamWriter writer = System.IO.File.CreateText(file);
+            xs.Serialize(writer, obj);
+            writer.Flush();
+            writer.Close();
+        }
+
+        public static string Save(T obj)
+        {
+            System.Xml.Serialization.XmlSerializer xs = new System.Xml.Serialization.XmlSerializer(typeof(T));
+            System.IO.MemoryStream ms = new MemoryStream();
+            System.IO.StreamWriter writer = new StreamWriter(ms);
+            xs.Serialize(writer, obj);
+            writer.Flush();
+            ms.Position = 0;
+            byte[] bb = new byte[ms.Length];
+            ms.Read(bb, 0, bb.Length);
+            writer.Close();
+            return System.Text.Encoding.UTF8.GetString(bb); ;
+        }
+
+        /// <summary>
+        ///     Ïîäêëþ÷åíèå ñòðóêòóðû èç ôàéëà
+        /// </summary>
+        /// <param name="file">Ïîëíûé ïóòü ê ôàéëó</param>
+        /// <returns>Ñòðóêòóðà</returns>
+        public static T Load(string file)
+        {
+            // if couldn't create file in temp - add credintals
+            // http://support.microsoft.com/kb/908158/ru
+            System.Xml.Serialization.XmlSerializer xs = new System.Xml.Serialization.XmlSerializer(typeof(T));
+            System.IO.StreamReader reader = System.IO.File.OpenText(file);
+            T c = (T)xs.Deserialize(reader);
+            reader.Close();
+            return c;
+        }
+    }
+
+    [Serializable]
+    public class State : XMLSaved<State>
+    {
+        public string SASCacheDir = @"C:\Program Files\SASPlanet\cache";
+        public int MapID = -1;
+        public string SASDir = null;
+        public string URL = null;
+        public double X;
+        public double Y;
+        public byte Z;
     }
 }

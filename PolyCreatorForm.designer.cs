@@ -32,15 +32,24 @@ namespace KMZRebuilder
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(PolyCreator));
             this.statusStrip2 = new System.Windows.Forms.StatusStrip();
             this.toolStripDropDownButton1 = new System.Windows.Forms.ToolStripDropDownButton();
-            this.toolStripMenuItem4 = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripMenuItem5 = new System.Windows.Forms.ToolStripMenuItem();
+            this.ËÁÏÂÌËÚ¸UserDefinedUrlToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripSeparator();
             this.ËÁÏÂÌËÚ¸ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.ËÁÏÂÌËÚ¸UserDefinedUrlToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.‚˚·‡Ú¸œ‡ÔÍÛ ˝¯‡SASPlanetToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.spcl = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem4 = new System.Windows.Forms.ToolStripSeparator();
+            this.showBBBikeExtractUrlToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusLabel2 = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusLabel3 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolStripStatusLabel4 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolStripStatusLabel5 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.cntLabel = new System.Windows.Forms.ToolStripStatusLabel();
+            this.persqr = new System.Windows.Forms.ToolStripStatusLabel();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.button6 = new System.Windows.Forms.Button();
+            this.button5 = new System.Windows.Forms.Button();
+            this.selMethod = new System.Windows.Forms.ComboBox();
             this.label3 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.cD = new System.Windows.Forms.NumericUpDown();
@@ -75,8 +84,6 @@ namespace KMZRebuilder
             this.markAllAsNotDeletedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.invertDeletedMarksToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.MView = new NaviMapNet.NaviMapNetViewer();
-            this.toolStripStatusLabel4 = new System.Windows.Forms.ToolStripStatusLabel();
-            this.toolStripStatusLabel5 = new System.Windows.Forms.ToolStripStatusLabel();
             this.statusStrip2.SuspendLayout();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.cD)).BeginInit();
@@ -91,10 +98,12 @@ namespace KMZRebuilder
             this.toolStripStatusLabel2,
             this.toolStripStatusLabel3,
             this.toolStripStatusLabel4,
-            this.toolStripStatusLabel5});
+            this.toolStripStatusLabel5,
+            this.cntLabel,
+            this.persqr});
             this.statusStrip2.Location = new System.Drawing.Point(0, 587);
             this.statusStrip2.Name = "statusStrip2";
-            this.statusStrip2.Size = new System.Drawing.Size(998, 22);
+            this.statusStrip2.Size = new System.Drawing.Size(1016, 22);
             this.statusStrip2.TabIndex = 6;
             this.statusStrip2.Text = "statusStrip2";
             // 
@@ -102,31 +111,27 @@ namespace KMZRebuilder
             // 
             this.toolStripDropDownButton1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.toolStripDropDownButton1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripMenuItem4,
-            this.toolStripMenuItem5,
+            this.ËÁÏÂÌËÚ¸UserDefinedUrlToolStripMenuItem,
             this.toolStripMenuItem2,
             this.ËÁÏÂÌËÚ¸ToolStripMenuItem,
-            this.ËÁÏÂÌËÚ¸UserDefinedUrlToolStripMenuItem});
+            this.‚˚·‡Ú¸œ‡ÔÍÛ ˝¯‡SASPlanetToolStripMenuItem,
+            this.spcl,
+            this.toolStripMenuItem4,
+            this.showBBBikeExtractUrlToolStripMenuItem});
             this.toolStripDropDownButton1.Image = ((System.Drawing.Image)(resources.GetObject("toolStripDropDownButton1.Image")));
             this.toolStripDropDownButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolStripDropDownButton1.Name = "toolStripDropDownButton1";
             this.toolStripDropDownButton1.Size = new System.Drawing.Size(51, 20);
             this.toolStripDropDownButton1.Text = " ‡Ú‡";
             this.toolStripDropDownButton1.TextImageRelation = System.Windows.Forms.TextImageRelation.TextBeforeImage;
+            this.toolStripDropDownButton1.DropDownOpening += new System.EventHandler(this.toolStripDropDownButton1_DropDownOpening);
             // 
-            // toolStripMenuItem4
+            // ËÁÏÂÌËÚ¸UserDefinedUrlToolStripMenuItem
             // 
-            this.toolStripMenuItem4.Name = "toolStripMenuItem4";
-            this.toolStripMenuItem4.Size = new System.Drawing.Size(261, 22);
-            this.toolStripMenuItem4.Text = "ŒÚÓ·‡Ê‡Ú¸ „‡ÌËˆ˚ Ú‡ÈÎÓ‚";
-            this.toolStripMenuItem4.Click += new System.EventHandler(this.toolStripMenuItem4_Click);
-            // 
-            // toolStripMenuItem5
-            // 
-            this.toolStripMenuItem5.Name = "toolStripMenuItem5";
-            this.toolStripMenuItem5.Size = new System.Drawing.Size(261, 22);
-            this.toolStripMenuItem5.Text = "ŒÚÓ·‡Ê‡Ú¸ ÌÛÏÂ‡ˆË˛ Ú‡ÈÎÓ‚";
-            this.toolStripMenuItem5.Click += new System.EventHandler(this.toolStripMenuItem5_Click);
+            this.ËÁÏÂÌËÚ¸UserDefinedUrlToolStripMenuItem.Name = "ËÁÏÂÌËÚ¸UserDefinedUrlToolStripMenuItem";
+            this.ËÁÏÂÌËÚ¸UserDefinedUrlToolStripMenuItem.Size = new System.Drawing.Size(261, 22);
+            this.ËÁÏÂÌËÚ¸UserDefinedUrlToolStripMenuItem.Text = "»ÁÏÂÌËÚ¸ User-Defined Url...";
+            this.ËÁÏÂÌËÚ¸UserDefinedUrlToolStripMenuItem.Click += new System.EventHandler(this.ËÁÏÂÌËÚ¸UserDefinedUrlToolStripMenuItem_Click);
             // 
             // toolStripMenuItem2
             // 
@@ -140,12 +145,31 @@ namespace KMZRebuilder
             this.ËÁÏÂÌËÚ¸ToolStripMenuItem.Text = "»ÁÏÂÌËÚ¸ Ô‡ÔÍÛ Í˝¯‡ SAS Planet...";
             this.ËÁÏÂÌËÚ¸ToolStripMenuItem.Click += new System.EventHandler(this.ËÁÏÂÌËÚ¸ToolStripMenuItem_Click);
             // 
-            // ËÁÏÂÌËÚ¸UserDefinedUrlToolStripMenuItem
+            // ‚˚·‡Ú¸œ‡ÔÍÛ ˝¯‡SASPlanetToolStripMenuItem
             // 
-            this.ËÁÏÂÌËÚ¸UserDefinedUrlToolStripMenuItem.Name = "ËÁÏÂÌËÚ¸UserDefinedUrlToolStripMenuItem";
-            this.ËÁÏÂÌËÚ¸UserDefinedUrlToolStripMenuItem.Size = new System.Drawing.Size(261, 22);
-            this.ËÁÏÂÌËÚ¸UserDefinedUrlToolStripMenuItem.Text = "»ÁÏÂÌËÚ¸ User-Defined Url...";
-            this.ËÁÏÂÌËÚ¸UserDefinedUrlToolStripMenuItem.Click += new System.EventHandler(this.ËÁÏÂÌËÚ¸UserDefinedUrlToolStripMenuItem_Click);
+            this.‚˚·‡Ú¸œ‡ÔÍÛ ˝¯‡SASPlanetToolStripMenuItem.Name = "‚˚·‡Ú¸œ‡ÔÍÛ ˝¯‡SASPlanetToolStripMenuItem";
+            this.‚˚·‡Ú¸œ‡ÔÍÛ ˝¯‡SASPlanetToolStripMenuItem.Size = new System.Drawing.Size(261, 22);
+            this.‚˚·‡Ú¸œ‡ÔÍÛ ˝¯‡SASPlanetToolStripMenuItem.Text = "¬˚·‡Ú¸ Ô‡ÔÍÛ Í˝¯‡ SAS Planet...";
+            this.‚˚·‡Ú¸œ‡ÔÍÛ ˝¯‡SASPlanetToolStripMenuItem.Click += new System.EventHandler(this.‚˚·‡Ú¸œ‡ÔÍÛ ˝¯‡SASPlanetToolStripMenuItem_Click);
+            // 
+            // spcl
+            // 
+            this.spcl.Enabled = false;
+            this.spcl.Name = "spcl";
+            this.spcl.Size = new System.Drawing.Size(261, 22);
+            this.spcl.Text = "–‡ÌÂÂ ‚˚·‡ÌÌ˚Â Ô‡ÔÍË Í˝¯‡...";
+            // 
+            // toolStripMenuItem4
+            // 
+            this.toolStripMenuItem4.Name = "toolStripMenuItem4";
+            this.toolStripMenuItem4.Size = new System.Drawing.Size(258, 6);
+            // 
+            // showBBBikeExtractUrlToolStripMenuItem
+            // 
+            this.showBBBikeExtractUrlToolStripMenuItem.Name = "showBBBikeExtractUrlToolStripMenuItem";
+            this.showBBBikeExtractUrlToolStripMenuItem.Size = new System.Drawing.Size(261, 22);
+            this.showBBBikeExtractUrlToolStripMenuItem.Text = "Show BBBike Extract Url ...";
+            this.showBBBikeExtractUrlToolStripMenuItem.Click += new System.EventHandler(this.showBBBikeExtractUrlToolStripMenuItem_Click);
             // 
             // toolStripStatusLabel1
             // 
@@ -171,8 +195,38 @@ namespace KMZRebuilder
             this.toolStripStatusLabel3.Size = new System.Drawing.Size(109, 17);
             this.toolStripStatusLabel3.Text = "toolStripStatusLabel3";
             // 
+            // toolStripStatusLabel4
+            // 
+            this.toolStripStatusLabel4.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
+            this.toolStripStatusLabel4.Name = "toolStripStatusLabel4";
+            this.toolStripStatusLabel4.Size = new System.Drawing.Size(109, 17);
+            this.toolStripStatusLabel4.Text = "toolStripStatusLabel4";
+            // 
+            // toolStripStatusLabel5
+            // 
+            this.toolStripStatusLabel5.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
+            this.toolStripStatusLabel5.Name = "toolStripStatusLabel5";
+            this.toolStripStatusLabel5.Size = new System.Drawing.Size(109, 17);
+            this.toolStripStatusLabel5.Text = "toolStripStatusLabel5";
+            // 
+            // cntLabel
+            // 
+            this.cntLabel.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Bold);
+            this.cntLabel.Name = "cntLabel";
+            this.cntLabel.Size = new System.Drawing.Size(55, 17);
+            this.cntLabel.Text = "Points: 0";
+            // 
+            // persqr
+            // 
+            this.persqr.Name = "persqr";
+            this.persqr.Size = new System.Drawing.Size(15, 17);
+            this.persqr.Text = "--";
+            // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.button6);
+            this.panel1.Controls.Add(this.button5);
+            this.panel1.Controls.Add(this.selMethod);
             this.panel1.Controls.Add(this.label3);
             this.panel1.Controls.Add(this.label2);
             this.panel1.Controls.Add(this.cD);
@@ -188,8 +242,71 @@ namespace KMZRebuilder
             this.panel1.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel1.Location = new System.Drawing.Point(0, 0);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(998, 24);
+            this.panel1.Size = new System.Drawing.Size(1016, 24);
             this.panel1.TabIndex = 8;
+            // 
+            // button6
+            // 
+            this.button6.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.button6.Location = new System.Drawing.Point(556, 2);
+            this.button6.Name = "button6";
+            this.button6.Size = new System.Drawing.Size(20, 21);
+            this.button6.TabIndex = 14;
+            this.button6.Text = "L";
+            this.button6.UseVisualStyleBackColor = true;
+            this.button6.Click += new System.EventHandler(this.button6_Click);
+            // 
+            // button5
+            // 
+            this.button5.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.button5.Location = new System.Drawing.Point(575, 2);
+            this.button5.Name = "button5";
+            this.button5.Size = new System.Drawing.Size(20, 21);
+            this.button5.TabIndex = 13;
+            this.button5.Text = "R";
+            this.button5.UseVisualStyleBackColor = true;
+            this.button5.Click += new System.EventHandler(this.button5_Click);
+            // 
+            // selMethod
+            // 
+            this.selMethod.DropDownHeight = 350;
+            this.selMethod.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.selMethod.DropDownWidth = 280;
+            this.selMethod.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.selMethod.FormattingEnabled = true;
+            this.selMethod.IntegralHeight = false;
+            this.selMethod.Items.AddRange(new object[] {
+            "----------------- NO INTERPOLATION ----------------",
+            "0 - Merge Only [BASIC]",
+            "1 - RUnion NH [No Holes] --(Slower, Max 2000 points)--",
+            "2 - RUnion WH [With Holes] --(Slower, Max 2000 points)--",
+            "3 - BUnion NH --(Slower)--",
+            "4 - BUnion WH --(Slower)--",
+            "----------------- BEFORE INTERPOLATION --------------",
+            "5 - Interpol -> Merge --(Faster)--",
+            "6 - Interpol -> RUnion NH --(Slower)--",
+            "7 - Interpol -> RUnion WH --(Slower)--",
+            "8 - Interpol -> BUnion NH --(Slower)--",
+            "9 - Interpol -> BUnion WH --(Slower)--",
+            "----------------- AFTER INTERPOLATION ----------------",
+            "A - Merge -> Interpolation --(Faster)--",
+            "B - RUnion NH -> Interpolation --(Slower, Max 2000)--",
+            "C - RUnion WH -> Interpolation --(Slower, Max 2000)--",
+            "D - BUnion NH -> Interpolation --(Slower)--",
+            "E - BUnion WH -> Interpolation --(Slower)--",
+            "---------- BEFORE & AFTER INTERPOLATION ----------",
+            "F - Interpol -> Merge -> Interpol --(Faster)--",
+            "G - Interpol -> RUnion NH -> Interpol --(Slower)--",
+            "H - Interpol -> RUnion WH -> Interpol --(Slower)--",
+            "I - Interpol -> BUnion NH -> Interpol --(Slower)--",
+            "J - Interpol -> BUnion WH -> Interpol --(Slower)--",
+            "------------------ OTHER METHODS ------------------------",
+            "K - BRound Bezier"});
+            this.selMethod.Location = new System.Drawing.Point(956, 1);
+            this.selMethod.Name = "selMethod";
+            this.selMethod.Size = new System.Drawing.Size(280, 21);
+            this.selMethod.TabIndex = 12;
+            this.selMethod.SelectedIndexChanged += new System.EventHandler(this.selMethod_SelectedIndexChanged);
             // 
             // label3
             // 
@@ -283,9 +400,9 @@ namespace KMZRebuilder
             // button4
             // 
             this.button4.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.button4.Location = new System.Drawing.Point(525, 1);
+            this.button4.Location = new System.Drawing.Point(485, 2);
             this.button4.Name = "button4";
-            this.button4.Size = new System.Drawing.Size(75, 21);
+            this.button4.Size = new System.Drawing.Size(70, 21);
             this.button4.TabIndex = 5;
             this.button4.Text = "Save Poly";
             this.button4.UseVisualStyleBackColor = true;
@@ -294,9 +411,9 @@ namespace KMZRebuilder
             // button3
             // 
             this.button3.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.button3.Location = new System.Drawing.Point(451, 1);
+            this.button3.Location = new System.Drawing.Point(416, 2);
             this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(75, 21);
+            this.button3.Size = new System.Drawing.Size(70, 21);
             this.button3.TabIndex = 4;
             this.button3.Text = "Delete Last";
             this.button3.UseVisualStyleBackColor = true;
@@ -305,9 +422,9 @@ namespace KMZRebuilder
             // button2
             // 
             this.button2.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.button2.Location = new System.Drawing.Point(377, 1);
+            this.button2.Location = new System.Drawing.Point(347, 2);
             this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(75, 21);
+            this.button2.Size = new System.Drawing.Size(70, 21);
             this.button2.TabIndex = 3;
             this.button2.Text = "New Poly";
             this.button2.UseVisualStyleBackColor = true;
@@ -316,9 +433,9 @@ namespace KMZRebuilder
             // button1
             // 
             this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
-            this.button1.Location = new System.Drawing.Point(303, 1);
+            this.button1.Location = new System.Drawing.Point(278, 2);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 21);
+            this.button1.Size = new System.Drawing.Size(70, 21);
             this.button1.TabIndex = 2;
             this.button1.Text = "Load Poly";
             this.button1.UseVisualStyleBackColor = true;
@@ -334,7 +451,7 @@ namespace KMZRebuilder
             this.iStorages.IntegralHeight = false;
             this.iStorages.Location = new System.Drawing.Point(65, 1);
             this.iStorages.Name = "iStorages";
-            this.iStorages.Size = new System.Drawing.Size(232, 21);
+            this.iStorages.Size = new System.Drawing.Size(212, 21);
             this.iStorages.TabIndex = 1;
             this.iStorages.SelectedIndexChanged += new System.EventHandler(this.iStorages_SelectedIndexChanged);
             // 
@@ -495,6 +612,8 @@ namespace KMZRebuilder
             // 
             // MView
             // 
+            this.MView.AdditionalClickInfoText = "";
+            this.MView.AdditionalSelectionInfoText = "";
             this.MView.AutoSize = true;
             this.MView.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
             this.MView.CenterDegrees = ((System.Drawing.PointF)(resources.GetObject("MView.CenterDegrees")));
@@ -512,6 +631,7 @@ namespace KMZRebuilder
             this.MView.Dock = System.Windows.Forms.DockStyle.Fill;
             this.MView.DrawMap = false;
             this.MView.DrawMapTestVectorData = false;
+            this.MView.DrawSelectionBox = true;
             this.MView.DrawTilesBorder = false;
             this.MView.DrawTilesXYZ = false;
             this.MView.DrawVector = true;
@@ -519,6 +639,7 @@ namespace KMZRebuilder
             this.MView.ImageSourceService = NaviMapNet.NaviMapNetViewer.MapServices.OSM_Mapnik;
             this.MView.ImageSourceType = NaviMapNet.NaviMapNetViewer.ImageSourceTypes.tiles;
             this.MView.ImageSourceUrl = "http://tile.openstreetmap.org/{z}/{x}/{y}.png";
+            this.MView.InvertBackground = false;
             this.MView.Location = new System.Drawing.Point(0, 24);
             this.MView.MapBackgroundColor = System.Drawing.Color.White;
             this.MView.MapMaxZoom = ((byte)(18));
@@ -527,49 +648,42 @@ namespace KMZRebuilder
             this.MView.MapTool = NaviMapNet.NaviMapNetViewer.MapTools.mtShift;
             this.MView.Name = "MView";
             this.MView.NotFoundTileColor = System.Drawing.Color.Transparent;
+            this.MView.SelectionBoxColor = System.Drawing.Color.Black;
             this.MView.ShowCross = false;
+            this.MView.ShowInfoOnDblClick = false;
             this.MView.ShowMapTypes = false;
             this.MView.ShowScale = true;
             this.MView.ShowZooms = true;
-            this.MView.Size = new System.Drawing.Size(998, 563);
+            this.MView.Size = new System.Drawing.Size(1016, 563);
             this.MView.TabIndex = 9;
             this.MView.TilesMaxZoom = ((byte)(21));
             this.MView.TilesMinZoom = ((byte)(1));
             this.MView.TilesRenderingZoneSize = ((short)(0));
+            this.MView.UseDefaultContextMenu = true;
+            this.MView.UseDiskCache = true;
+            this.MView.UserDefinedMapName = null;
             this.MView.WebRequestTimeout = 3000;
             this.MView.ZoomID = ((byte)(10));
             this.MView.MouseMove += new System.Windows.Forms.MouseEventHandler(this.MView_MouseMove);
             this.MView.MouseClick += new System.Windows.Forms.MouseEventHandler(this.MapViewer_MouseClick);
             this.MView.MouseDown += new System.Windows.Forms.MouseEventHandler(this.MView_MouseDown);
             // 
-            // toolStripStatusLabel4
-            // 
-            this.toolStripStatusLabel4.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
-            this.toolStripStatusLabel4.Name = "toolStripStatusLabel4";
-            this.toolStripStatusLabel4.Size = new System.Drawing.Size(109, 17);
-            this.toolStripStatusLabel4.Text = "toolStripStatusLabel4";
-            // 
-            // toolStripStatusLabel5
-            // 
-            this.toolStripStatusLabel5.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
-            this.toolStripStatusLabel5.Name = "toolStripStatusLabel5";
-            this.toolStripStatusLabel5.Size = new System.Drawing.Size(109, 17);
-            this.toolStripStatusLabel5.Text = "toolStripStatusLabel5";
-            // 
             // PolyCreator
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(998, 609);
+            this.ClientSize = new System.Drawing.Size(1016, 609);
             this.Controls.Add(this.MView);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.statusStrip2);
             this.MinimizeBox = false;
             this.Name = "PolyCreator";
             this.ShowIcon = false;
-            this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Map Polygon Creator";
+            this.Load += new System.EventHandler(this.PolyCreator_Load);
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.PolyCreator_FormClosed);
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.PolyCreator_FormClosing);
             this.statusStrip2.ResumeLayout(false);
             this.statusStrip2.PerformLayout();
             this.panel1.ResumeLayout(false);
@@ -585,8 +699,6 @@ namespace KMZRebuilder
 
         private System.Windows.Forms.StatusStrip statusStrip2;
         private System.Windows.Forms.ToolStripDropDownButton toolStripDropDownButton1;
-        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem4;
-        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem5;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel2;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel3;
@@ -630,5 +742,14 @@ namespace KMZRebuilder
         private System.Windows.Forms.NumericUpDown cD;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel4;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel5;
+        private System.Windows.Forms.ToolStripMenuItem ‚˚·‡Ú¸œ‡ÔÍÛ ˝¯‡SASPlanetToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem spcl;
+        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem4;
+        private System.Windows.Forms.ToolStripMenuItem showBBBikeExtractUrlToolStripMenuItem;
+        private System.Windows.Forms.ComboBox selMethod;
+        private System.Windows.Forms.ToolStripStatusLabel cntLabel;
+        private System.Windows.Forms.Button button5;
+        private System.Windows.Forms.Button button6;
+        private System.Windows.Forms.ToolStripStatusLabel persqr;
     }
 }

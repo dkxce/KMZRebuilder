@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Xml;
 using System.Windows.Forms;
 
@@ -15,15 +16,21 @@ namespace KMZRebuilder
 {
     public partial class GMLayRenamerForm : Form
     {
+        private bool noGML = false;
+        public bool noGPI = true;
+        public bool isCRC = false;
         private string filename = "";
         private string xml = "";
         private XmlDocument xd = null;
-        private List<Category> categories = new List<Category>();
+        public List<Category> categories = new List<Category>();
         private List<Symbol> symbols = new List<Symbol>();
         
         public GMLayRenamerForm(string filename)
         {            
             InitializeComponent();
+            this.button2.Visible = false;
+            this.button3.Visible = false;
+            this.subtext.Visible = true;
 
             this.filename = filename;
             FileStream fs = new FileStream(filename, FileMode.Open, FileAccess.Read);
@@ -58,8 +65,95 @@ namespace KMZRebuilder
             };
         }
 
+        public GMLayRenamerForm()
+        {
+            noGML = true;
+            InitializeComponent();
+            layers.ContextMenuStrip = null;            
+        }
+
+        public static GMLayRenamerForm FromGPIGPX(Dictionary<string,string> files, string dir)
+        {
+            GMLayRenamerForm res = new GMLayRenamerForm();
+            res.layers.ContextMenuStrip = res.contextMenuStrip1;
+            res.loadImagesToolStripMenuItem.Visible = false;
+            res.saveImagesToolStripMenuItem.Visible = false;
+            res.layers.FullRowSelect = true;
+            res.button2.Visible = false;
+            res.button3.Visible = false;
+            res.subtext.Visible = true;
+            int no = 0;
+            foreach (KeyValuePair<string, string> kvp in files)
+            {
+                res.categories.Add(new Category(kvp.Key, kvp.Key, kvp.Value));
+                res.layers.Items.Add(String.Format("{0}: {1}", no++, kvp.Value), kvp.Key);
+                res.symbols.Add(new Symbol(kvp.Key, kvp.Value));
+
+                Image im = Image.FromFile(dir + kvp.Key + ".bmp");
+                res.images.Images.Add(kvp.Key, (Image)(new Bitmap(im)));
+                im.Dispose();
+            };
+            res.noGPI = false;
+            return res;
+        }
+
+        public static GMLayRenamerForm ForCRCCheckSum(string[] files, Dictionary<string, string> d4crc_names, Dictionary<string, string> d4crc_subnames)
+        {
+            GMLayRenamerForm res = new GMLayRenamerForm();
+            res.layers.Columns[0].Width = 450;
+            if (res.layers.Columns.Count == 1)
+                res.layers.Columns.Add(new ColumnHeader());
+            res.layers.Columns[1].Width = 100;
+            res.layers.FullRowSelect = true;
+            res.Text = "GPI Layers Names Editor by Images CRC";
+            res.label1.Text = "You can enter names for images styles here (gpi_name_*):";
+            res.button2.Text = "Save to ...";
+            res.button3.Text = "Load from ...";
+            res.subtext.Visible = true;
+            res.layers.ContextMenuStrip = res.contextMenuStrip2;
+            CRC32 crc = new CRC32();
+            foreach (string file in files)
+            {
+                string sn = Path.GetFileNameWithoutExtension(file);
+                string cc = crc.CRC32Num(file).ToString();
+
+                bool skip = false;
+                foreach (Category cat in res.categories)
+                    if (cat.ID == cc) skip = true;
+                if (skip)
+                    continue;
+
+                bool chd = false;
+                string nm = "";
+                if ((d4crc_names != null) && (d4crc_names.ContainsKey(cc)))
+                {
+                    nm = d4crc_names[cc];
+                    chd = false;
+                };
+                if ((d4crc_subnames != null) && (d4crc_subnames.ContainsKey(cc)))
+                {
+                    nm = d4crc_subnames[cc];
+                    chd = true;
+                };
+
+                res.categories.Add(new Category(cc, sn, nm));
+                ListViewItem lvi = new ListViewItem(new string[] { nm, chd ? "subname" : "name" }, sn);
+                lvi.SubItems[0].BackColor = chd ? Color.LightPink : res.layers.BackColor;
+                res.layers.Items.Add(lvi);
+                res.symbols.Add(new Symbol(sn, sn));
+
+                Image im = Image.FromFile(file);
+                res.images.Images.Add(sn, (Image)(new Bitmap(im)));
+                im.Dispose();
+            };
+            res.isCRC = true;
+            return res;
+        }
+
         private void GMLayRenamer_FormClosing(object sender, FormClosingEventArgs e)
         {
+            if (noGML) return;
+
             images.Dispose();
             if (this.DialogResult == DialogResult.OK)
             {
@@ -89,9 +183,35 @@ namespace KMZRebuilder
 
         private void renameToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if (isCRC)
+            {
+                if (layers.SelectedIndices.Count == 0) return;
+                string nme = categories[layers.SelectedIndices[0]].name;
+                if (KMZRebuilederForm.InputBox("Layer name", "Change layer name:", ref nme, (Bitmap)images.Images[layers.Items[layers.SelectedIndices[0]].ImageKey]) != DialogResult.OK)
+                    return;
+                categories[layers.SelectedIndices[0]].name = nme;
+                layers.Items[layers.SelectedIndices[0]].Text = nme;
+            };
+
+            if (noGML && noGPI) return;
+
             if (layers.SelectedIndices.Count == 0) return;
             string name = categories[layers.SelectedIndices[0]].name;
-            KMZRebuilederForm.InputBox("Layer name", "Change layer name:", ref name, (Bitmap)images.Images[layers.Items[layers.SelectedIndices[0]].ImageKey]);
+            if (KMZRebuilederForm.InputBox("Layer name", "Change layer name:", ref name, (Bitmap)images.Images[layers.Items[layers.SelectedIndices[0]].ImageKey]) != DialogResult.OK)
+                return;
+            if (!noGPI)
+            {
+                name = name.Trim(Path.GetInvalidFileNameChars()).Trim();
+                for (int i = 0; i < categories.Count; i++)
+                {
+                    if (i == layers.SelectedIndices[0]) continue;
+                    if (categories[i].name == name)
+                    {
+                        MessageBox.Show("Categoty with name `" + name + "` already exists!", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                        return;
+                    };
+                };                
+            };
             categories[layers.SelectedIndices[0]].name = name;
             layers.Items[layers.SelectedIndices[0]].Text = String.Format("{0}: {1}", layers.SelectedIndices[0], name);
         }
@@ -209,8 +329,12 @@ namespace KMZRebuilder
                 ms.Close();
 
                 // images
-                for (int i = 0; i < symbols.Count; i++)
-                    ZipFile(symbols[i].file, zipStream);
+                try
+                {
+                    for (int i = 0; i < symbols.Count; i++)
+                        ZipFile(symbols[i].file, zipStream);
+                }
+                catch { };
                 
                 zipStream.IsStreamOwner = true; // Makes the Close also Close the underlying stream
                 zipStream.Close();
@@ -334,6 +458,190 @@ namespace KMZRebuilder
             string txt = txtT + ((txtT == "" ? "" : "\r\n")) + txtI;
             if (txt != "")
                 MessageBox.Show(txt, "Update layers", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private void layers_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyValue == 113) layers_DoubleClick(sender, e);
+            if (e.KeyValue == 13) layers_DoubleClick(sender, e);
+            // if ((layers.CheckBoxes == false) && (e.KeyValue == 32)) layers_DoubleClick(sender, e);
+            if (e.KeyValue == 32) switchsub();
+            if (e.KeyValue == 37) switchsub();
+            if (e.KeyValue == 39) switchsub();
+        }
+
+        public bool IsSubName(string imageIndex)
+        {
+            if (layers.Items.Count == 0) return false;
+            if (String.IsNullOrEmpty(imageIndex)) return false;
+            for (int ii = 0; ii < layers.Items.Count; ii++)
+                if (layers.Items[ii].ImageKey == imageIndex)
+                    if(layers.Items[ii].SubItems.Count > 1)
+                        if(layers.Items[ii].SubItems[1].Text == "subname")
+                            return true;
+            return false;
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            if (layers.Items.Count == 0) return;
+
+            if (isCRC)
+            {
+                OpenFileDialog ofd = new OpenFileDialog();
+                ofd.Title = "Load Names From File";
+                ofd.DefaultExt = ".txt";
+                ofd.Filter = "Text Files (*.txt)|*.txt";
+                if (ofd.ShowDialog() == DialogResult.OK)
+                {
+                    Regex rxgpinn = new Regex(@"gpi_name_(?<crc>[^=]+)\s*=(?<name>[\S\s][^\r\n]+)", RegexOptions.IgnoreCase);
+                    Regex rxgpisn = new Regex(@"gpi_subname_(?<crc>[^=]+)\s*=(?<name>[\S\s][^\r\n]+)", RegexOptions.IgnoreCase);
+                    FileStream fs = new FileStream(ofd.FileName, FileMode.Open, FileAccess.Read);
+                    StreamReader sr = new StreamReader(fs, true);
+                    while (!sr.EndOfStream)
+                    {
+                        string line = sr.ReadLine();
+                        if(line.StartsWith("#")) continue;
+                        MatchCollection mc;
+                        if ((mc = rxgpisn.Matches(line)).Count > 0)
+                        {
+                            string cc = mc[0].Groups["crc"].Value;
+                            string nn = mc[0].Groups["name"].Value;
+                            for (int i = 0; i < this.categories.Count; i++)
+                                if (this.categories[i].ID == cc)
+                                {
+                                    this.categories[i].name = nn;
+                                    this.layers.Items[i].SubItems[0].Text = nn;
+                                    this.layers.Items[i].SubItems[1].Text = "subname";
+                                    this.layers.Items[i].SubItems[0].BackColor = Color.LightPink;
+                                };
+                        };
+                        if ((mc = rxgpinn.Matches(line)).Count > 0)
+                        {
+                            string cc = mc[0].Groups["crc"].Value;
+                            string nn = mc[0].Groups["name"].Value;
+                            for (int i = 0; i < this.categories.Count; i++)
+                                if (this.categories[i].ID == cc)
+                                {
+                                    this.categories[i].name = nn;
+                                    this.layers.Items[i].SubItems[0].Text = nn;
+                                    this.layers.Items[i].SubItems[1].Text = "name";
+                                    this.layers.Items[i].SubItems[0].BackColor = this.layers.BackColor;
+                                };
+                        };
+                    };
+                    sr.Close();
+                    fs.Close();
+                }
+                ofd.Dispose();
+                return;
+            };
+
+            for (int i = 0; i < layers.Items.Count; i++)
+                layers.Items[i].Checked = false;
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            if (layers.Items.Count == 0) return;
+
+            if (isCRC)
+            {
+                SaveFileDialog sfd = new SaveFileDialog();
+                sfd.Title = "Save Names To File";
+                sfd.DefaultExt = ".txt";
+                sfd.Filter = "Text Files (*.txt)|*.txt";
+                if (sfd.ShowDialog() == DialogResult.OK)
+                {
+                    List<string> gSave = new List<string>();
+                    List<string> gLoad = new List<string>();
+                    foreach (Category cat in categories)
+                        if (!String.IsNullOrEmpty(cat.name))
+                        {
+                            if (this.IsSubName(cat.CustomSymbol))
+                                gSave.Add("gpi_subname_" + cat.ID + "=" + cat.name);
+                            else
+                                gSave.Add("gpi_name_" + cat.ID + "=" + cat.name);
+                        };
+                    FileStream fs;
+                    if(File.Exists(sfd.FileName))
+                    {
+                        fs = new FileStream(sfd.FileName, FileMode.Open, FileAccess.Read);
+                        StreamReader sr = new StreamReader(fs, true);
+                        while (!sr.EndOfStream)
+                        {
+                            string line = sr.ReadLine();
+                            if (String.IsNullOrEmpty(line)) continue;
+                            gLoad.Add(line);
+                        };
+                        sr.Close();
+                        fs.Close();
+                    };
+                    Regex rxgpiun = new Regex(@"gpi_(?:sub)?name_(?<crc>\d+)=", RegexOptions.IgnoreCase);
+                    foreach (string gs in gSave)
+                    {
+                        Match mgs = null;
+                        if (!(mgs = rxgpiun.Match(gs)).Success) continue;
+                        bool ex = false;
+                        for (int ii = 0; ii < gLoad.Count; ii++)
+                        {
+                            string glt = gLoad[ii];
+                            Match mgl = null;
+                            if (((mgl = rxgpiun.Match(glt)).Success) && (mgs.Groups["crc"].Value == mgl.Groups["crc"].Value))
+                            {
+                                ex = true;
+                                gLoad[ii] = gs;
+                                ii = gLoad.Count;
+                            };
+                        }
+                        if (!ex)
+                            gLoad.Add(gs);
+                    };
+                    fs = new FileStream(sfd.FileName, FileMode.Create, FileAccess.Write);
+                    StreamWriter sw = new StreamWriter(fs, Encoding.UTF8);
+                    foreach (string gl in gLoad) sw.WriteLine(gl);
+                    sw.Close();
+                    fs.Close();
+                }
+                sfd.Dispose();
+                return;
+            };
+
+            for (int i = 0; i < layers.Items.Count; i++)
+                layers.Items[i].Checked = true;
+        }
+
+        private void layers_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            selttl.Text = layers.CheckedIndices.Count.ToString() + " / " + layers.Items.Count.ToString();
+        }
+
+        private void GMLayRenamerForm_Shown(object sender, EventArgs e)
+        {
+            layers_SelectedIndexChanged(this, e);
+        }
+
+        private void layers_ItemChecked(object sender, ItemCheckedEventArgs e)
+        {
+            layers_SelectedIndexChanged(this, e);
+        }
+
+        private void contextMenuStrip2_Opening(object sender, CancelEventArgs e)
+        {
+            switchToSubnameToolStripMenuItem.Enabled = (layers.SelectedItems.Count > 0) && (layers.SelectedItems[0].SubItems.Count > 1);
+            switchToSubnameToolStripMenuItem.Text = "Switch to " + (layers.SelectedItems[0].SubItems[1].Text == "name" ? "SubName" : "Name");
+        }
+
+        private void switchToSubnameToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            switchsub();
+        }
+
+        private void switchsub()
+        {
+            if ((layers.SelectedItems.Count == 0) || (layers.SelectedItems[0].SubItems.Count < 2)) return;
+            layers.SelectedItems[0].SubItems[1].Text = (layers.SelectedItems[0].SubItems[1].Text == "name" ? "subname" : "name");
+            layers.SelectedItems[0].SubItems[0].BackColor = (layers.SelectedItems[0].SubItems[1].Text == "name" ? layers.BackColor : Color.LightPink);
         }
     }
 
