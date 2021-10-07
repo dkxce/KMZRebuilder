@@ -1,6 +1,8 @@
 # KMZ Rebuilder
 
-KMZRebuilder allow to create/edit/manage/split/merge/import/export/explore yours POI
+KMZRebuilder is a powerfull tool thats allow to create/edit/manage/split/merge/import/export/explore yours POI
+Support KMZ/KML files from Google and SAS.Planet.
+Supported formats: KMZ, KML, GPS, Progorod, WPT, GDB, FIR, TXT, CSV, Clipboard
 
 This is a special tool to edit kmz files.
 Add, remove, rename placemarks & points.
