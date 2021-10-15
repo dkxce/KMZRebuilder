@@ -43,11 +43,14 @@ namespace KMZRebuilder
         private int SYSMENU_WGSFormX = 0x2;
         private int SYSMENU_DefSize  = 0x3;
         private int SYSMENU_MinSize  = 0x4;
+        private int SYSMENU_NEW_INST = 0x5;
 
         public string[] args;
         public MruList MyMruList;
         public static WaitingBoxForm waitBox;
         public MapIcons mapIcons;
+
+        private MemFile.MemoryFile memFile = null;
 
         public static PointInRegionUtils PIRU = new PointInRegionUtils();
 
@@ -70,19 +73,36 @@ namespace KMZRebuilder
             return dir;
         }
 
-        public KMZRebuilederForm(string[] args)
+        public KMZRebuilederForm(string[] args, string captiondop)
         {
             this.args = args;
             
             InitializeComponent();            
             System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
             System.Diagnostics.FileVersionInfo fvi = System.Diagnostics.FileVersionInfo.GetVersionInfo(assembly.Location);
-            Text += " " + fvi.FileVersion + " by " + fvi.CompanyName;
+            Text += " " + captiondop + fvi.FileVersion + " by " + fvi.CompanyName;
 
             RegisterFileAsses();
             prepareTranslit();
             MapIcons.InitZip(CurrentDirectory() + @"\mapicons\default.zip");
-        }        
+
+            try
+            {
+                memFile = new MemFile.MemoryFile("KMZRebuilder");
+                memFile.onGetNotify = OnGetNotifyEvent;
+            }
+            catch { };
+        }
+
+        private void OnGetNotifyEvent(MemFile.MemoryFile.NotifyEvent notify, MemFile.MemoryFile.NotifySource source, byte notifyParam)
+        {
+            if (notify != MemFile.MemoryFile.NotifyEvent.fUserEvent) return;
+            if (notifyParam == 1)
+            {
+                this.args = (string[]) memFile.GetSeriazable();
+                this.Invoke(new EventHandler(LoadFiles), new object[] { null, null });
+            };
+        }
 
         private void RegisterFileAsses()
         {
@@ -118,17 +138,21 @@ namespace KMZRebuilder
             if(Directory.Exists(TempDirectory())) System.IO.Directory.Delete(TempDirectory(),true);
             System.IO.Directory.CreateDirectory(TempDirectory());
 
+            LoadFiles(null, null);
+            PreLoadPlugins(openPluginsToolStripMenuItem);
+        }
+
+        private void LoadFiles(object sender, EventArgs e)
+        {
             if ((args != null) && (args.Length > 0))
             {
                 List<string> files = new List<string>();
-                foreach(string arg in args)
-                    if(File.Exists(arg))
+                foreach (string arg in args)
+                    if (File.Exists(arg))
                         files.Add(arg);
                 if (files.Count > 0)
                     LoadFiles(files.ToArray());
             };
-
-            PreLoadPlugins(openPluginsToolStripMenuItem);
         }
 
         private void MyMruList_FileSelected(string file_name)
@@ -2882,11 +2906,8 @@ namespace KMZRebuilder
         private void FormKMZ_FormClosed(object sender, FormClosedEventArgs e)
         {
             waitBox.Hide();
-            try
-            {
-                if (Directory.Exists(TempDirectory())) System.IO.Directory.Delete(TempDirectory(), true);
-            }
-            catch { };
+            try { if (memFile != null) memFile.Close(); } catch { };
+            try { if (Directory.Exists(TempDirectory())) System.IO.Directory.Delete(TempDirectory(), true); } catch { };
         }
 
         private void OpenTempDir_click(object sender, EventArgs e)
@@ -3393,6 +3414,7 @@ namespace KMZRebuilder
             IntPtr hSysMenu = GetSystemMenu(this.Handle, false);
             AppendMenu(hSysMenu, MF_SEPARATOR, 0, string.Empty);
             AppendMenu(hSysMenu, MF_STRING, SYSMENU_WGSFormX, "Lat && Lon Converter ...");
+            AppendMenu(hSysMenu, MF_STRING, SYSMENU_NEW_INST, "Run New Instance ...");
             AppendMenu(hSysMenu, MF_SEPARATOR, 0, string.Empty);
             AppendMenu(hSysMenu, MF_STRING, SYSMENU_DefSize, "Default Window Size");
             AppendMenu(hSysMenu, MF_STRING, SYSMENU_MinSize, "Minimum Window Size");
@@ -3424,7 +3446,20 @@ namespace KMZRebuilder
                 System.Diagnostics.FileVersionInfo fvi = System.Diagnostics.FileVersionInfo.GetVersionInfo(assembly.Location);
                 string text = fvi.ProductName + " " + fvi.FileVersion + " by " + fvi.CompanyName + "\r\n";
                 text += fvi.LegalCopyright;
+                try
+                {
+                    string[] dnst = DNS.DNSLookUp.Get_TXT("kmztools.dkxce.linkpc.net");
+                    foreach (string dt in dnst)
+                        if (dt.StartsWith("reb: about:"))
+                            text += "\r\n" + dt.Substring(11).Trim();
+                }
+                catch { };
                 MessageBox.Show(text, this.Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
+            };
+            if ((m.Msg == WM_SYSCOMMAND) && ((int)m.WParam == SYSMENU_NEW_INST))
+            {
+                string fn = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
+                System.Diagnostics.Process.Start(fn, "/multiple");
             };
         }
 
