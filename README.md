@@ -10,6 +10,9 @@ Change icons.
 Move points.
 Split and merge kmz files.
 
+[KMZ Repository](https://github.com/dkxce/KMZ_FILES)     
+[KMZ Репозиторий](https://github.com/dkxce/KMZ_FILES)     
+
 <img src="window1.png"/>
 <img src="window2.png"/>
 <img src="window3.png"/>
