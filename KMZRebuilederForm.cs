@@ -9318,7 +9318,25 @@ namespace KMZRebuilder
                             SizeF ms = g.MeasureString(imgs[i].ToString(), new Font("Arial", 11, FontStyle.Bold));
                             g.DrawString(imgs[i].ToString(), new Font("Arial", 11, FontStyle.Bold), Brushes.Black, 16 - ms.Width / 2, 16 - ms.Height / 2);
                             g.Dispose();
-                            bmp.Save(this.tmp_file_dir + @"\images\sasstyle" + imgs[i].ToString() + ".png", ImageFormat.Png);
+                            string fName = this.tmp_file_dir + @"\images\sasstyle" + imgs[i].ToString() + ".png";
+                            try
+                            {
+                                bmp.Save(fName, ImageFormat.Png);
+                            }
+                            catch (Exception ex2)
+                            {
+                                try
+                                {
+                                    ImageMagick.MagickImage mi = new ImageMagick.MagickImage(bmp);
+                                    FileStream sfs = new FileStream(fName, FileMode.Create, FileAccess.Write);
+                                    mi.Write(sfs, ImageMagick.MagickFormat.Png);
+                                    sfs.Close();
+                                }
+                                catch (Exception subex)
+                                {
+
+                                };
+                            };
                             bmp.Dispose();                            
                         };
                         sw.WriteLine("\t<Style id=\"sasstyle" + imgs[i].ToString() + "\"><IconStyle><Icon><href>images/sasstyle" + imgs[i].ToString() + ".png</href></Icon></IconStyle></Style>");
@@ -9895,7 +9913,26 @@ namespace KMZRebuilder
                     SizeF ms = g.MeasureString(i.ToString(), new Font("Arial", 11, FontStyle.Bold));
                     g.DrawString(i.ToString(), new Font("Arial", 11, FontStyle.Bold), Brushes.Black, 16 - ms.Width / 2, 16 - ms.Height / 2);
                     g.Dispose();
-                    bmp.Save(this.tmp_file_dir + @"\images\" + byIcon[i] + ".png", ImageFormat.Png);
+                    string fName = this.tmp_file_dir + @"\images\" + byIcon[i] + ".png";
+                    try
+                    {
+                        bmp.Save(fName, ImageFormat.Png);
+                    }
+                    catch (Exception ex)
+                    {
+                        try
+                        {
+                            ImageMagick.MagickImage mi = new ImageMagick.MagickImage(bmp);
+                            FileStream sfs = new FileStream(fName, FileMode.Create, FileAccess.Write);
+                            mi.Write(sfs, ImageMagick.MagickFormat.Png);
+                            sfs.Close();
+                        }
+                        catch (Exception subex)
+                        {
+
+                        };
+                    };
+
                     bmp.Dispose();
                 };
                 sw.WriteLine("\t<Style id=\"icon" + i.ToString() + "\"><IconStyle><Icon><href>images/" + byIcon[i] + ".png</href></Icon></IconStyle></Style>");
