@@ -73,36 +73,19 @@ namespace KMZRebuilder
             return dir;
         }
 
-        public KMZRebuilederForm(string[] args, string captiondop)
+        public KMZRebuilederForm(string[] args)
         {
             this.args = args;
             
             InitializeComponent();            
             System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
             System.Diagnostics.FileVersionInfo fvi = System.Diagnostics.FileVersionInfo.GetVersionInfo(assembly.Location);
-            Text += " " + captiondop + fvi.FileVersion + " by " + fvi.CompanyName;
+            Text += " " + fvi.FileVersion + " by " + fvi.CompanyName;
 
             RegisterFileAsses();
             prepareTranslit();
             MapIcons.InitZip(CurrentDirectory() + @"\mapicons\default.zip");
-
-            try
-            {
-                memFile = new MemFile.MemoryFile("KMZRebuilder");
-                memFile.onGetNotify = OnGetNotifyEvent;
-            }
-            catch { };
-        }
-
-        private void OnGetNotifyEvent(MemFile.MemoryFile.NotifyEvent notify, MemFile.MemoryFile.NotifySource source, byte notifyParam)
-        {
-            if (notify != MemFile.MemoryFile.NotifyEvent.fUserEvent) return;
-            if (notifyParam == 1)
-            {
-                this.args = (string[]) memFile.GetSeriazable();
-                this.Invoke(new EventHandler(LoadFiles), new object[] { null, null });
-            };
-        }
+        }      
 
         private void RegisterFileAsses()
         {
@@ -3453,13 +3436,15 @@ namespace KMZRebuilder
                         if (dt.StartsWith("reb: about:"))
                             text += "\r\n" + dt.Substring(11).Trim();
                 }
-                catch { };
+                catch (Exception ex) 
+                { 
+                };
                 MessageBox.Show(text, this.Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
             };
             if ((m.Msg == WM_SYSCOMMAND) && ((int)m.WParam == SYSMENU_NEW_INST))
             {
                 string fn = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
-                System.Diagnostics.Process.Start(fn, "/multiple");
+                System.Diagnostics.Process.Start(fn);
             };
         }
 
@@ -9679,8 +9664,13 @@ namespace KMZRebuilder
                 foreach (XmlNode trkseg in trk.SelectNodes("trkseg"))
                 {
                     string xyz = "";
-                    foreach (XmlNode trkpt in trkseg.SelectNodes("trkpt"))
+                    XmlNodeList nl = trkseg.SelectNodes("trkpt");
+                    int cnt = 0; 
+                    foreach (XmlNode trkpt in nl) // FOR DEBUG COUNTER
+                    {                         
                         xyz += trkpt.Attributes["lon"].Value + "," + trkpt.Attributes["lat"].Value + ",0 ";
+                        cnt++;
+                    };
                     sw.WriteLine("\t\t\t<Placemark>");
                     sw.WriteLine("\t\t\t\t<name>" + nam + "</name>");
                     sw.WriteLine("\t\t\t\t<description><![CDATA[" + desc + "]]></description>");

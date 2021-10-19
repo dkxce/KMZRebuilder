@@ -17,10 +17,6 @@ namespace KMZRebuilder
 {
     static class Program
     {
-        [DllImport("user32.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        static extern bool SetForegroundWindow(IntPtr hWnd);
-
         public static KMZRebuilederForm mainForm;
 
         /// <summary>
@@ -29,8 +25,6 @@ namespace KMZRebuilder
         [STAThread]
         static void Main(string[] args)
         {
-            bool onlyOneInstance = true;
-
             //FormKMZ.ConvertImageToBmp8bppIndexed(@"C:\Downloads\CD-REC\KMZRebuilder[Sources]\bin\Debug\dot[red].png",
             //    @"C:\Downloads\CD-REC\KMZRebuilder[Sources]\bin\Debug\dot[red].bmp");
             //return;
@@ -41,9 +35,6 @@ namespace KMZRebuilder
             //Application.ThreadException += new ThreadExceptionEventHandler(Application_ThreadException);
             //AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);
 
-            if ((args != null) && (args.Length > 0) && (args[0] == "/m")) onlyOneInstance = false;
-            if ((args != null) && (args.Length > 0) && (args[0] == "/multi")) onlyOneInstance = false;
-            if ((args != null) && (args.Length > 0) && (args[0] == "/multiple")) onlyOneInstance = false;
             if ((args != null) && (args.Length > 0) && (args[0] == "/bpa"))
             {
                 Application.Run(new BenzinPriceAnalizer.BenzinPriceAnalizerForm());
@@ -80,38 +71,8 @@ namespace KMZRebuilder
                 return;
             };
 
-            Process rp = RunningProcess();
-            if ((onlyOneInstance) && (rp != null))
-            {
-                try { SetForegroundWindow(rp.MainWindowHandle); } catch { };
-                if ((args != null) && (args.Length > 0))
-                {
-                    MemFile.MemoryFile mf = null;
-                    try
-                    {
-                        mf = new MemFile.MemoryFile("KMZRebuilder");
-                        mf.SetSeriazable(args);
-                        mf.SetNotifyUserEvent(1);
-                    }
-                    catch { };
-                    try { if(mf != null) mf.Close(); } catch { };                                        
-                };
-                Application.Exit();
-                return;
-            };
-            Application.Run(mainForm = new KMZRebuilederForm(args, rp == null ? "" : "[" + (new Random()).Next(10,99).ToString() + "] "));
-        }
 
-        public static Process RunningProcess()
-        {
-            Process current = Process.GetCurrentProcess();
-            foreach (Process process in Process.GetProcessesByName(current.ProcessName))
-                if (process.Id != current.Id)
-                    return process;
-            foreach (Process process in Process.GetProcessesByName("KMZRebuilder.vshost.exe"))
-                if (process.Id != current.Id)
-                    return process;
-            return null;
+            Application.Run(mainForm = new KMZRebuilederForm(args));
         }
 
         //private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)

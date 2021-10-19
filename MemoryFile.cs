@@ -66,16 +66,6 @@ namespace MemFile
         }
 
         /// <summary>
-        ///     Notify Source
-        /// </summary>
-        public enum NotifySource : byte
-        {
-            nsUnknown = 0,
-            nsThread = 1,
-            nsSystem = 2
-        }
-
-        /// <summary>
         ///     File State 
         /// </summary>
         public enum FileState : byte
@@ -150,7 +140,7 @@ namespace MemFile
         /// </summary>
         /// <param name="notify">Notify Event Type</param>
         /// <param name="notifyParam">Notify param, for fUserEvent is userEventCode</param>
-        public delegate void OnGetNotify(NotifyEvent notify, NotifySource source, byte notifyParam);
+        public delegate void OnGetNotify(NotifyEvent notify, byte notifyParam);
 
         private SafeFileMappingHandle fileHandle = null;
         private const int notify_timeout = 500; // ms timeout        
@@ -167,10 +157,7 @@ namespace MemFile
         private bool typeFileOrKernel = false; // false - file
         private bool connected = false;
         private bool _resetUserEvent2Zero = true;
-        private IncomingMessagesWindow imw = null;
-        private NotifySource _processNotifySources = NotifySource.nsThread;
         private Exception _lastEx = null;
-
         /// <summary>
         ///     On Notify Event
         /// </summary>
@@ -193,21 +180,6 @@ namespace MemFile
         }
 
         /// <summary>
-        ///     Process Notify from: nsUnknown - no process; nsSystem, nsFile or nsSystem | nsFile
-        /// </summary>
-        public NotifySource ProcessNotifySources
-        {
-            get
-            {
-                return _processNotifySources;
-            }
-            set
-            {                
-                _processNotifySources = value;
-            }
-        }
-
-        /// <summary>
         ///     Linked to file in memory
         /// </summary>
         public bool Connected { get { return connected; } }
@@ -221,16 +193,6 @@ namespace MemFile
         ///     File Size in Memory (file size + flag bytes)
         /// </summary>
         public uint MemorySize { get { return FullFileSize; } }
-
-        /// <summary>
-        ///     Create Memory File and Link to it
-        /// </summary>
-        /// <param name="fileName">unical file name</param>
-        public MemoryFile(string fileName)
-        {            
-            FullFileName = String.Format("Global\\{0}", fileName);
-            Connect();
-        }
 
         /// <summary>
         ///     Create Memory File and Link to it
@@ -252,7 +214,6 @@ namespace MemFile
         public void SetNotifyUserEvent(byte userEventCode)
         {
             _userEvent = userEventCode;
-            if(imw != null) imw.SendMessage((int)0xFF00 + (int)userEventCode);
         }
 
         /// <summary>
@@ -453,7 +414,6 @@ namespace MemFile
             if (sendUpdate)
             {
                 _fileWrited++;
-                if (imw != null) imw.SendMessage((byte)NotifyEvent.fWrited);
             };
         }
 
@@ -496,14 +456,7 @@ namespace MemFile
                 
                 connected = true;
                 _fileClients++;
-
-                try
-                {
-                    imw = new IncomingMessagesWindow(FullFileName, Process.GetCurrentProcess().Handle, GetNotify);
-                }
-                catch (Exception ex) { _lastEx = ex; };
-                if (imw != null) imw.SendMessage((byte)NotifyEvent.fConnected);
-
+                
                 nThread = new System.Threading.Thread(NotifyThread);
                 nThread.Start();                
 
@@ -514,6 +467,7 @@ namespace MemFile
             }
             catch (Exception ex)
             {
+                MessageBox.Show(ex.ToString());
                 _lastEx = ex;
                 throw ex;
             };
@@ -649,7 +603,6 @@ namespace MemFile
             if (tof == typeof(int[])) _fileType = (byte)FileType.ftIntArray;
             this.intState = FileState.fsReady;
             _fileWrited++;
-            if (imw != null) imw.SendMessage((byte)NotifyEvent.fWrited);
         }
 
         /// <summary>
@@ -669,7 +622,6 @@ namespace MemFile
             };
             this.intState = FileState.fsReady;
             _fileReaded++;
-            if (imw != null) imw.SendMessage((byte)NotifyEvent.fHandled);
             return res;
         }
 
@@ -693,7 +645,6 @@ namespace MemFile
             _fileType = (byte)FileType.ftXmlSeriazable;
             this.intState = FileState.fsReady;
             _fileWrited++;
-            if (imw != null) imw.SendMessage((byte)NotifyEvent.fWrited);
         }
 
         /// <summary>
@@ -714,7 +665,6 @@ namespace MemFile
             };
             this.intState = FileState.fsReady;
             _fileReaded++;
-            if (imw != null) imw.SendMessage((byte)NotifyEvent.fHandled);
             return res;
         }
 
@@ -735,12 +685,6 @@ namespace MemFile
             {
                 try { _Stream.Close(); } catch (Exception ex) { _lastEx = ex; };
                 _fileClients--;
-                if (imw != null)
-                {
-                    imw.SendMessage((byte)NotifyEvent.fDisconnected);
-                    imw.Destroy();
-                    imw = null;
-                };
 
                 if (ptrState != IntPtr.Zero)
                 {
@@ -779,7 +723,6 @@ namespace MemFile
                     };
                 };
                 _fileReaded++;
-                if (imw != null) imw.SendMessage((byte)NotifyEvent.fHandled);
                 return res;
             }
             set
@@ -806,7 +749,6 @@ namespace MemFile
                 };
                 _fileType = (byte)FileType.ftKeyValues;
                 _fileWrited++;
-                if (imw != null) imw.SendMessage((byte)NotifyEvent.fWrited);
             }
         }
 
@@ -826,7 +768,6 @@ namespace MemFile
                 _fileType = (byte)FileType.ftText;
                 this.intState = FileState.fsReady;
                 _fileReaded++;
-                if (imw != null) imw.SendMessage((byte)NotifyEvent.fHandled);
                 return System.Text.Encoding.UTF8.GetString(res).Trim('\0');
             }
             set
@@ -840,7 +781,6 @@ namespace MemFile
                 };
                 this.intState = FileState.fsReady;
                 _fileWrited++;
-                if (imw != null) imw.SendMessage((byte)NotifyEvent.fWrited);
             }
         }
 
@@ -862,7 +802,6 @@ namespace MemFile
             };
             this.intState = FileState.fsReady;            
             _fileReaded++;
-            if (imw != null) imw.SendMessage((byte)NotifyEvent.fHandled);
         }
 
         /// <summary>
@@ -883,7 +822,6 @@ namespace MemFile
             };
             this.intState = FileState.fsReady;
             _fileWrited++;
-            if (imw != null) imw.SendMessage((byte)NotifyEvent.fWrited);
         }
 
         /// <summary>
@@ -901,7 +839,6 @@ namespace MemFile
             _fileType = (byte)FileType.ftMarshalStructure;
             this.intState = FileState.fsReady;
             _fileWrited++;
-            if (imw != null) imw.SendMessage((byte)NotifyEvent.fWrited);
         }
 
         /// <summary>
@@ -919,7 +856,6 @@ namespace MemFile
             };
             this.intState = FileState.fsReady;
             _fileReaded++;
-            if (imw != null) imw.SendMessage((byte)NotifyEvent.fHandled);
             return res;
         }
 
@@ -939,15 +875,14 @@ namespace MemFile
         /// </summary>
         /// <param name="notify"></param>
         /// <param name="notifyParam"></param>
-        private void GetNotify(NotifyEvent notify, NotifySource source, byte notifyParam)
+        private void GetNotify(NotifyEvent notify, byte notifyParam)
         {            
-            if ((source & _processNotifySources) <= 0) return;
             if ((notify == NotifyEvent.fUserEvent) && (_resetUserEvent2Zero) && (notifyParam > 0)) _userEvent = 0;
 
             if (onGetNotify == null)
-                Console.WriteLine("Get Notify from {2}: {0}({1})", notify, notifyParam, source);
+                Console.WriteLine("Get Notify: {0}({1})", notify, notifyParam);
             else
-                onGetNotify(notify, source, notifyParam);
+                onGetNotify(notify, notifyParam);
         }
 
         /// <summary>
@@ -963,11 +898,11 @@ namespace MemFile
             {
                 while (connected)
                 {
-                    if (prevState[0] < _fileClients) { GetNotify(NotifyEvent.fConnected, NotifySource.nsThread, _fileClients); };
-                    if (prevState[0] > _fileClients) { GetNotify(NotifyEvent.fDisconnected, NotifySource.nsThread, _fileClients); };
-                    if (prevState[1] != _fileReaded) { GetNotify(NotifyEvent.fHandled, NotifySource.nsThread, _fileReaded); };
-                    if (prevState[2] != _fileWrited) { GetNotify(NotifyEvent.fWrited, NotifySource.nsThread, _fileWrited); };
-                    if (prevState[3] != _userEvent) { GetNotify(NotifyEvent.fUserEvent, NotifySource.nsThread, _userEvent); };
+                    if (prevState[0] < _fileClients) { GetNotify(NotifyEvent.fConnected, _fileClients); };
+                    if (prevState[0] > _fileClients) { GetNotify(NotifyEvent.fDisconnected, _fileClients); };
+                    if (prevState[1] != _fileReaded) { GetNotify(NotifyEvent.fHandled, _fileReaded); };
+                    if (prevState[2] != _fileWrited) { GetNotify(NotifyEvent.fWrited, _fileWrited); };
+                    if (prevState[3] != _userEvent) { GetNotify(NotifyEvent.fUserEvent, _userEvent); };
                     prevState[0] = _fileClients;
                     prevState[1] = _fileReaded;
                     prevState[2] = _fileWrited;
@@ -1277,161 +1212,5 @@ namespace MemFile
         public SampleClass4Marshal() { }
         public SampleClass4Marshal(int x, int y, string name, string[] vals) { this.x = x; this.y = y; this.name = name; this.dt = DateTime.Now; this.VALUES = vals; }
         public override string ToString() { return String.Format("{3} {0};{1} {2} {4}", x, y, name, dt, values); }
-    }
-
-    /// <summary>
-    ///     Class to Receive System Messages (SendMessage, PostMessage, SendNotifyMessage)
-    /// </summary>
-    public class IncomingMessagesWindow : NativeWindow
-    {
-        private const int HWND_BROADCAST = 0xFFFF;
-        private const int WM_CLOSE = 0x0010;
-        private const int WM_USER = 0x0400;
-        private const int WM_USER_MAX = 0x7FFF;
-        private const int WM_APP = 0x8000;
-        private const int WM_APP_MAX = 0xBFFF;        
-
-        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
-        private static extern int RegisterWindowMessage(string lpString);
-
-        [DllImport("user32.dll", CharSet = CharSet.Auto)]
-        private static extern IntPtr SendMessage(IntPtr hWnd, int Msg, int wParam, IntPtr lParam);
-
-        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
-        private static extern bool SendNotifyMessage(IntPtr hWnd, int msg, int wParam, IntPtr lParam);
-
-        [DllImport("user32.dll")]
-        private static extern bool PostMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
-
-        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
-        private static extern int GetWindowText(IntPtr hWnd, StringBuilder strText, int maxCount);
-
-        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
-        private static extern int GetWindowTextLength(IntPtr hWnd);
-
-        [DllImport("user32.dll")]
-        private static extern bool EnumWindows(EnumWindowsProc enumProc, IntPtr lParam);
-
-        private delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
-
-        private int WM_USERNOTIFY = 0;
-        private IntPtr _appHandle = IntPtr.Zero;
-        private string _caption = "NoName";
-        private MemoryFile.OnGetNotify _onGetNotify = null;
-
-        public IncomingMessagesWindow(string caption, IntPtr applicationHandle, MemoryFile.OnGetNotify onGetNotify)
-        {
-            _caption = "MSG_" + caption;
-            _appHandle = applicationHandle;
-            WM_USERNOTIFY = RegisterWindowMessage(_caption);
-            _caption += "_" + WM_USERNOTIFY.ToString();
-            _onGetNotify = onGetNotify;
-
-            CreateParams cp = new CreateParams();
-            cp.Style = 0;
-            cp.ExStyle = 0;
-            cp.ClassStyle = 0;
-            cp.Caption = _caption;
-            cp.Parent = IntPtr.Zero;
-            CreateHandle(cp);
-        }
-
-        private static string GetWindowText(IntPtr hWnd)
-        {
-            int size = GetWindowTextLength(hWnd);
-            if (size > 0)
-            {
-                StringBuilder builder = new StringBuilder(size + 1);
-                GetWindowText(hWnd, builder, builder.Capacity);
-                return builder.ToString();
-            };
-            return String.Empty;
-        }
-
-        private static IEnumerable<IntPtr> FindWindows(EnumWindowsProc filter)
-        {
-            IntPtr found = IntPtr.Zero;
-            List<IntPtr> windows = new List<IntPtr>();
-
-            EnumWindows(delegate(IntPtr wnd, IntPtr param)
-            {
-                if (filter(wnd, param))
-                {
-                    // only add the windows that pass the filter
-                    windows.Add(wnd);
-                };
-                // but return true here so that we iterate all windows
-                return true;
-            }, IntPtr.Zero);
-            return windows;
-        }
-
-        public static IEnumerable<IntPtr> FindWindows(string titleText)
-        {
-            return FindWindows(delegate(IntPtr wnd, IntPtr param)
-            {
-                return GetWindowText(wnd).Contains(titleText);
-            });
-        } 
-
-        public void SendMessage(int message)
-        {
-            try
-            {
-                // Broadcast
-                SendNotifyMessage((IntPtr)HWND_BROADCAST, WM_USERNOTIFY, message, _appHandle);
-
-                //// No Broadcast
-                //IEnumerable<IntPtr> apps = FindWindows(_caption);
-                //if (apps == null) return;
-                //foreach (IntPtr app in apps)
-                //{
-                //    try
-                //    {
-                //        SendNotifyMessage(app, WM_USERNOTIFY, message, _appHandle);
-                //        //PostMessage(app, WM_USERNOTIFY, message, (int)_appHandle);
-                //        //SendMessage(app, WM_USERNOTIFY, message, _appHandle);                    
-                //    }
-                //    catch (Exception ex)
-                //    {
-                //       _lastEx = ex;
-                //    };
-                //};
-            }
-            catch { }
-        }
-
-        public void Destroy()
-        {
-            SendMessage(this.Handle, WM_CLOSE, 0, IntPtr.Zero);
-            ReleaseHandle();
-        }
-
-        protected override void WndProc(ref Message m)
-        {
-            // WM_USER //
-            if ((m.Msg >= WM_USER) && (m.Msg <= WM_USER_MAX)) { };
-
-            // WM_APP //
-            if ((m.Msg == WM_APP) && (m.Msg <= WM_APP_MAX)) { };
-
-            // Registered by RegisterWindowMessage //
-            if (m.Msg == WM_USERNOTIFY) 
-            {
-                if (m.LParam != _appHandle)
-                {
-                    MemoryFile.NotifyEvent ne = (MemoryFile.NotifyEvent)m.WParam;
-                    byte paramVal = 0;
-                    if ((int)m.WParam >= 0xFF)
-                    {
-                        ne = MemoryFile.NotifyEvent.fUserEvent;
-                        paramVal = (byte)m.WParam;
-                    };
-                    _onGetNotify(ne, MemoryFile.NotifySource.nsSystem, paramVal);
-                };
-            };
-
-            base.WndProc(ref m);
-        }
-    }    
+    }   
 }
