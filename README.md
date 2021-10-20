@@ -3,7 +3,9 @@
 KMZRebuilder is a powerfull tool thats allow to create/edit/manage/split/merge/import/export/explore/sort yours POI.    
 Working with points, polylines and polygons. You can filter POI by text, routes/tracks, polylines or geozones/polygons/areas.    
 Support KMZ/KML files from [Google](https://www.google.com/maps/d/) and [SAS.Planet](http://www.sasgis.org/sasplaneta/).
-Supported formats: KMZ, KML, GPS, Progorod, WPT, GDB, FIR, TXT, CSV, DB3 (SAS.Planet), Clipboard
+Supported formats: KMZ, KML, GPS, Progorod, WPT, GDB, FIR, TXT, CSV, DB3 (SAS.Planet), Clipboard.     
+
+You can export result kmz file to HTML Map and upload it to your site.    
 
 This is a special tool to edit kmz files.
 Add, remove, rename placemarks & points.
