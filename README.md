@@ -11,10 +11,12 @@ Change icons.
 Move points.
 Split and merge kmz files.
 
+You can use result files in [KMZViewer](https://github.com/dkxce/KMZViewer), [OruxMaps](http://oruxmaps.com), [Google Maps](https://www.google.com/maps/d/), [SASPlanet](http://www.sasgis.org/sasplaneta/) and more others...
+
 KMZRebuilder - мощная программа для работы с KMZ/KML файлами. Импорт/экспорт/создание/редактирование ваших точек интереса в одном удобном интерфейсе. Подключение внешних тайлов и импорт из других форматов. Работа со слоями. Экспорт точек в навигаторы. Обработка треков, полилиний, полигонов и прочие возможности. 
 
-[KMZ Repository](https://github.com/dkxce/KMZ_FILES)     
-[KMZ Репозиторий](https://github.com/dkxce/KMZ_FILES)     
+[KMZ files Repository](https://github.com/dkxce/KMZ_FILES)     
+[Репозиторий KMZ файлов](https://github.com/dkxce/KMZ_FILES)     
 
 <img src="window1.png"/>
 <img src="window2.png"/>
