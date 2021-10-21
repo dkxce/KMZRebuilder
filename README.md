@@ -30,3 +30,4 @@ KMZRebuilder - мощная программа для работы с KMZ/KML ф
 <img src="window8.png"/>
 <img src="window9.png"/>
 <img src="windowA.png"/>
+<img src="windowB.png"/>
