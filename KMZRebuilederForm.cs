@@ -3407,7 +3407,7 @@ namespace KMZRebuilder
 
         protected override void WndProc(ref Message m)
         {
-            base.WndProc(ref m);
+            base.WndProc(ref m); 
 
             if ((m.Msg == WM_SYSCOMMAND) && ((int)m.WParam == SYSMENU_MinSize))
             {
