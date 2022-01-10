@@ -84,6 +84,7 @@ namespace KMZRebuilder
             this.markAllAsNotDeletedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.invertDeletedMarksToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.MView = new NaviMapNet.NaviMapNetViewer();
+            this.selmbtfToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip2.SuspendLayout();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.cD)).BeginInit();
@@ -112,6 +113,7 @@ namespace KMZRebuilder
             this.toolStripDropDownButton1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.toolStripDropDownButton1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.èçìåíèòüUserDefinedUrlToolStripMenuItem,
+            this.selmbtfToolStripMenuItem,
             this.toolStripMenuItem2,
             this.èçìåíèòüToolStripMenuItem,
             this.âûáðàòüÏàïêóÊýøàSASPlanetToolStripMenuItem,
@@ -668,6 +670,13 @@ namespace KMZRebuilder
             this.MView.MouseClick += new System.Windows.Forms.MouseEventHandler(this.MapViewer_MouseClick);
             this.MView.MouseDown += new System.Windows.Forms.MouseEventHandler(this.MView_MouseDown);
             // 
+            // selmbtfToolStripMenuItem
+            // 
+            this.selmbtfToolStripMenuItem.Name = "selmbtfToolStripMenuItem";
+            this.selmbtfToolStripMenuItem.Size = new System.Drawing.Size(261, 22);
+            this.selmbtfToolStripMenuItem.Text = "Âûáðàòü MBTiles ôàéë...";
+            this.selmbtfToolStripMenuItem.Click += new System.EventHandler(this.selmbtfToolStripMenuItem_Click);
+            // 
             // PolyCreator
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -751,5 +760,6 @@ namespace KMZRebuilder
         private System.Windows.Forms.Button button5;
         private System.Windows.Forms.Button button6;
         private System.Windows.Forms.ToolStripStatusLabel persqr;
+        private System.Windows.Forms.ToolStripMenuItem selmbtfToolStripMenuItem;
     }
 }

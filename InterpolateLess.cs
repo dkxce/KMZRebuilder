@@ -21,6 +21,7 @@ namespace KMZRebuilder
 
         private string SASPlanetCacheDir = @"C:\Program Files\SASPlanet\cache\osmmapMapnik\";
         private string UserDefindedUrl = @"http://tile.openstreetmap.org/{z}/{x}/{y}.png";
+        private string UserDefindedFile = @"C:\nofile.mbtiles";
 
         public InterLessForm(KMZRebuilederForm parent)
         {
@@ -92,6 +93,7 @@ namespace KMZRebuilder
             //iStorages.Items.Add("Google Sat");
 
             // LOAD USER-DEFINED MAPS
+            iStorages.Items.Add(new MapStore("[[*** MBTiles file ***]]", "", NaviMapNet.NaviMapNetViewer.MapServices.Custom_MBTiles));
             iStorages.Items.Add(new MapStore("[[*** User-Defined Url ***]]", "", "URLDefined"));
             iStorages.Items.Add(new MapStore("[[*** SAS Planet Cache ***]]", "", "SASPlanet"));
 
@@ -113,6 +115,7 @@ namespace KMZRebuilder
             {
                 SASPlanetCacheDir = state.SASDir;
                 UserDefindedUrl = state.URL;
+                UserDefindedFile = state.FILE;
                 if (MView.ZoomID > 0)
                 {
                     MView.CenterDegrees = new PointF((float)state.X, (float)state.Y);
@@ -159,6 +162,11 @@ namespace KMZRebuilder
 
                 if (iStorages.SelectedIndex == (iStorages.Items.Count - 2))
                     MView.ImageSourceUrl = UserDefindedUrl;
+                else if (iStorages.SelectedIndex == (iStorages.Items.Count - 3))
+                {
+                    MView.UseDiskCache = false;
+                    MView.ImageSourceUrl = UserDefindedFile;
+                }
                 else
                     MView.ImageSourceUrl = iS.Url;
             };
@@ -170,6 +178,7 @@ namespace KMZRebuilder
                 MView.ImageSourceUrl = SASPlanetCacheDir;
             };
 
+            iStorages.Refresh();
             MView.ReloadMap();
         }
 
@@ -719,11 +728,35 @@ namespace KMZRebuilder
             state.MapID = iStorages.SelectedIndex;
             state.SASDir = SASPlanetCacheDir;
             state.URL = UserDefindedUrl;
+            state.FILE = UserDefindedFile;
             state.X = MView.CenterDegreesX;
             state.Y = MView.CenterDegreesY;
             state.Z = MView.ZoomID;
             string fn = KMZRebuilederForm.CurrentDirectory() + @"\KMZRebuilder.stt";
             State.Save(fn, state);
+        }
+
+        private void smbtToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            string fName = null;
+
+            OpenFileDialog ofd = new OpenFileDialog();
+            ofd.Title = "Select MBTiles File";
+            ofd.DefaultExt = ".mbtiles";
+            ofd.Filter = "All supported files|*.mbtiles;*.sqlite;*.db;*.db3|All Types (*.*)|*.*";
+            try { ofd.FileName = UserDefindedFile; }
+            catch { };
+            if (ofd.ShowDialog() == DialogResult.OK) fName = ofd.FileName;
+            ofd.Dispose();
+
+            if (!String.IsNullOrEmpty(fName))
+            {
+                UserDefindedFile = fName;
+                if (iStorages.SelectedIndex == (iStorages.Items.Count - 3))
+                    iStorages_SelectedIndexChanged(sender, e);
+                else
+                    iStorages.SelectedIndex = iStorages.Items.Count - 3;
+            };
         }
     }
 
@@ -749,6 +782,12 @@ namespace KMZRebuilder
             this.Name = Name;
             this.Url = Url;
             this.CacheDir = Cache;
+        }
+        public MapStore(string Name, string Url, NaviMapNet.NaviMapNetViewer.MapServices Service)
+        {
+            this.Name = Name;
+            this.Url = Url;
+            this.Service = Service;
         }
     }
 }

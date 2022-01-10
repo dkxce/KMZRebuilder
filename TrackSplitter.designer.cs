@@ -68,6 +68,7 @@ namespace KMZRebuilder
             this.importSegmentsFromFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem4 = new System.Windows.Forms.ToolStripSeparator();
             this.openProjectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.loadRoutePlannerProjectNoPaywaysToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveProjectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem5 = new System.Windows.Forms.ToolStripSeparator();
             this.exportProjectToKMLToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -101,7 +102,7 @@ namespace KMZRebuilder
             this.columnHeader8 = new System.Windows.Forms.ColumnHeader();
             this.panel2 = new System.Windows.Forms.Panel();
             this.label2 = new System.Windows.Forms.Label();
-            this.loadRoutePlannerProjectNoPaywaysToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.selectMBTilesFilesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip2.SuspendLayout();
             this.panel1.SuspendLayout();
             this.contextMenuStrip1.SuspendLayout();
@@ -136,6 +137,7 @@ namespace KMZRebuilder
             this.toolStripDropDownButton1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.toolStripDropDownButton1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.èçìåíèòüUserDefinedUrlToolStripMenuItem,
+            this.selectMBTilesFilesToolStripMenuItem,
             this.toolStripMenuItem1,
             this.èçìåíèòüToolStripMenuItem,
             this.âûáðàòüÏàïêóÊýøàSASPlanetToolStripMenuItem,
@@ -493,7 +495,7 @@ namespace KMZRebuilder
             this.toolStripMenuItem10,
             this.selectNoneToolStripMenuItem1});
             this.contextMenuStrip2.Name = "contextMenuStrip2";
-            this.contextMenuStrip2.Size = new System.Drawing.Size(325, 392);
+            this.contextMenuStrip2.Size = new System.Drawing.Size(325, 370);
             this.contextMenuStrip2.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuStrip2_Opening);
             // 
             // splitTrackToSegmentsAndCreateWaypointsFileToolStripMenuItem
@@ -521,6 +523,13 @@ namespace KMZRebuilder
             this.openProjectToolStripMenuItem.Size = new System.Drawing.Size(324, 22);
             this.openProjectToolStripMenuItem.Text = "Open Route Planner Project ...";
             this.openProjectToolStripMenuItem.Click += new System.EventHandler(this.openProjectToolStripMenuItem_Click);
+            // 
+            // loadRoutePlannerProjectNoPaywaysToolStripMenuItem
+            // 
+            this.loadRoutePlannerProjectNoPaywaysToolStripMenuItem.Name = "loadRoutePlannerProjectNoPaywaysToolStripMenuItem";
+            this.loadRoutePlannerProjectNoPaywaysToolStripMenuItem.Size = new System.Drawing.Size(324, 22);
+            this.loadRoutePlannerProjectNoPaywaysToolStripMenuItem.Text = "Load Route Planner Project (No Payways) ...";
+            this.loadRoutePlannerProjectNoPaywaysToolStripMenuItem.Click += new System.EventHandler(this.loadRoutePlannerProjectNoPaywaysToolStripMenuItem_Click);
             // 
             // saveProjectToolStripMenuItem
             // 
@@ -798,12 +807,12 @@ namespace KMZRebuilder
             this.label2.TabIndex = 0;
             this.label2.Text = resources.GetString("label2.Text");
             // 
-            // loadRoutePlannerProjectNoPaywaysToolStripMenuItem
+            // selectMBTilesFilesToolStripMenuItem
             // 
-            this.loadRoutePlannerProjectNoPaywaysToolStripMenuItem.Name = "loadRoutePlannerProjectNoPaywaysToolStripMenuItem";
-            this.loadRoutePlannerProjectNoPaywaysToolStripMenuItem.Size = new System.Drawing.Size(324, 22);
-            this.loadRoutePlannerProjectNoPaywaysToolStripMenuItem.Text = "Load Route Planner Project (No Payways) ...";
-            this.loadRoutePlannerProjectNoPaywaysToolStripMenuItem.Click += new System.EventHandler(this.loadRoutePlannerProjectNoPaywaysToolStripMenuItem_Click);
+            this.selectMBTilesFilesToolStripMenuItem.Name = "selectMBTilesFilesToolStripMenuItem";
+            this.selectMBTilesFilesToolStripMenuItem.Size = new System.Drawing.Size(261, 22);
+            this.selectMBTilesFilesToolStripMenuItem.Text = "Âûáðàòü MBTiles ôàéë...";
+            this.selectMBTilesFilesToolStripMenuItem.Click += new System.EventHandler(this.selectMBTilesFilesToolStripMenuItem_Click);
             // 
             // TrackSplitter
             // 
@@ -916,5 +925,6 @@ namespace KMZRebuilder
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem10;
         private System.Windows.Forms.ToolStripMenuItem clearPaywaysToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem loadRoutePlannerProjectNoPaywaysToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem selectMBTilesFilesToolStripMenuItem;
     }
 }

@@ -33,6 +33,7 @@ namespace KMZRebuilder
             this.statusStrip2 = new System.Windows.Forms.StatusStrip();
             this.toolStripDropDownButton1 = new System.Windows.Forms.ToolStripDropDownButton();
             this.èçìåíèòüUserDefinedUrlToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.selectMBTilesFilesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem7 = new System.Windows.Forms.ToolStripSeparator();
             this.èçìåíèòüToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.CDSC = new System.Windows.Forms.ToolStripMenuItem();
@@ -46,6 +47,7 @@ namespace KMZRebuilder
             this.sWAPToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.searchToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem4 = new System.Windows.Forms.ToolStripSeparator();
+            this.showRouteBarToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.spvl = new System.Windows.Forms.ToolStripMenuItem();
             this.OMM = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusLabel2 = new System.Windows.Forms.ToolStripStatusLabel();
@@ -209,6 +211,46 @@ namespace KMZRebuilder
             this.navigateToToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem16 = new System.Windows.Forms.ToolStripSeparator();
             this.switchToNavigationModeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.routeBar = new System.Windows.Forms.StatusStrip();
+            this.roufsa = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolStripStatusLabel6 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.oncb = new System.Windows.Forms.ToolStripDropDownButton();
+            this.rbDN = new System.Windows.Forms.ToolStripMenuItem();
+            this.rbStFi = new System.Windows.Forms.ToolStripMenuItem();
+            this.rbSt = new System.Windows.Forms.ToolStripMenuItem();
+            this.rbFi = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem31 = new System.Windows.Forms.ToolStripSeparator();
+            this.rbGR = new System.Windows.Forms.ToolStripMenuItem();
+            this.rbSL = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripStatusLabel7 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.rtStart = new System.Windows.Forms.ToolStripStatusLabel();
+            this.rbSw = new System.Windows.Forms.ToolStripSplitButton();
+            this.rtFinish = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolStripStatusLabel10 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.rbSet = new System.Windows.Forms.ToolStripSplitButton();
+            this.setURLToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.setKeyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.setToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem32 = new System.Windows.Forms.ToolStripSeparator();
+            this.setColorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.setWidthToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem33 = new System.Windows.Forms.ToolStripSeparator();
+            this.timeoutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem35 = new System.Windows.Forms.ToolStripSeparator();
+            this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.rbGet = new System.Windows.Forms.ToolStripSplitButton();
+            this.rtt1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.rtt2 = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem34 = new System.Windows.Forms.ToolStripSeparator();
+            this.rtt3 = new System.Windows.Forms.ToolStripMenuItem();
+            this.rtt4 = new System.Windows.Forms.ToolStripMenuItem();
+            this.rbSave = new System.Windows.Forms.ToolStripSplitButton();
+            this.rbClear = new System.Windows.Forms.ToolStripSplitButton();
+            this.clearAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.clearWayOnlyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripStatusLabel9 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolStripStatusLabel11 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.rtStatus = new System.Windows.Forms.ToolStripStatusLabel();
             this.statusStrip2.SuspendLayout();
             this.panel1.SuspendLayout();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -218,6 +260,7 @@ namespace KMZRebuilder
             this.toolStrip1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.contextMenuStrip2.SuspendLayout();
+            this.routeBar.SuspendLayout();
             this.SuspendLayout();
             // 
             // statusStrip2
@@ -241,6 +284,7 @@ namespace KMZRebuilder
             this.toolStripDropDownButton1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.toolStripDropDownButton1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.èçìåíèòüUserDefinedUrlToolStripMenuItem,
+            this.selectMBTilesFilesToolStripMenuItem,
             this.toolStripMenuItem7,
             this.èçìåíèòüToolStripMenuItem,
             this.CDSC,
@@ -249,6 +293,7 @@ namespace KMZRebuilder
             this.toolStripMenuItem9,
             this.mapContextMenuModeToolStripMenuItem,
             this.toolStripMenuItem4,
+            this.showRouteBarToolStripMenuItem,
             this.spvl});
             this.toolStripDropDownButton1.Image = ((System.Drawing.Image)(resources.GetObject("toolStripDropDownButton1.Image")));
             this.toolStripDropDownButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
@@ -265,6 +310,14 @@ namespace KMZRebuilder
             this.èçìåíèòüUserDefinedUrlToolStripMenuItem.Size = new System.Drawing.Size(271, 22);
             this.èçìåíèòüUserDefinedUrlToolStripMenuItem.Text = "Set User-Defined URL...";
             this.èçìåíèòüUserDefinedUrlToolStripMenuItem.Click += new System.EventHandler(this.èçìåíèòüUserDefinedUrlToolStripMenuItem_Click);
+            // 
+            // selectMBTilesFilesToolStripMenuItem
+            // 
+            this.selectMBTilesFilesToolStripMenuItem.ForeColor = System.Drawing.Color.Crimson;
+            this.selectMBTilesFilesToolStripMenuItem.Name = "selectMBTilesFilesToolStripMenuItem";
+            this.selectMBTilesFilesToolStripMenuItem.Size = new System.Drawing.Size(271, 22);
+            this.selectMBTilesFilesToolStripMenuItem.Text = "Select MBTiles file ...";
+            this.selectMBTilesFilesToolStripMenuItem.Click += new System.EventHandler(this.selectMBTilesFilesToolStripMenuItem_Click);
             // 
             // toolStripMenuItem7
             // 
@@ -365,6 +418,14 @@ namespace KMZRebuilder
             this.toolStripMenuItem4.Name = "toolStripMenuItem4";
             this.toolStripMenuItem4.Size = new System.Drawing.Size(268, 6);
             // 
+            // showRouteBarToolStripMenuItem
+            // 
+            this.showRouteBarToolStripMenuItem.Name = "showRouteBarToolStripMenuItem";
+            this.showRouteBarToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F6;
+            this.showRouteBarToolStripMenuItem.Size = new System.Drawing.Size(271, 22);
+            this.showRouteBarToolStripMenuItem.Text = "Show Route Bar";
+            this.showRouteBarToolStripMenuItem.Click += new System.EventHandler(this.showRouteBarToolStripMenuItem_Click);
+            // 
             // spvl
             // 
             this.spvl.Checked = true;
@@ -418,7 +479,7 @@ namespace KMZRebuilder
             this.toolStripStatusLabel1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
             this.toolStripStatusLabel1.ForeColor = System.Drawing.Color.Maroon;
             this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
-            this.toolStripStatusLabel1.Size = new System.Drawing.Size(492, 17);
+            this.toolStripStatusLabel1.Size = new System.Drawing.Size(461, 17);
             this.toolStripStatusLabel1.Spring = true;
             this.toolStripStatusLabel1.Text = "toolStripStatusLabel1";
             this.toolStripStatusLabel1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -1788,6 +1849,341 @@ namespace KMZRebuilder
             this.switchToNavigationModeToolStripMenuItem.Text = "Switch to Navigation Mode";
             this.switchToNavigationModeToolStripMenuItem.Click += new System.EventHandler(this.switchToNavigationModeToolStripMenuItem_Click);
             // 
+            // routeBar
+            // 
+            this.routeBar.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.roufsa,
+            this.toolStripStatusLabel6,
+            this.oncb,
+            this.toolStripStatusLabel7,
+            this.rtStart,
+            this.rbSw,
+            this.rtFinish,
+            this.toolStripStatusLabel10,
+            this.rbSet,
+            this.rbGet,
+            this.rbSave,
+            this.rbClear,
+            this.toolStripStatusLabel9,
+            this.toolStripStatusLabel11,
+            this.rtStatus});
+            this.routeBar.Location = new System.Drawing.Point(0, 587);
+            this.routeBar.Name = "routeBar";
+            this.routeBar.Size = new System.Drawing.Size(998, 22);
+            this.routeBar.TabIndex = 12;
+            this.routeBar.Text = "statusStrip1";
+            this.routeBar.Visible = false;
+            // 
+            // roufsa
+            // 
+            this.roufsa.BackColor = System.Drawing.Color.Turquoise;
+            this.roufsa.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Bold);
+            this.roufsa.Name = "roufsa";
+            this.roufsa.Size = new System.Drawing.Size(50, 17);
+            this.roufsa.Text = "Routes:";
+            // 
+            // toolStripStatusLabel6
+            // 
+            this.toolStripStatusLabel6.Name = "toolStripStatusLabel6";
+            this.toolStripStatusLabel6.Size = new System.Drawing.Size(47, 17);
+            this.toolStripStatusLabel6.Text = "On click:";
+            // 
+            // oncb
+            // 
+            this.oncb.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.oncb.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.rbDN,
+            this.rbStFi,
+            this.rbSt,
+            this.rbFi,
+            this.toolStripMenuItem31,
+            this.rbGR,
+            this.rbSL});
+            this.oncb.Image = ((System.Drawing.Image)(resources.GetObject("oncb.Image")));
+            this.oncb.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.oncb.Name = "oncb";
+            this.oncb.Size = new System.Drawing.Size(73, 20);
+            this.oncb.Text = "Do Nothing";
+            // 
+            // rbDN
+            // 
+            this.rbDN.Checked = true;
+            this.rbDN.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.rbDN.Name = "rbDN";
+            this.rbDN.Size = new System.Drawing.Size(159, 22);
+            this.rbDN.Text = "Do Nothing";
+            this.rbDN.Click += new System.EventHandler(this.rbDN_Click);
+            // 
+            // rbStFi
+            // 
+            this.rbStFi.Name = "rbStFi";
+            this.rbStFi.Size = new System.Drawing.Size(159, 22);
+            this.rbStFi.Text = "Set Start/Finish";
+            this.rbStFi.Click += new System.EventHandler(this.rbStFi_Click);
+            // 
+            // rbSt
+            // 
+            this.rbSt.Name = "rbSt";
+            this.rbSt.Size = new System.Drawing.Size(159, 22);
+            this.rbSt.Text = "Set Start";
+            this.rbSt.Click += new System.EventHandler(this.rbSt_Click);
+            // 
+            // rbFi
+            // 
+            this.rbFi.Name = "rbFi";
+            this.rbFi.Size = new System.Drawing.Size(159, 22);
+            this.rbFi.Text = "Set Finish";
+            this.rbFi.Click += new System.EventHandler(this.rbFi_Click);
+            // 
+            // toolStripMenuItem31
+            // 
+            this.toolStripMenuItem31.Name = "toolStripMenuItem31";
+            this.toolStripMenuItem31.Size = new System.Drawing.Size(156, 6);
+            // 
+            // rbGR
+            // 
+            this.rbGR.Name = "rbGR";
+            this.rbGR.Size = new System.Drawing.Size(159, 22);
+            this.rbGR.Text = "Get Route";
+            this.rbGR.Click += new System.EventHandler(this.rbGR_Click);
+            // 
+            // rbSL
+            // 
+            this.rbSL.Name = "rbSL";
+            this.rbSL.Size = new System.Drawing.Size(159, 22);
+            this.rbSL.Text = "Save to Layer";
+            this.rbSL.Click += new System.EventHandler(this.rbSL_Click);
+            // 
+            // toolStripStatusLabel7
+            // 
+            this.toolStripStatusLabel7.Name = "toolStripStatusLabel7";
+            this.toolStripStatusLabel7.Size = new System.Drawing.Size(11, 17);
+            this.toolStripStatusLabel7.Text = "-";
+            // 
+            // rtStart
+            // 
+            this.rtStart.ForeColor = System.Drawing.Color.MediumBlue;
+            this.rtStart.Name = "rtStart";
+            this.rtStart.Size = new System.Drawing.Size(39, 17);
+            this.rtStart.Text = "START";
+            // 
+            // rbSw
+            // 
+            this.rbSw.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.rbSw.DropDownButtonWidth = 0;
+            this.rbSw.Image = ((System.Drawing.Image)(resources.GetObject("rbSw.Image")));
+            this.rbSw.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.rbSw.Name = "rbSw";
+            this.rbSw.Size = new System.Drawing.Size(32, 20);
+            this.rbSw.Text = "<->";
+            this.rbSw.ButtonClick += new System.EventHandler(this.rbSw_ButtonClick);
+            // 
+            // rtFinish
+            // 
+            this.rtFinish.ForeColor = System.Drawing.Color.MediumBlue;
+            this.rtFinish.Name = "rtFinish";
+            this.rtFinish.Size = new System.Drawing.Size(41, 17);
+            this.rtFinish.Text = "FINISH";
+            // 
+            // toolStripStatusLabel10
+            // 
+            this.toolStripStatusLabel10.Name = "toolStripStatusLabel10";
+            this.toolStripStatusLabel10.Size = new System.Drawing.Size(15, 17);
+            this.toolStripStatusLabel10.Text = "--";
+            // 
+            // rbSet
+            // 
+            this.rbSet.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.rbSet.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.setURLToolStripMenuItem,
+            this.setKeyToolStripMenuItem,
+            this.setToolStripMenuItem,
+            this.toolStripMenuItem32,
+            this.setColorToolStripMenuItem,
+            this.setWidthToolStripMenuItem,
+            this.toolStripMenuItem33,
+            this.timeoutToolStripMenuItem,
+            this.toolStripMenuItem35,
+            this.aboutToolStripMenuItem});
+            this.rbSet.Image = ((System.Drawing.Image)(resources.GetObject("rbSet.Image")));
+            this.rbSet.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.rbSet.Name = "rbSet";
+            this.rbSet.Size = new System.Drawing.Size(41, 20);
+            this.rbSet.Text = "SET";
+            this.rbSet.ButtonClick += new System.EventHandler(this.rbSet_ButtonClick);
+            // 
+            // setURLToolStripMenuItem
+            // 
+            this.setURLToolStripMenuItem.Name = "setURLToolStripMenuItem";
+            this.setURLToolStripMenuItem.Size = new System.Drawing.Size(195, 22);
+            this.setURLToolStripMenuItem.Text = "Set URL ...";
+            this.setURLToolStripMenuItem.Click += new System.EventHandler(this.setURLToolStripMenuItem_Click);
+            // 
+            // setKeyToolStripMenuItem
+            // 
+            this.setKeyToolStripMenuItem.Name = "setKeyToolStripMenuItem";
+            this.setKeyToolStripMenuItem.Size = new System.Drawing.Size(195, 22);
+            this.setKeyToolStripMenuItem.Text = "Set Key ...";
+            this.setKeyToolStripMenuItem.Click += new System.EventHandler(this.setKeyToolStripMenuItem_Click);
+            // 
+            // setToolStripMenuItem
+            // 
+            this.setToolStripMenuItem.Name = "setToolStripMenuItem";
+            this.setToolStripMenuItem.Size = new System.Drawing.Size(195, 22);
+            this.setToolStripMenuItem.Text = "Set RA ...";
+            this.setToolStripMenuItem.Click += new System.EventHandler(this.setToolStripMenuItem_Click);
+            // 
+            // toolStripMenuItem32
+            // 
+            this.toolStripMenuItem32.Name = "toolStripMenuItem32";
+            this.toolStripMenuItem32.Size = new System.Drawing.Size(192, 6);
+            // 
+            // setColorToolStripMenuItem
+            // 
+            this.setColorToolStripMenuItem.Name = "setColorToolStripMenuItem";
+            this.setColorToolStripMenuItem.Size = new System.Drawing.Size(195, 22);
+            this.setColorToolStripMenuItem.Text = "Set Color ...";
+            this.setColorToolStripMenuItem.Click += new System.EventHandler(this.setColorToolStripMenuItem_Click);
+            // 
+            // setWidthToolStripMenuItem
+            // 
+            this.setWidthToolStripMenuItem.Name = "setWidthToolStripMenuItem";
+            this.setWidthToolStripMenuItem.Size = new System.Drawing.Size(195, 22);
+            this.setWidthToolStripMenuItem.Text = "Set Width ...";
+            this.setWidthToolStripMenuItem.Click += new System.EventHandler(this.setWidthToolStripMenuItem_Click);
+            // 
+            // toolStripMenuItem33
+            // 
+            this.toolStripMenuItem33.Name = "toolStripMenuItem33";
+            this.toolStripMenuItem33.Size = new System.Drawing.Size(192, 6);
+            // 
+            // timeoutToolStripMenuItem
+            // 
+            this.timeoutToolStripMenuItem.Name = "timeoutToolStripMenuItem";
+            this.timeoutToolStripMenuItem.Size = new System.Drawing.Size(195, 22);
+            this.timeoutToolStripMenuItem.Text = "Set request timeout ...";
+            this.timeoutToolStripMenuItem.Click += new System.EventHandler(this.timeoutToolStripMenuItem_Click);
+            // 
+            // toolStripMenuItem35
+            // 
+            this.toolStripMenuItem35.Name = "toolStripMenuItem35";
+            this.toolStripMenuItem35.Size = new System.Drawing.Size(192, 6);
+            // 
+            // aboutToolStripMenuItem
+            // 
+            this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
+            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(195, 22);
+            this.aboutToolStripMenuItem.Text = "About ...";
+            this.aboutToolStripMenuItem.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
+            // 
+            // rbGet
+            // 
+            this.rbGet.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.rbGet.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.rtt1,
+            this.rtt2,
+            this.toolStripMenuItem34,
+            this.rtt3,
+            this.rtt4});
+            this.rbGet.Image = ((System.Drawing.Image)(resources.GetObject("rbGet.Image")));
+            this.rbGet.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.rbGet.Name = "rbGet";
+            this.rbGet.Size = new System.Drawing.Size(42, 20);
+            this.rbGet.Text = "GET";
+            this.rbGet.ButtonClick += new System.EventHandler(this.rbGet_ButtonClick);
+            this.rbGet.DropDownOpening += new System.EventHandler(this.rbGet_DropDownOpening);
+            // 
+            // rtt1
+            // 
+            this.rtt1.Name = "rtt1";
+            this.rtt1.Size = new System.Drawing.Size(196, 22);
+            this.rtt1.Text = "From Start to Checked";
+            this.rtt1.Click += new System.EventHandler(this.rtt1_Click);
+            // 
+            // rtt2
+            // 
+            this.rtt2.Name = "rtt2";
+            this.rtt2.Size = new System.Drawing.Size(196, 22);
+            this.rtt2.Text = "From Checked to Finish";
+            this.rtt2.Click += new System.EventHandler(this.rtt2_Click);
+            // 
+            // toolStripMenuItem34
+            // 
+            this.toolStripMenuItem34.Name = "toolStripMenuItem34";
+            this.toolStripMenuItem34.Size = new System.Drawing.Size(193, 6);
+            // 
+            // rtt3
+            // 
+            this.rtt3.Name = "rtt3";
+            this.rtt3.Size = new System.Drawing.Size(196, 22);
+            this.rtt3.Text = "From Line to Checked";
+            this.rtt3.Click += new System.EventHandler(this.rtt3_Click);
+            // 
+            // rtt4
+            // 
+            this.rtt4.Name = "rtt4";
+            this.rtt4.Size = new System.Drawing.Size(196, 22);
+            this.rtt4.Text = "From Checked to Line";
+            this.rtt4.Click += new System.EventHandler(this.rtt4_Click);
+            // 
+            // rbSave
+            // 
+            this.rbSave.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.rbSave.DropDownButtonWidth = 0;
+            this.rbSave.Enabled = false;
+            this.rbSave.Image = ((System.Drawing.Image)(resources.GetObject("rbSave.Image")));
+            this.rbSave.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.rbSave.Name = "rbSave";
+            this.rbSave.Size = new System.Drawing.Size(37, 20);
+            this.rbSave.Text = "SAVE";
+            this.rbSave.ButtonClick += new System.EventHandler(this.rbSave_ButtonClick);
+            // 
+            // rbClear
+            // 
+            this.rbClear.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.rbClear.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.clearAllToolStripMenuItem,
+            this.clearWayOnlyToolStripMenuItem});
+            this.rbClear.Image = ((System.Drawing.Image)(resources.GetObject("rbClear.Image")));
+            this.rbClear.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.rbClear.Name = "rbClear";
+            this.rbClear.Size = new System.Drawing.Size(55, 20);
+            this.rbClear.Text = "CLEAR";
+            this.rbClear.ButtonClick += new System.EventHandler(this.rbClear_ButtonClick);
+            // 
+            // clearAllToolStripMenuItem
+            // 
+            this.clearAllToolStripMenuItem.Name = "clearAllToolStripMenuItem";
+            this.clearAllToolStripMenuItem.Size = new System.Drawing.Size(160, 22);
+            this.clearAllToolStripMenuItem.Text = "Clear All";
+            this.clearAllToolStripMenuItem.Click += new System.EventHandler(this.clearAllToolStripMenuItem_Click);
+            // 
+            // clearWayOnlyToolStripMenuItem
+            // 
+            this.clearWayOnlyToolStripMenuItem.Name = "clearWayOnlyToolStripMenuItem";
+            this.clearWayOnlyToolStripMenuItem.Size = new System.Drawing.Size(160, 22);
+            this.clearWayOnlyToolStripMenuItem.Text = "Clear Way Only";
+            this.clearWayOnlyToolStripMenuItem.Click += new System.EventHandler(this.clearWayOnlyToolStripMenuItem_Click);
+            // 
+            // toolStripStatusLabel9
+            // 
+            this.toolStripStatusLabel9.Name = "toolStripStatusLabel9";
+            this.toolStripStatusLabel9.Size = new System.Drawing.Size(15, 17);
+            this.toolStripStatusLabel9.Text = "::";
+            // 
+            // toolStripStatusLabel11
+            // 
+            this.toolStripStatusLabel11.Name = "toolStripStatusLabel11";
+            this.toolStripStatusLabel11.Size = new System.Drawing.Size(42, 17);
+            this.toolStripStatusLabel11.Text = "Status:";
+            // 
+            // rtStatus
+            // 
+            this.rtStatus.ForeColor = System.Drawing.Color.Maroon;
+            this.rtStatus.Name = "rtStatus";
+            this.rtStatus.Size = new System.Drawing.Size(25, 17);
+            this.rtStatus.Text = "Idle";
+            // 
             // ContentViewer
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1795,6 +2191,7 @@ namespace KMZRebuilder
             this.ClientSize = new System.Drawing.Size(998, 609);
             this.Controls.Add(this.splitContainer1);
             this.Controls.Add(this.panel1);
+            this.Controls.Add(this.routeBar);
             this.Controls.Add(this.statusStrip2);
             this.MinimizeBox = false;
             this.Name = "ContentViewer";
@@ -1819,6 +2216,8 @@ namespace KMZRebuilder
             this.panel2.ResumeLayout(false);
             this.panel2.PerformLayout();
             this.contextMenuStrip2.ResumeLayout(false);
+            this.routeBar.ResumeLayout(false);
+            this.routeBar.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -2005,5 +2404,47 @@ namespace KMZRebuilder
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem29;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem30;
         private System.Windows.Forms.ToolStripMenuItem sbi;
+        private System.Windows.Forms.StatusStrip routeBar;
+        private System.Windows.Forms.ToolStripStatusLabel roufsa;
+        private System.Windows.Forms.ToolStripMenuItem showRouteBarToolStripMenuItem;
+        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel6;
+        private System.Windows.Forms.ToolStripDropDownButton oncb;
+        private System.Windows.Forms.ToolStripMenuItem rbDN;
+        private System.Windows.Forms.ToolStripMenuItem rbStFi;
+        private System.Windows.Forms.ToolStripMenuItem rbSt;
+        private System.Windows.Forms.ToolStripMenuItem rbFi;
+        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem31;
+        private System.Windows.Forms.ToolStripMenuItem rbGR;
+        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel7;
+        private System.Windows.Forms.ToolStripStatusLabel rtStart;
+        private System.Windows.Forms.ToolStripMenuItem rbSL;
+        private System.Windows.Forms.ToolStripStatusLabel rtFinish;
+        private System.Windows.Forms.ToolStripSplitButton rbSet;
+        private System.Windows.Forms.ToolStripSplitButton rbGet;
+        private System.Windows.Forms.ToolStripSplitButton rbClear;
+        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel10;
+        private System.Windows.Forms.ToolStripSplitButton rbSave;
+        private System.Windows.Forms.ToolStripMenuItem setKeyToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem setURLToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem setToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSplitButton rbSw;
+        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel9;
+        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel11;
+        private System.Windows.Forms.ToolStripStatusLabel rtStatus;
+        private System.Windows.Forms.ToolStripMenuItem setColorToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem setWidthToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem32;
+        private System.Windows.Forms.ToolStripMenuItem rtt1;
+        private System.Windows.Forms.ToolStripMenuItem rtt2;
+        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem34;
+        private System.Windows.Forms.ToolStripMenuItem rtt3;
+        private System.Windows.Forms.ToolStripMenuItem rtt4;
+        private System.Windows.Forms.ToolStripMenuItem clearWayOnlyToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem clearAllToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem33;
+        private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem selectMBTilesFilesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem timeoutToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem35;
     }
 }

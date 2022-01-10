@@ -43,6 +43,8 @@ namespace KMZRebuilder
             this.toolStripStatusLabel4 = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusLabel5 = new System.Windows.Forms.ToolStripStatusLabel();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.usedMethod = new System.Windows.Forms.ComboBox();
+            this.label3 = new System.Windows.Forms.Label();
             this.button2 = new System.Windows.Forms.Button();
             this.maVal = new System.Windows.Forms.NumericUpDown();
             this.label2 = new System.Windows.Forms.Label();
@@ -57,8 +59,7 @@ namespace KMZRebuilder
             this.columnHeader1 = new System.Windows.Forms.ColumnHeader();
             this.columnHeader2 = new System.Windows.Forms.ColumnHeader();
             this.columnHeader3 = new System.Windows.Forms.ColumnHeader();
-            this.label3 = new System.Windows.Forms.Label();
-            this.usedMethod = new System.Windows.Forms.ComboBox();
+            this.smbtToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip2.SuspendLayout();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.maVal)).BeginInit();
@@ -85,6 +86,7 @@ namespace KMZRebuilder
             this.toolStripDropDownButton1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.toolStripDropDownButton1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.èçìåíèòüUserDefinedUrlToolStripMenuItem,
+            this.smbtToolStripMenuItem,
             this.toolStripMenuItem1,
             this.èçìåíèòüToolStripMenuItem,
             this.âûáðàòüÏàïêóÊýøàSASPlanetToolStripMenuItem,
@@ -183,6 +185,30 @@ namespace KMZRebuilder
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(998, 24);
             this.panel1.TabIndex = 8;
+            // 
+            // usedMethod
+            // 
+            this.usedMethod.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.usedMethod.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.usedMethod.FormattingEnabled = true;
+            this.usedMethod.Items.AddRange(new object[] {
+            "Multi Pass Normal",
+            "Multi Pass Triangle",
+            "Sinlge Pass Normal",
+            "Single Pass Triangle"});
+            this.usedMethod.Location = new System.Drawing.Point(651, 1);
+            this.usedMethod.Name = "usedMethod";
+            this.usedMethod.Size = new System.Drawing.Size(142, 21);
+            this.usedMethod.TabIndex = 14;
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(608, 5);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(45, 13);
+            this.label3.TabIndex = 9;
+            this.label3.Text = "method:";
             // 
             // button2
             // 
@@ -386,29 +412,12 @@ namespace KMZRebuilder
             this.columnHeader3.Text = "Points";
             this.columnHeader3.Width = 80;
             // 
-            // label3
+            // smbtToolStripMenuItem
             // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(608, 5);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(45, 13);
-            this.label3.TabIndex = 9;
-            this.label3.Text = "method:";
-            // 
-            // usedMethod
-            // 
-            this.usedMethod.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.usedMethod.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.usedMethod.FormattingEnabled = true;
-            this.usedMethod.Items.AddRange(new object[] {
-            "Multi Pass Normal",
-            "Multi Pass Triangle",
-            "Sinlge Pass Normal",
-            "Single Pass Triangle"});
-            this.usedMethod.Location = new System.Drawing.Point(651, 1);
-            this.usedMethod.Name = "usedMethod";
-            this.usedMethod.Size = new System.Drawing.Size(142, 21);
-            this.usedMethod.TabIndex = 14;
+            this.smbtToolStripMenuItem.Name = "smbtToolStripMenuItem";
+            this.smbtToolStripMenuItem.Size = new System.Drawing.Size(261, 22);
+            this.smbtToolStripMenuItem.Text = "Âûáðàòü MBTiles ôàéë...";
+            this.smbtToolStripMenuItem.Click += new System.EventHandler(this.smbtToolStripMenuItem_Click);
             // 
             // InterLessForm
             // 
@@ -468,5 +477,6 @@ namespace KMZRebuilder
         public System.Windows.Forms.Button loadbutton;
         private System.Windows.Forms.ComboBox usedMethod;
         private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.ToolStripMenuItem smbtToolStripMenuItem;
     }
 }
