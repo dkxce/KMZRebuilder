@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("milokz@gmail.com")]
 [assembly: AssemblyProduct("KMZ Rebuilder")]
-[assembly: AssemblyCopyright("Copyright © milokz@gmail.com 2021")]
+[assembly: AssemblyCopyright("Copyright © milokz@gmail.com 2022")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -29,5 +29,5 @@ using System.Runtime.InteropServices;
 //      Build Number
 //      Revision
 //
-[assembly: AssemblyVersion("21.11.07.105")]
-[assembly: AssemblyFileVersion("21.11.07.105")]
+[assembly: AssemblyVersion("22.1.10.107")]
+[assembly: AssemblyFileVersion("22.1.10.107")]

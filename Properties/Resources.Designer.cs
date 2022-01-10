@@ -150,5 +150,19 @@ namespace KMZRebuilder.Properties {
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
+        
+        internal static System.Drawing.Bitmap rFinish {
+            get {
+                object obj = ResourceManager.GetObject("rFinish", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap rStart {
+            get {
+                object obj = ResourceManager.GetObject("rStart", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
     }
 }
