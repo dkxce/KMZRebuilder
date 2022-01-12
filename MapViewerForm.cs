@@ -963,9 +963,14 @@ namespace KMZRebuilder
         {
             if (!locate) return;
 
-            if (mapContent.ObjectsCount == 0) return;
             Point clicked = MapViewer.MousePositionPixels;
             PointF sCenter = MapViewer.PixelsToDegrees(clicked);
+
+            if (mapContent.ObjectsCount == 0)
+            {
+                SubClick(sCenter, null);
+                return;
+            };
             PointF sFrom = MapViewer.PixelsToDegrees(new Point(clicked.X - 5, clicked.Y + 5));
             PointF sTo = MapViewer.PixelsToDegrees(new Point(clicked.X + 5, clicked.Y - 5));
             NaviMapNet.MapObject[] objs = mapContent.Select(new RectangleF(sFrom, new SizeF(sTo.X - sFrom.X, sTo.Y - sFrom.Y)), NaviMapNet.MapObjectType.mEllipse | NaviMapNet.MapObjectType.mLine | NaviMapNet.MapObjectType.mPoint | NaviMapNet.MapObjectType.mPolygon | NaviMapNet.MapObjectType.mPolyline, true, false);

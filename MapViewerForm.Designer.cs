@@ -479,7 +479,7 @@ namespace KMZRebuilder
             this.toolStripStatusLabel1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
             this.toolStripStatusLabel1.ForeColor = System.Drawing.Color.Maroon;
             this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
-            this.toolStripStatusLabel1.Size = new System.Drawing.Size(461, 17);
+            this.toolStripStatusLabel1.Size = new System.Drawing.Size(492, 17);
             this.toolStripStatusLabel1.Spring = true;
             this.toolStripStatusLabel1.Text = "toolStripStatusLabel1";
             this.toolStripStatusLabel1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -2191,8 +2191,8 @@ namespace KMZRebuilder
             this.ClientSize = new System.Drawing.Size(998, 609);
             this.Controls.Add(this.splitContainer1);
             this.Controls.Add(this.panel1);
-            this.Controls.Add(this.routeBar);
             this.Controls.Add(this.statusStrip2);
+            this.Controls.Add(this.routeBar);
             this.MinimizeBox = false;
             this.Name = "ContentViewer";
             this.ShowIcon = false;
