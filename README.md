@@ -12,14 +12,24 @@ This is a special tool to edit kmz files:
 - Change icons.
 - Move points.
 - Split and merge kmz files.
-- Get Routes.
+- Get Routes (dkxce & OSRM).    
+- Import data from plugins.
 
 You can use result files in [KMZViewer](https://github.com/dkxce/KMZViewer), [OruxMaps](http://oruxmaps.com), [Google Maps](https://www.google.com/maps/d/), [SASPlanet](http://www.sasgis.org/sasplaneta/) and more others...
 
 KMZRebuilder - мощная программа для работы с KMZ/KML файлами. Импорт/экспорт/создание/редактирование ваших точек интереса в одном удобном интерфейсе. Подключение внешних тайлов и импорт из других форматов. Работа со слоями. Экспорт точек в навигаторы. Обработка треков, полилиний, полигонов и прочие возможности. 
 
 [KMZ files Repository](https://github.com/dkxce/KMZ_FILES)     
-[Репозиторий KMZ файлов](https://github.com/dkxce/KMZ_FILES)     
+[Репозиторий KMZ файлов](https://github.com/dkxce/KMZ_FILES)    
+
+Плагины:
+* [AvtodorM4Tarrifs](https://github.com/dkxce/AvtodorM4Tarrifs)
+* [TransitCard](https://github.com/dkxce/TransitCardGrabber)
+* [RusPetrol](https://github.com/dkxce/RusPetrolGrabber)
+
+
+
+
 
 <img src="window1.png"/>
 <img src="window2.png"/>
