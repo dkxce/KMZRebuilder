@@ -6877,14 +6877,22 @@ namespace KMZRebuilder
                     }
                     catch { };
                 };
-                string[] fls = Directory.GetFiles(dir, "*.exe");
+                string[] fls = Directory.GetFiles(dir, "*.exe");                
                 if ((fls != null) && (fls.Length != 0))
                 {
+                    Array.Sort(fls);
                     ToolStripMenuItem tsmi = new ToolStripMenuItem();
                     tsmi.Text = name;
-                    topItem.DropDownItems.Add(tsmi);
-                    tsmi.Click += new EventHandler(tsmi_Click);
-                    plugins.Add(name, fls[0]);
+                    try
+                    {
+                        topItem.DropDownItems.Add(tsmi);
+                        tsmi.Click += new EventHandler(tsmi_Click);
+                        plugins.Add(name, fls[0]);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message, "Plugin Load Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    };
                 };
             };
             topItem.Enabled = plugins.Count > 0;
@@ -6908,7 +6916,7 @@ namespace KMZRebuilder
                 string output = "";
                 try
                 {
-                    KMZViewer.RunProcStdOutForm pf = new KMZViewer.RunProcStdOutForm(mi.Text);
+                    KMZViewer.RunProcStdOutForm pf = new KMZViewer.RunProcStdOutForm(mi.Text, "Running file: " + Path.GetFileName(psi.FileName));
                     pf.WriteLine("Starting plugin ...");
                     if (pf.StartProcAndShowWhileRunning(psi) != DialogResult.OK)
                         return;
@@ -6933,10 +6941,11 @@ namespace KMZRebuilder
                             };
                         };
                     };
+                    if (output.Length > 2000) output = output.Substring(0, 2000) + "\r\n...";
                     if (output.IndexOf("Error") > 0)
-                        MessageBox.Show("Plugin " + mi.Name + " return ERROR\r\n" + output, mi.Name, MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                        MessageBox.Show("Plugin " + mi.Name + " return ERROR\r\n" + output, mi.Text, MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                     else
-                        MessageBox.Show("Plugin " + mi.Name + " return nothing\r\n" + output, mi.Name, MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                        MessageBox.Show("Plugin " + mi.Name + " return nothing\r\n" + output, mi.Text, MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                 }
                 catch (Exception ex)
                 {

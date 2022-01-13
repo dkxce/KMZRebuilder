@@ -13,12 +13,24 @@ namespace KMZViewer
         private System.Diagnostics.Process proc;
         private string _stdText = "";
         private bool run_proc = false;
+        private DateTime Started = DateTime.Now;
      
         public RunProcStdOutForm(string caption)
         {
             InitializeComponent();
             this.Text = caption;
+            this.SubText.Text = "";
             this.DialogResult = DialogResult.Cancel;
+            UpdateElapsed();
+        }
+
+        public RunProcStdOutForm(string caption, string subText)
+        {
+            InitializeComponent();
+            this.Text = caption;
+            this.SubText.Text = subText;
+            this.DialogResult = DialogResult.Cancel;
+            UpdateElapsed();
         }
 
         public void SetText(string text)
@@ -37,6 +49,7 @@ namespace KMZViewer
         {
             std.Text += line + "\r\n";
             std.SelectionStart = std.Text.Length;
+            std.ScrollToCaret();
         }
 
         public void StdOutputDataReceived(object sender, System.Diagnostics.DataReceivedEventArgs e)
@@ -72,6 +85,7 @@ namespace KMZViewer
 
         private void timer1_Tick(object sender, EventArgs e)
         {
+            UpdateElapsed();
             if (run_proc)
             {
                 if (proc.HasExited)
@@ -81,6 +95,17 @@ namespace KMZViewer
                     this.Close();
                 };
                 //proc.WaitForExit();
+            };
+        }
+
+        private ulong tickCounter = 0;
+        private void UpdateElapsed()
+        {
+            if (tickCounter++ % 10 == 0)
+            {
+                DateTime isNow = DateTime.Now;
+                TimeSpan subst = isNow.Subtract(Started);
+                SelfText.Text = String.Format("Started: {0}, Elapsed: {1}", Started.ToString("HH:mm:ss dd.MM.yyyy"), subst);
             };
         }
     }
