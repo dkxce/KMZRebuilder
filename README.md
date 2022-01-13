@@ -24,10 +24,10 @@ KMZRebuilder - мощная программа для работы с KMZ/KML ф
 [Репозиторий KMZ файлов](https://github.com/dkxce/KMZ_FILES)    
 
 Плагины:
-* [AvtodorM4Tarrifs](https://github.com/dkxce/AvtodorM4Tarrifs)
-* [TransitCard](https://github.com/dkxce/TransitCardGrabber)
-* [RusPetrol](https://github.com/dkxce/RusPetrolGrabber)
-* [TvilGrabber](https://github.com/dkxce/TvilGrabber)
+* [AvtodorM4Tarrifs](https://github.com/dkxce/AvtodorM4Tarrifs) - Получение тарифов М4 для планировщика маршрутов
+* [TransitCard](https://github.com/dkxce/TransitCardGrabber) - Карта заправок 
+* [RusPetrol](https://github.com/dkxce/RusPetrolGrabber) - Карта заправок
+* [TvilGrabber](https://github.com/dkxce/TvilGrabber) - Карта объектов
 
 Main Window (основное окно)     
 <img src="window1.png"/>     
