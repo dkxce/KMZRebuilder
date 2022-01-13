@@ -6741,6 +6741,8 @@ namespace KMZRebuilder
                         int ind = res.service * -1 - 1;
                         if (ind >= res.url_dkxce.Count) res.service = -1;
                     };
+                    if((res.url_dkxce == null) || (res.url_dkxce.Count == 0)) res.url_dkxce = new List<DRSParams>(new DRSParams[] { new DRSParams() });
+                    if ((res.url_osrm == null) || (res.url_osrm.Count == 0)) res.url_osrm = new List<OSRMParams>(new OSRMParams[] { new OSRMParams("map.project-osrm.org", "http://router.project-osrm.org/route/v1/driving/"), new OSRMParams("maps.openrouteservice.org", "http://routing.openstreetmap.de/routed-car/route/v1/driving/") });
                     return res;
                 }
                 catch { };
