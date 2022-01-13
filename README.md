@@ -2,6 +2,7 @@
 
 **KMZRebuilder** is a powerfull tool thats allow to create/edit/manage/split/merge/import/export/explore/sort yours POI.    
 Working with points, polylines and polygons. You can filter POI by text, routes/tracks, polylines or geozones/polygons/areas.    
+
 Support KMZ/KML files from [Google](https://www.google.com/maps/d/) and [SAS.Planet](http://www.sasgis.org/sasplaneta/).
 Supported formats: KMZ, KML, GPS, Progorod, WPT, GDB, FIR, TXT, CSV, DB3 (SAS.Planet), Raster [MBTiles](https://wiki.openstreetmap.org/wiki/MBTiles), Clipboard.        
 
@@ -27,19 +28,27 @@ KMZRebuilder - мощная программа для работы с KMZ/KML ф
 * [TransitCard](https://github.com/dkxce/TransitCardGrabber)
 * [RusPetrol](https://github.com/dkxce/RusPetrolGrabber)
 
-
-
-
-
-<img src="window1.png"/>
-<img src="window2.png"/>
-<img src="window3.png"/>
-<img src="window4.png"/>
-<img src="window5.png"/>
-<img src="window6.png"/>
-<img src="window7.png"/>
-<img src="window8.png"/>
-<img src="window9.png"/>
-<img src="windowA.png"/>
-<img src="windowB.png"/>
-<img src="windowC.png"/>
+Main Window (основное окно)     
+<img src="window1.png"/>     
+Map Window (окно карты)     
+<img src="window2.png"/>     
+Map Window (окно карты)     
+<img src="window3.png"/>     
+GPX Tachograph (тахограф)     
+<img src="window4.png"/>     
+Map poly creator (окно создание полигонов)     
+<img src="window5.png"/>     
+Compress track (окно интерполяции треков)     
+<img src="window6.png"/>     
+Track planner (окно планировщика маршрутов)     
+<img src="window7.png"/>     
+Lat/Lon Converter (окно преобразования координат)     
+<img src="window8.png"/>     
+Main Menu (основное меню)     
+<img src="window9.png"/>     
+Tools Menu (меню утилит)     
+<img src="windowA.png"/>     
+Layers Menu (меню слоев карты)     
+<img src="windowB.png"/>     
+Route Sample (вывод маршрутов)     
+<img src="windowC.png"/>     
