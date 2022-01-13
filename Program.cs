@@ -24,7 +24,7 @@ namespace KMZRebuilder
         /// </summary>
         [STAThread]
         static void Main(string[] args)
-        {
+        {            
             //FormKMZ.ConvertImageToBmp8bppIndexed(@"C:\Downloads\CD-REC\KMZRebuilder[Sources]\bin\Debug\dot[red].png",
             //    @"C:\Downloads\CD-REC\KMZRebuilder[Sources]\bin\Debug\dot[red].bmp");
             //return;

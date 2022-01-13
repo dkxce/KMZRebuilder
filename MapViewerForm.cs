@@ -960,8 +960,9 @@ namespace KMZRebuilder
         }
         
         private void MapViewer_MouseClick(object sender, MouseEventArgs e)
-        {
-            if (!locate) return;
+        {            
+            if (!locate) 
+                return;
 
             Point clicked = MapViewer.MousePositionPixels;
             PointF sCenter = MapViewer.PixelsToDegrees(clicked);
@@ -5552,7 +5553,10 @@ namespace KMZRebuilder
             routeBar.Visible = showRouteBarToolStripMenuItem.Checked;
             if (routeBar.Visible && (groute == null))
             {
+                InputBox.defWidth = 600;
                 groute = GetRouter.Load();
+                rbSet.Text = String.Format("Set ({0})", groute.ServiceIndex);
+                rbGet.Text = String.Format("Get ({0})", groute.ServiceIndex);
                 if (groute.mode == 0) rbDN_Click(sender, e);
                 if (groute.mode == 1) rbStFi_Click(sender, e);
                 if (groute.mode == 2) rbSt_Click(sender, e);
@@ -5617,22 +5621,76 @@ namespace KMZRebuilder
 
         private void setURLToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            string url = groute.url;
-            List<string> urls = new List<string>();
-            urls.Add("http://localhost:8080/nms/");
-            if (!urls.Contains(url)) urls.Insert(0, url);
-            if (InputBox.Show("Web Route Engine", "Enter HTTP Url to dkxce.Route.Service:", urls.ToArray(), ref url, true) != DialogResult.OK) return;
-            groute.url = url;
+            if (groute.service < 0)
+            {
+                string url = groute.ServiceURL;
+                List<string> urls = new List<string>();
+                urls.Add("http://localhost:8080/nms/");
+                if (!urls.Contains(url)) urls.Insert(0, url);
+                if (InputBox.Show("Web Route Engine", "Enter HTTP Url to " + groute.ServiceName + ":", urls.ToArray(), ref url, true) != DialogResult.OK) return;
+                url = url.Trim();
+                int si = -1;
+                for (int i = 0; i < groute.url_dkxce.Count; i++)
+                    if (groute.url_dkxce[i].url == url)
+                        si = i;
+                if (si >= 0)
+                {
+                    groute.service = (si + 1) * -1;
+                    rbSet.Text = String.Format("Set ({0})", groute.ServiceIndex);
+                    rbGet.Text = String.Format("Get ({0})", groute.ServiceIndex);
+                }
+                else
+                {
+                    GetRouter.DRSParams p = new GetRouter.DRSParams();
+                    p.url = url;
+                    Uri uri = new Uri(url);
+                    p.name = uri.Host + ":" + uri.Port + " # "+DateTime.Now.ToString("HHmmssMMddyy");
+                    groute.url_dkxce.Add(p);
+                    groute.service = (groute.url_dkxce.Count) * -1;
+                    rbSet.Text = String.Format("Set ({0})", groute.ServiceIndex);
+                    rbGet.Text = String.Format("Get ({0})", groute.ServiceIndex);
+                };
+            }
+            else
+            {
+                string url = groute.ServiceURL;
+                if (InputBox.Show("Web Route Engine", "Enter HTTP Url to " + groute.ServiceName + ":", ref url) != DialogResult.OK) return;
+                url = url.Trim();
+                int si = -1;
+                for (int i = 0; i < groute.url_osrm.Count; i++)
+                    if (groute.url_osrm[i].url == url)
+                        si = i;
+                if (si >= 0)
+                {
+                    groute.service = (si + 1);
+                    rbSet.Text = String.Format("Set ({0})", groute.ServiceIndex);
+                    rbGet.Text = String.Format("Get ({0})", groute.ServiceIndex);
+                }
+                else
+                {
+                    GetRouter.OSRMParams p = new GetRouter.OSRMParams();
+                    p.url = url;
+                    Uri uri = new Uri(url);
+                    p.name = uri.Host + ":" + uri.Port + " # " + DateTime.Now.ToString("HHmmssMMddyy");
+                    groute.url_osrm.Add(p);
+                    groute.service = (groute.url_osrm.Count);
+                    rbSet.Text = String.Format("Set ({0})", groute.ServiceIndex);
+                    rbGet.Text = String.Format("Get ({0})", groute.ServiceIndex);
+                };
+            };
         }
 
         private void setKeyToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            string key = groute.key;
+            if (groute.service >= 0) return;
+            int ki = groute.service * -1 - 1;
+
+            string key = groute.url_dkxce[ki].key;
             List<string> keys = new List<string>();
             keys.Add("TEST");
             if (!keys.Contains(key)) keys.Insert(0, key);
-            if (InputBox.Show("Web Route Engine", "Enter Key to dkxce.Route.Service:", keys.ToArray(), ref key, true) != DialogResult.OK) return;
-            groute.key = key;
+            if (InputBox.Show("Web Route Engine", "Enter Key to " + groute.ServiceName + ":", keys.ToArray(), ref key, true) != DialogResult.OK) return;
+            groute.url_dkxce[ki].key = key;
         }
 
         private void rbSet_ButtonClick(object sender, EventArgs e)
@@ -5729,8 +5787,14 @@ namespace KMZRebuilder
             MapViewer.DrawOnMapData();
             if (rbGR.Checked)
             {
-                bool ok = rbSave.Enabled = GetRoute();
+                bool ok = rbSave.Enabled = GetRoute();                
                 if (rbSL.Checked && ok) SaveResult(mapRVector);
+                try
+                {
+                    MapViewer.Focus();
+                    MapViewer.Select();
+                }
+                catch { };
             };
         }
 
@@ -5787,7 +5851,7 @@ namespace KMZRebuilder
                 XML += "<Placemark>\r\n";
                 XML += "<name><![CDATA[" + String.Format("{0} - {1}", rtStart.Text, rtFinish.Text) + "]]></name>\r\n";
                 XML += "<styleUrl>#" + stylen + "</styleUrl>\r\n";
-                XML += "<description><![CDATA[" + String.Format(System.Globalization.CultureInfo.InvariantCulture, "Route: {0} - {1}\r\nLength: {2:0.0} km\r\nTime: {3:0.0} min\r\nFrom: {4}", rtStart.Text, rtFinish.Text, ((nmsRouteClient.Route)polyline.UserData).driveLength / 1024.0, ((nmsRouteClient.Route)polyline.UserData).driveTime, groute.url) + "]]></description>\r\n";
+                XML += "<description><![CDATA[" + String.Format(System.Globalization.CultureInfo.InvariantCulture, "Route: {0} - {1}\r\nLength: {2:0.0} km\r\nTime: {3:0.0} min\r\nFrom: {4}\r\nSName: {5}\r\nEngine: {6}", rtStart.Text, rtFinish.Text, ((nmsRouteClient.Route)polyline.UserData).driveLength / 1024.0, ((nmsRouteClient.Route)polyline.UserData).driveTime, groute.ServiceURL, groute.ServiceName, groute.ServiceEngine) + "]]></description>\r\n";
                 XML += "<LineString>\r\n";
                 XML += "<coordinates>" + poly+ "</coordinates>\r\n";
                 XML += "</LineString>\r\n";
@@ -5824,12 +5888,15 @@ namespace KMZRebuilder
 
         private void setToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            string ra = groute.ra;
+            if (groute.service >= 0) return;
+            int ki = groute.service * -1 - 1;
+
+            string ra = groute.url_dkxce[ki].ra;
             List<string> ras = new List<string>();
             ras.Add("00000000000000000000000000000000");
             if (!ras.Contains(ra)) ras.Insert(0, ra);
-            if (InputBox.Show("Web Route Engine", "Enter RA (Route Attributes) to dkxce.Route.Service:", ras.ToArray(), ref ra, true) != DialogResult.OK) return;
-            groute.ra = ra;
+            if (InputBox.Show("Web Route Engine", "Enter RA (Route Attributes) to " + groute.ServiceName + ":", ras.ToArray(), ref ra, true) != DialogResult.OK) return;
+            groute.url_dkxce[ki].ra = ra;
         }
 
         private void rbSw_ButtonClick(object sender, EventArgs e)
@@ -5931,7 +5998,7 @@ namespace KMZRebuilder
                 }
                 else
                 {
-                    comms = String.Format(System.Globalization.CultureInfo.InvariantCulture, "Route: {0} - {1}\r\nLength: {2:0.0} km\r\nTime: {3:0.0} min\r\nFrom: {4}", rtStart.Text, points[i].Name, route.driveLength / 1024.0, route.driveTime, groute.url);
+                    comms = String.Format(System.Globalization.CultureInfo.InvariantCulture, "Route: {0} - {1}\r\nLength: {2:0.0} km\r\nTime: {3:0.0} min\r\nFrom: {4}\r\nSName: {5}Engine: {6}", rtStart.Text, points[i].Name, route.driveLength / 1024.0, route.driveTime, groute.ServiceURL, groute.ServiceName, groute.ServiceEngine);
                     for (int j = 0; j < route.polyline.Length; j++)
                     {
                         if (polys.Length > 0) polys += " ";
@@ -6005,7 +6072,7 @@ namespace KMZRebuilder
                 }
                 else
                 {
-                    comms = String.Format(System.Globalization.CultureInfo.InvariantCulture, "Route: {0} - {1}\r\nLength: {2:0.0} km\r\nTime: {3:0.0} min\r\nFrom: {4}", points[i].Name, rtFinish.Text, route.driveLength / 1024.0, route.driveTime, groute.url);
+                    comms = String.Format(System.Globalization.CultureInfo.InvariantCulture, "Route: {0} - {1}\r\nLength: {2:0.0} km\r\nTime: {3:0.0} min\r\nFrom: {4}\r\nSName: {5}Engine: {6}", points[i].Name, rtFinish.Text, route.driveLength / 1024.0, route.driveTime, groute.ServiceURL, groute.ServiceName, groute.ServiceEngine);
                     for (int j = 0; j < route.polyline.Length; j++)
                     {
                         if (polys.Length > 0) polys += " ";
@@ -6099,7 +6166,7 @@ namespace KMZRebuilder
                 }
                 else
                 {
-                    comms = String.Format(System.Globalization.CultureInfo.InvariantCulture, "Route: {0} - {1}\r\nLength: {2:0.0} km\r\nTime: {3:0.0} min\r\nFrom: {4}", lines[sel].Name, points[i].Name, route.driveLength / 1024.0, route.driveTime, groute.url);
+                    comms = String.Format(System.Globalization.CultureInfo.InvariantCulture, "Route: {0} - {1}\r\nLength: {2:0.0} km\r\nTime: {3:0.0} min\r\nFrom: {4}\r\nSName: {5}Engine: {6}", lines[sel].Name, points[i].Name, route.driveLength / 1024.0, route.driveTime, groute.ServiceURL, groute.ServiceName, groute.ServiceEngine);
                     for (int j = 0; j < route.polyline.Length; j++)
                     {
                         if (polys.Length > 0) polys += " ";
@@ -6193,7 +6260,7 @@ namespace KMZRebuilder
                 }
                 else
                 {
-                    comms = String.Format(System.Globalization.CultureInfo.InvariantCulture, "Route: {0} - {1}\r\nLength: {2:0.0} km\r\nTime: {3:0.0} min\r\nFrom: {4}", points[i].Name, lines[sel].Name, route.driveLength / 1024.0, route.driveTime, groute.url);
+                    comms = String.Format(System.Globalization.CultureInfo.InvariantCulture, "Route: {0} - {1}\r\nLength: {2:0.0} km\r\nTime: {3:0.0} min\r\nFrom: {4}\r\nSName: {5}Engine: {6}", points[i].Name, lines[sel].Name, route.driveLength / 1024.0, route.driveTime, groute.ServiceURL, groute.ServiceName, groute.ServiceEngine);
                     for (int j = 0; j < route.polyline.Length; j++)
                     {
                         if (polys.Length > 0) polys += " ";
@@ -6270,7 +6337,7 @@ namespace KMZRebuilder
         {
             System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
             System.Diagnostics.FileVersionInfo fvi = System.Diagnostics.FileVersionInfo.GetVersionInfo(assembly.Location);
-            string atext = "This is a tool for dkxce Route Engine\r\n\r\nMore info:\r\n   https://github.com/dkxce/\r\nBy:\r\n   " + fvi.CompanyName;
+            string atext = "This is a tool for dkxce Route Engine and OSRM Route Engine\r\n\r\nMore info:\r\n   https://github.com/dkxce/\r\nBy:\r\n   " + fvi.CompanyName;
             MessageBox.Show(atext, this.Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
@@ -6301,6 +6368,56 @@ namespace KMZRebuilder
             int w = groute.timeout;
             if (System.Windows.Forms.InputBox.Show("Web Route Engine", "Select timeout for Route request:", ref w, 10, 180) != DialogResult.OK) return;
             groute.timeout = w;
+        }
+
+        private void routeEngineToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            
+        }
+
+        private void rbSet_DropDownOpening(object sender, EventArgs e)
+        {            
+            setKeyToolStripMenuItem.Enabled = (groute != null) && (groute.service < 0);
+            setToolStripMenuItem.Enabled = (groute != null) && (groute.service < 0);
+            if (groute == null) return;
+            if(groute.service > 0)
+                routeEngineToolStripMenuItem.Text = String.Format("{0} - OSRM Engine [{1}]", groute.ServiceIndex, groute.ServiceName);
+            else
+                routeEngineToolStripMenuItem.Text = String.Format("{0} - dkxce Engine [{1}]", groute.ServiceIndex, groute.ServiceName);
+        }
+
+        private void selectRouteServiceToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (groute == null) return;
+
+            int si = 0;
+            List<string> svcs = new List<string>();
+            List<int> svci = new List<int>();
+            if (groute.url_dkxce.Count > 0)
+            {
+                for (int i = 0; i < groute.url_dkxce.Count; i++)
+                {
+                    svcs.Add(String.Format("D{0}: {1}", i + 1, groute.url_dkxce[i].name));
+                    int sid = -1 * i - 1;
+                    svci.Add(sid);
+                    if (sid == groute.service) si = svci.Count - 1;
+                };
+            };
+            if (groute.url_osrm.Count > 0)
+            {
+                for (int i = 0; i < groute.url_osrm.Count; i++)
+                {
+                    svcs.Add(String.Format("O{0}: {1}", i + 1, groute.url_osrm[i].name));
+                    int sid = i + 1;
+                    svci.Add(sid);
+                    if (sid == groute.service) si = svci.Count - 1;
+                };
+            };
+
+            if (InputBox.Show("Select Route Engine", "Select Web Route Service (D - dkxce Engine, O - OSRM Engine):", svcs.ToArray(), ref si) != DialogResult.OK) return;
+            groute.service = svci[si];
+            rbSet.Text = String.Format("Set ({0})", groute.ServiceIndex);
+            rbGet.Text = String.Format("Get ({0})", groute.ServiceIndex);
         }
     }
 
@@ -6374,37 +6491,70 @@ namespace KMZRebuilder
 
     [Serializable]
     public class GetRouter
-    {
+    {       
         public int mode = 0;
+        public int service = -1; // < 0 - dkxce; > 0 - OSRM      
+        public bool getroute = false;
+        public bool saveroute = false;
+        public int routecolor { get { return color.ToArgb(); } set { color = Color.FromArgb(value); } }
+        public int width = 5;
+        public int timeout = 30;
+
         [XmlIgnore]
         public object[] start = null;
         [XmlIgnore]
         public object[] finish = null;
         [XmlIgnore]
         public ulong counter = 0;
-        public string url = "http://localhost:8080/nms/";
-        public string key = "TEST";
-        public string ra = "00000000000000000000000000000000";
-        public bool getroute = false;
-        public bool saveroute = false;
         [XmlIgnore]
-        public Color color = Color.OrangeRed;
-        public int routecolor { get { return color.ToArgb(); } set { color = Color.FromArgb(value); } }
-        public int width = 5;
-        public int timeout = 30;
+        public Color color = Color.OrangeRed;    
+
+        [XmlArray(ElementName = "dkxce.Route.Service")]
+        [XmlArrayItem(ElementName = "url")]
+        public List<DRSParams> url_dkxce = new List<DRSParams>();
+        
+        [XmlArray(ElementName = "OSRMaps.Route")]
+        [XmlArrayItem(ElementName = "url")] // http://project-osrm.org/docs/v5.24.0/api/#
+        public List<OSRMParams> url_osrm = new List<OSRMParams>();                
+        
+        [XmlIgnore]
+        public string ServiceURL 
+        {
+            get { if (service >= 0) return url_osrm[service - 1].url; else return url_dkxce[-1 * service - 1].url; }
+            set { if (service >= 0) url_osrm[service - 1].url = value; else url_dkxce[-1 * service - 1].url = value; }
+        }
+        [XmlIgnore]
+        public string ServiceName
+        {
+            get { if (service >= 0) return url_osrm[service - 1].name; else return url_dkxce[-1 * service - 1].name; }
+            set { if (service >= 0) url_osrm[service - 1].name = value; else url_dkxce[-1 * service - 1].name = value; }
+        }
+        [XmlIgnore]
+        public string ServiceIndex
+        {
+            get { if (service >= 0) return String.Format("O{0}", service); else return String.Format("D{0}", -1 * service ); }
+        }
+        [XmlIgnore]
+        public string ServiceEngine { get { if (service > 0) return "OSRM"; else return "dkxce"; } }
 
         public nmsRouteClient.Route GetRoute(PointF a, PointF b)
+        {
+            if (service >= 0) return GetRouteOSRM(a, b, url_osrm[service - 1]);
+            return GetRouteDKXCE(a, b, url_dkxce[- 1 * service - 1]);
+        }
+
+        public nmsRouteClient.Route GetRouteDKXCE(PointF a, PointF b, DRSParams param)
         {
             nmsRouteClient.Route res = new nmsRouteClient.Route();
             res.LastError = "Couldn't request route";
 
-            string furl = url;
+            string furl = param.url;
             {
                 int iu = furl.ToUpper().IndexOf("/NMS");
                 if (iu > 0) furl = furl.Substring(0, iu + 4) + "/";
                 string xx = String.Format(System.Globalization.CultureInfo.InvariantCulture, "{0},{1}", a.X, b.X);
                 string yy = String.Format(System.Globalization.CultureInfo.InvariantCulture, "{0},{1}", a.Y, b.Y);
-                furl += String.Format("route?k={0}&f=2&p=1&i=0&minby=time&x={1}&y={2}&ra={3}&n=start,dest", key.Trim(), xx, yy, ra.Trim());
+                furl += String.Format("route?k={0}&f=2&p=1&i=0&minby=time&x={1}&y={2}&ra={3}&n=start,dest", param.key.Trim(), xx, yy, param.ra.Trim());
             };
 
             try
@@ -6428,21 +6578,72 @@ namespace KMZRebuilder
             };
         }
 
+        public nmsRouteClient.Route GetRouteOSRM(PointF a, PointF b, OSRMParams param)
+        {
+            nmsRouteClient.Route route = new nmsRouteClient.Route();
+            route.LastError = "Couldn't request route";
+
+            string furl = param.url;
+            {
+                int iu = furl.LastIndexOf("/");
+                if (iu > 0) furl = furl.Substring(0, iu + 1);
+                string xyxy = String.Format(System.Globalization.CultureInfo.InvariantCulture, "{0},{1};{2},{3}", a.X, a.Y, b.X, b.Y);
+                furl += String.Format("{0}?overview=full&geometries=polyline", xyxy);
+            };
+            
+            try
+            {
+                System.Net.HttpWebRequest wReq = (System.Net.HttpWebRequest)System.Net.HttpWebRequest.Create(furl);
+                wReq.Timeout = this.timeout * 1000;
+                System.Net.HttpWebResponse wRes = (System.Net.HttpWebResponse)wReq.GetResponse();
+                StreamReader sr = new StreamReader(wRes.GetResponseStream());
+                string json = sr.ReadToEnd();
+                sr.Close();
+                wRes.Close();
+
+                if (String.IsNullOrEmpty(json)) throw new Exception("No valid route JSON");
+
+                OSMRResponse osmr = OSMRResponse.FromText(json);
+                if ((!String.IsNullOrEmpty(osmr.code)) && (osmr.code.ToLower() != "ok")) throw new Exception(osmr.code);
+                if ((osmr.routes == null) || (osmr.routes.Length == 0)) { route.LastError = osmr.code; return route; };
+
+                PointF[] vector = osmr.routes[0].points;
+                route = new nmsRouteClient.Route();
+                route.driveLength = osmr.routes[0].distance;
+                route.driveTime = osmr.routes[0].duration / 60.0;
+                route.polyline = new nmsRouteClient.XYPoint[vector.Length];
+                for (int i = 0; i < vector.Length; i++)
+                    route.polyline[i] = new nmsRouteClient.XYPoint(vector[i].X, vector[i].Y);
+            }
+            catch (Exception ex)
+            {
+                route.LastError = ex.Message;
+                return route;
+            };
+            return route;
+        }
+
         public double GetRoute(PointF a, PointF b, WaitingBoxForm wbf, out PointF[] vector, out nmsRouteClient.Route route)
+        {
+            if (service >= 0) return GetRouteOSRM(a, b, wbf, out vector, out route, url_osrm[service - 1]);
+            return GetRouteDKXCE(a, b, wbf, out vector, out route, url_dkxce[- 1 * service - 1]);
+        }
+
+        public double GetRouteDKXCE(PointF a, PointF b, WaitingBoxForm wbf, out PointF[] vector, out nmsRouteClient.Route route, DRSParams param)
         {
             vector = null;
             route = null;
             double res = double.MaxValue;
 
-            string furl = url;
+            string furl = param.url;
             {
                 int iu = furl.ToUpper().IndexOf("/NMS");
                 if (iu > 0) furl = furl.Substring(0, iu + 4) + "/";
                 string xx = String.Format(System.Globalization.CultureInfo.InvariantCulture, "{0},{1}", a.X, b.X);
                 string yy = String.Format(System.Globalization.CultureInfo.InvariantCulture, "{0},{1}", a.Y, b.Y);
-                furl += String.Format("route?k={0}&f=2&p=1&i=0&minby=time&x={1}&y={2}&ra={3}&n=start,dest", key.Trim(), xx, yy, ra.Trim());
+                furl += String.Format("route?k={0}&f=2&p=1&i=0&minby=time&x={1}&y={2}&ra={3}&n=start,dest", param.key.Trim(), xx, yy, param.ra.Trim());
             };
-            wbf.Show("Request route", this.url);
+            wbf.Show("Request route", param.url);
             try
             {
                 System.Net.HttpWebRequest wReq = (System.Net.HttpWebRequest)System.Net.HttpWebRequest.Create(furl);
@@ -6472,6 +6673,55 @@ namespace KMZRebuilder
             return res;
         }
 
+        public double GetRouteOSRM(PointF a, PointF b, WaitingBoxForm wbf, out PointF[] vector, out nmsRouteClient.Route route, OSRMParams param)
+        {
+            vector = null;
+            route = null;
+            double res = double.MaxValue;
+
+            string furl = param.url;
+            {
+                int iu = furl.LastIndexOf("/");
+                if (iu > 0) furl = furl.Substring(0, iu + 1);
+                string xyxy = String.Format(System.Globalization.CultureInfo.InvariantCulture, "{0},{1};{2},{3}", a.X, a.Y, b.X, b.Y);
+                furl += String.Format("{0}?overview=full&geometries=polyline", xyxy);
+            };
+            wbf.Show("Request route", param.url);
+            try
+            {
+                System.Net.HttpWebRequest wReq = (System.Net.HttpWebRequest)System.Net.HttpWebRequest.Create(furl);
+                wReq.Timeout = this.timeout * 1000;
+                System.Net.HttpWebResponse wRes = (System.Net.HttpWebResponse)wReq.GetResponse();
+                StreamReader sr = new StreamReader(wRes.GetResponseStream());
+                string json = sr.ReadToEnd();
+                sr.Close();
+                wRes.Close();
+
+                if (String.IsNullOrEmpty(json)) throw new Exception("No valid route JSON");
+                
+                OSMRResponse osmr = OSMRResponse.FromText(json);
+                if ((!String.IsNullOrEmpty(osmr.code)) && (osmr.code.ToLower() != "ok")) throw new Exception(osmr.code);
+                if ((osmr.routes == null) || (osmr.routes.Length == 0)) return double.MaxValue;
+                res = osmr.routes[0].distance;
+                vector = osmr.routes[0].points;
+
+                route = new nmsRouteClient.Route();
+                route.driveLength = osmr.routes[0].distance;
+                route.driveTime = osmr.routes[0].duration / 60.0;
+                route.polyline = new nmsRouteClient.XYPoint[vector.Length];
+                for (int i = 0; i < vector.Length; i++)
+                    route.polyline[i] = new nmsRouteClient.XYPoint(vector[i].X, vector[i].Y);
+            }
+            catch (Exception ex)
+            {
+                wbf.Hide();
+                MessageBox.Show("Get route failed\r\nError: " + ex.Message, "Get Route", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                return double.MaxValue;
+            };
+            wbf.Hide();
+            return res;
+        }
+
         public static GetRouter Load()
         {
             string fName = KMZRebuilederForm.CurrentDirectory() + @"\KMZRebuilder.rtc";
@@ -6479,15 +6729,28 @@ namespace KMZRebuilder
             {
                 try
                 {
-                    return XMLSaved<GetRouter>.Load(fName);
+                    GetRouter res = XMLSaved<GetRouter>.Load(fName);
+                    if (res.service == 0) res.service = -1;
+                    if (res.service > 0)
+                    {
+                        int ind = res.service - 1;
+                        if (ind >= res.url_osrm.Count) res.service = -1;
+                    };
+                    if (res.service < 0)
+                    {
+                        int ind = res.service * -1 - 1;
+                        if (ind >= res.url_dkxce.Count) res.service = -1;
+                    };
+                    return res;
                 }
-                catch
-                {
-                    return new GetRouter();
-                };
-            }
-            else
-                return new GetRouter();
+                catch { };
+            };
+            {
+                GetRouter res = new GetRouter();
+                res.url_dkxce = new List<DRSParams>(new DRSParams[] { new DRSParams() });
+                res.url_osrm = new List<OSRMParams>(new OSRMParams[] { new OSRMParams("map.project-osrm.org", "http://router.project-osrm.org/route/v1/driving/"), new OSRMParams("maps.openrouteservice.org", "http://routing.openstreetmap.de/routed-car/route/v1/driving/") });
+                return res;
+            };
         }
 
         public void Save()
@@ -6498,6 +6761,126 @@ namespace KMZRebuilder
                 XMLSaved<GetRouter>.Save(fName, this);
             }
             catch { };
+        }
+
+        public class DRSParams
+        {
+            [XmlText]
+            public string url = "http://localhost:8080/nms/";
+            [XmlAttribute]
+            public string key = "TEST";
+            [XmlAttribute]
+            public string ra = "00000000000000000000000000000000";
+            [XmlAttribute]
+            public string name = "localhost:8080";
+        }
+
+        public class OSRMParams
+        {
+            [XmlText]
+            public string url;
+            [XmlAttribute]
+            public string name;
+            public OSRMParams() { }
+            public OSRMParams(string name, string url) { this.name = name; this.url = url; }
+        }
+
+        public class OSMRResponse
+        {
+            public class OSMRRoute
+            {
+                public string geometry;
+                public string weight_name;
+                public double weight;
+                public double distance;
+                public double duration;
+                public PointF[] points { get { return DecodeA(this.geometry); } }
+
+                private static IEnumerable<PointF> Decode(string polylineString)
+                {
+                    char[] polylineChars = polylineString.ToCharArray();
+                    int index = 0;
+
+                    double currentLat = 0;
+                    double currentLng = 0;
+
+                    while (index < polylineChars.Length)
+                    {
+                        // Next lat
+                        int sum = 0;
+                        int shifter = 0;
+                        int nextFiveBits;
+                        do
+                        {
+                            nextFiveBits = polylineChars[index++] - 63;
+                            sum |= (nextFiveBits & 31) << shifter;
+                            shifter += 5;
+                        } while (nextFiveBits >= 32 && index < polylineChars.Length);
+
+                        if (index >= polylineChars.Length)
+                            break;
+
+                        currentLat += (sum & 1) == 1 ? ~(sum >> 1) : (sum >> 1);
+
+                        // Next lng
+                        sum = 0;
+                        shifter = 0;
+                        do
+                        {
+                            nextFiveBits = polylineChars[index++] - 63;
+                            sum |= (nextFiveBits & 31) << shifter;
+                            shifter += 5;
+                        } while (nextFiveBits >= 32 && index < polylineChars.Length);
+
+                        if (index >= polylineChars.Length && nextFiveBits >= 32)
+                            break;
+
+                        currentLng += (sum & 1) == 1 ? ~(sum >> 1) : (sum >> 1);
+
+                        yield return new PointF((float)(Convert.ToDouble(currentLng) / 1.0E+5), (float)(Convert.ToDouble(currentLat) / 1.0E+5));
+                    };
+                }
+
+                private static PointF[] DecodeA(string polylineString)
+                {
+                    List<PointF> res = new List<PointF>();
+                    foreach (PointF pnt in Decode(polylineString)) res.Add(pnt);
+                    return res.ToArray();
+                }
+            }
+            
+            public string code;
+            public OSMRRoute[] routes;
+
+            public static OSMRResponse FromText(string text)
+            {
+                OSMRResponse result = new OSMRResponse();
+                List<OSMRRoute> resrts = new List<OSMRRoute>();
+
+                Newtonsoft.Json.Linq.JToken osmd = (Newtonsoft.Json.Linq.JContainer)Newtonsoft.Json.JsonConvert.DeserializeObject(text);
+                foreach (Newtonsoft.Json.Linq.JProperty suntoken in osmd)
+                {
+                    if (suntoken.Name == "code") result.code = suntoken.Value.ToString();
+                    if (suntoken.Name == "routes")
+                    {
+                        foreach (Newtonsoft.Json.Linq.JObject rt in suntoken.Value)
+                        {
+                            OSMRRoute rres = new OSMRRoute();
+                            foreach (Newtonsoft.Json.Linq.JProperty trp in (Newtonsoft.Json.Linq.JContainer)rt)
+                            {
+                                if (trp.Name == "geometry") rres.geometry = trp.Value.ToString();
+                                if (trp.Name == "weight_name") rres.weight_name = trp.Value.ToString();
+                                if (trp.Name == "weight") double.TryParse(trp.Value.ToString(), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out rres.weight);
+                                if (trp.Name == "distance") double.TryParse(trp.Value.ToString(), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out rres.distance);
+                                if (trp.Name == "duration") double.TryParse(trp.Value.ToString(), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out rres.duration);
+                            };
+                            resrts.Add(rres);
+                        };
+                    };                    
+                };
+                result.routes = resrts.ToArray();
+                return result;
+            }
         }
     }
 

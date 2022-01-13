@@ -110,6 +110,9 @@ namespace KMZRebuilder
 
         private void FormKMZ_Load(object sender, EventArgs e)
         {
+            //foreach (PointF loc in GoogleGeometry.GooglePolylineConverter.DecodePE("wkwzHohvz@KYOWSUIEGEu@k@o@k@_@g@GIEKK[ESCQAMDWDWDW@]Bk@TeDBODQBGDIFKJGd@YJMJMFOBQ@Q?SCYa@aCAa@Aq@@}@D]Pu@Hc@B_@?a@A]g@gD]aC_@eCq@gFGg@GeAG}AG{BIqGEcB?aBFqAJqA^eC^mBZmAZaAX{@h@yA`AgBfAsBXs@\\mA`@cClAgKjCsUj@kEPkAJg@~@iD`@{Af@_CXoBPqBPoBD_@PcBj@uCb@oBDU\\cCTaB\\cDt@iGv@gFn@mDxAeHj@mC`@aBb@qA^y@t@mAvCmEt@qA~CmIlAaD~AeE^_Av@wA~@iAdAy@jAc@^OFCj@Wf@a@jCwCp@{@L_@F_@F{ADi@h@cDLa@JSNGNCb@@`B@d@ETKZ]FSNe@dAwDLa@~C{N`BoHfAoE|AoGjBuGjCwJtAaGnAkGlC}NJe@r@yD`@qBVqAn@mCVkAbAwDDQ`@sA|AiElBuEzAuCdCsDpBmCfG{GzF{FfBaBrAiAtAaAhBq@pCq@HAJC`Ac@j@_@x@s@v@}@fBeClCuDb@o@Rc@N]DOBO@M@O?O?[Aq@?Y"))
+            //    MessageBox.Show(loc.ToString());
+
             MyMruList = new MruList(CurrentDirectory() + @"\KMZRebuilder.mru", MRU, 10);
             MyMruList.FileSelected += new MruList.FileSelectedEventHandler(MyMruList_FileSelected);
             waitBox = new WaitingBoxForm(this);
