@@ -178,7 +178,6 @@ namespace KMZRebuilder
             this.selectNoneToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.toolStripLabel1 = new System.Windows.Forms.ToolStripLabel();
-            this.textBox2 = new KMZRebuilder.ToolStripSpringTextBox();
             this.NCB = new System.Windows.Forms.ToolStripButton();
             this.NDB = new System.Windows.Forms.ToolStripButton();
             this.NPB = new System.Windows.Forms.ToolStripButton();
@@ -219,6 +218,7 @@ namespace KMZRebuilder
             this.rbStFi = new System.Windows.Forms.ToolStripMenuItem();
             this.rbSt = new System.Windows.Forms.ToolStripMenuItem();
             this.rbFi = new System.Windows.Forms.ToolStripMenuItem();
+            this.rbMi = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem31 = new System.Windows.Forms.ToolStripSeparator();
             this.rbGR = new System.Windows.Forms.ToolStripMenuItem();
             this.rbSL = new System.Windows.Forms.ToolStripMenuItem();
@@ -260,6 +260,7 @@ namespace KMZRebuilder
             this.toolStripStatusLabel9 = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusLabel11 = new System.Windows.Forms.ToolStripStatusLabel();
             this.rtStatus = new System.Windows.Forms.ToolStripStatusLabel();
+            this.textBox2 = new KMZRebuilder.ToolStripSpringTextBox();
             this.statusStrip2.SuspendLayout();
             this.panel1.SuspendLayout();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -1568,14 +1569,6 @@ namespace KMZRebuilder
             this.toolStripLabel1.Size = new System.Drawing.Size(31, 22);
             this.toolStripLabel1.Text = "Find:";
             // 
-            // textBox2
-            // 
-            this.textBox2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.textBox2.MaxLength = 100;
-            this.textBox2.Name = "textBox2";
-            this.textBox2.Size = new System.Drawing.Size(131, 25);
-            this.textBox2.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBox2_KeyPress);
-            // 
             // NCB
             // 
             this.NCB.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
@@ -1905,6 +1898,7 @@ namespace KMZRebuilder
             this.rbStFi,
             this.rbSt,
             this.rbFi,
+            this.rbMi,
             this.toolStripMenuItem31,
             this.rbGR,
             this.rbSL});
@@ -1943,6 +1937,13 @@ namespace KMZRebuilder
             this.rbFi.Size = new System.Drawing.Size(159, 22);
             this.rbFi.Text = "Set Finish";
             this.rbFi.Click += new System.EventHandler(this.rbFi_Click);
+            // 
+            // rbMi
+            // 
+            this.rbMi.Name = "rbMi";
+            this.rbMi.Size = new System.Drawing.Size(159, 22);
+            this.rbMi.Text = "Set Multipoint";
+            this.rbMi.Click += new System.EventHandler(this.rbMi_Click);
             // 
             // toolStripMenuItem31
             // 
@@ -2275,6 +2276,14 @@ namespace KMZRebuilder
             this.rtStatus.Size = new System.Drawing.Size(25, 17);
             this.rtStatus.Text = "Idle";
             // 
+            // textBox2
+            // 
+            this.textBox2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.textBox2.MaxLength = 100;
+            this.textBox2.Name = "textBox2";
+            this.textBox2.Size = new System.Drawing.Size(131, 25);
+            this.textBox2.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBox2_KeyPress);
+            // 
             // ContentViewer
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -2546,5 +2555,6 @@ namespace KMZRebuilder
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem38;
         private System.Windows.Forms.ToolStripMenuItem saveRouteToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem saveRouteAsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem rbMi;
     }
 }

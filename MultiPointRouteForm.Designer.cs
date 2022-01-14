@@ -29,8 +29,8 @@ namespace KMZRebuilder
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            this.button1 = new System.Windows.Forms.Button();
-            this.button2 = new System.Windows.Forms.Button();
+            this.buttonOk = new System.Windows.Forms.Button();
+            this.buttonCancel = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.pbox = new System.Windows.Forms.CheckedListBox();
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
@@ -40,28 +40,31 @@ namespace KMZRebuilder
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
             this.deleteCheckedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.deleteUncheckedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripSeparator();
+            this.clearAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.label2 = new System.Windows.Forms.Label();
             this.contextMenuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
-            // button1
+            // buttonOk
             // 
-            this.button1.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.button1.Location = new System.Drawing.Point(341, 368);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 23);
-            this.button1.TabIndex = 0;
-            this.button1.Text = "OK";
-            this.button1.UseVisualStyleBackColor = true;
+            this.buttonOk.DialogResult = System.Windows.Forms.DialogResult.OK;
+            this.buttonOk.Location = new System.Drawing.Point(341, 368);
+            this.buttonOk.Name = "buttonOk";
+            this.buttonOk.Size = new System.Drawing.Size(75, 23);
+            this.buttonOk.TabIndex = 0;
+            this.buttonOk.Text = "OK";
+            this.buttonOk.UseVisualStyleBackColor = true;
             // 
-            // button2
+            // buttonCancel
             // 
-            this.button2.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.button2.Location = new System.Drawing.Point(12, 368);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(75, 23);
-            this.button2.TabIndex = 1;
-            this.button2.Text = "Cancel";
-            this.button2.UseVisualStyleBackColor = true;
+            this.buttonCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            this.buttonCancel.Location = new System.Drawing.Point(12, 368);
+            this.buttonCancel.Name = "buttonCancel";
+            this.buttonCancel.Size = new System.Drawing.Size(75, 23);
+            this.buttonCancel.TabIndex = 1;
+            this.buttonCancel.Text = "Cancel";
+            this.buttonCancel.UseVisualStyleBackColor = true;
             // 
             // label1
             // 
@@ -79,7 +82,7 @@ namespace KMZRebuilder
             this.pbox.FormattingEnabled = true;
             this.pbox.Location = new System.Drawing.Point(12, 25);
             this.pbox.Name = "pbox";
-            this.pbox.Size = new System.Drawing.Size(404, 332);
+            this.pbox.Size = new System.Drawing.Size(404, 317);
             this.pbox.TabIndex = 3;
             this.pbox.MouseUp += new System.Windows.Forms.MouseEventHandler(this.pbox_MouseUp);
             this.pbox.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbox_MouseDown);
@@ -93,9 +96,11 @@ namespace KMZRebuilder
             this.inverseCheckedToolStripMenuItem,
             this.toolStripMenuItem1,
             this.deleteCheckedToolStripMenuItem,
-            this.deleteUncheckedToolStripMenuItem});
+            this.deleteUncheckedToolStripMenuItem,
+            this.toolStripMenuItem2,
+            this.clearAllToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(172, 142);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(172, 148);
             // 
             // checkAllToolStripMenuItem
             // 
@@ -137,15 +142,38 @@ namespace KMZRebuilder
             this.deleteUncheckedToolStripMenuItem.Text = "Delete Unchecked";
             this.deleteUncheckedToolStripMenuItem.Click += new System.EventHandler(this.deleteUncheckedToolStripMenuItem_Click);
             // 
+            // toolStripMenuItem2
+            // 
+            this.toolStripMenuItem2.Name = "toolStripMenuItem2";
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(168, 6);
+            // 
+            // clearAllToolStripMenuItem
+            // 
+            this.clearAllToolStripMenuItem.Name = "clearAllToolStripMenuItem";
+            this.clearAllToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
+            this.clearAllToolStripMenuItem.Text = "Delete All";
+            this.clearAllToolStripMenuItem.Click += new System.EventHandler(this.clearAllToolStripMenuItem_Click);
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(267, 346);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(150, 13);
+            this.label2.TabIndex = 4;
+            this.label2.Text = "Click on map to add new point";
+            // 
             // MultiPointRouteForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(428, 396);
+            this.Controls.Add(this.label2);
             this.Controls.Add(this.pbox);
             this.Controls.Add(this.label1);
-            this.Controls.Add(this.button2);
-            this.Controls.Add(this.button1);
+            this.Controls.Add(this.buttonCancel);
+            this.Controls.Add(this.buttonOk);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "MultiPointRouteForm";
@@ -160,8 +188,6 @@ namespace KMZRebuilder
 
         #endregion
 
-        private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.Button button2;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.CheckedListBox pbox;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
@@ -171,5 +197,10 @@ namespace KMZRebuilder
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem deleteCheckedToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem deleteUncheckedToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem2;
+        private System.Windows.Forms.ToolStripMenuItem clearAllToolStripMenuItem;
+        public System.Windows.Forms.Button buttonOk;
+        public System.Windows.Forms.Button buttonCancel;
+        private System.Windows.Forms.Label label2;
     }
 }

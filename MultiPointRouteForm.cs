@@ -10,12 +10,39 @@ namespace KMZRebuilder
 {
     public partial class MultiPointRouteForm : Form
     {
+        public List<NaviMapNet.MapPoint> OnMapPoints = new List<NaviMapNet.MapPoint>();
+
         object temp;
         int trackingItem;
 
         public MultiPointRouteForm()
         {
             InitializeComponent();
+            this.DialogResult = DialogResult.Cancel;
+        }
+
+        private const int WS_SYSMENU = 0x80000;
+        protected override CreateParams CreateParams
+        {
+            get
+            {
+                CreateParams cp = base.CreateParams;
+                cp.Style &= ~WS_SYSMENU;
+                return cp;
+            }
+        }     
+
+        public void Clear()
+        {
+            this.pbox.Items.Clear();
+        }
+
+        public int Count
+        {
+            get
+            {
+                return pbox.Items.Count;
+            }
         }
 
         public List<KeyValuePair<string, PointF>> Points
@@ -34,6 +61,12 @@ namespace KMZRebuilder
             {
                 InitPoints(value);
             }
+        }
+
+        public void AddPoint(KeyValuePair<string, PointF> point, NaviMapNet.MapPoint mapPoint)
+        {
+            pbox.Items.Add(new KeyValuePair<string, PointF>(String.Format("{0:00} - {1}", pbox.Items.Count + 1, point.Key), point.Value), true);
+            OnMapPoints.Add(mapPoint);
         }
 
         private void InitPoints(List<KeyValuePair<string, PointF>> points)
@@ -104,34 +137,39 @@ namespace KMZRebuilder
 
         private void checkAllToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            for (int i = 0; i < pbox.CheckedItems.Count; i++)
+            for (int i = 0; i < pbox.Items.Count; i++)
                 pbox.SetItemChecked(i, true);
         }
 
         private void checkNoneToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            for (int i = 0; i < pbox.CheckedItems.Count; i++)
+            for (int i = 0; i < pbox.Items.Count; i++)
                 pbox.SetItemChecked(i, false);
         }
 
         private void inverseCheckedToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            for (int i = 0; i < pbox.CheckedItems.Count; i++)
+            for (int i = 0; i < pbox.Items.Count; i++)
                 pbox.SetItemChecked(i, !pbox.GetItemChecked(i));
         }
 
         private void deleteCheckedToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            for (int i = pbox.CheckedItems.Count - 1; i >= 0; i--)
+            for (int i = pbox.Items.Count - 1; i >= 0; i--)
                 if(pbox.GetItemChecked(i))
                     pbox.Items.RemoveAt(i);
         }
 
         private void deleteUncheckedToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            for (int i = pbox.CheckedItems.Count - 1; i >= 0; i--)
+            for (int i = pbox.Items.Count - 1; i >= 0; i--)
                 if (!pbox.GetItemChecked(i))
                     pbox.Items.RemoveAt(i);
+        }
+
+        private void clearAllToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            pbox.Items.Clear();
         }
     }
 

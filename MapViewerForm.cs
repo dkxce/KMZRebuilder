@@ -30,6 +30,7 @@ namespace KMZRebuilder
         public NaviMapNet.MapPoint mapRStart = null;
         public NaviMapNet.MapPoint mapRFinish = null;
         public NaviMapNet.MapPolyLine mapRVector = null;
+        private MultiPointRouteForm mapRMulti = null;
 
         private string SASPlanetCacheDir = @"C:\Program Files\SASPlanet\cache\osmmapMapnik";
         private string UserDefindedUrl = @"http://tile.openstreetmap.org/{z}/{x}/{y}.png";
@@ -5561,6 +5562,7 @@ namespace KMZRebuilder
                 if (groute.mode == 1) rbStFi_Click(sender, e);
                 if (groute.mode == 2) rbSt_Click(sender, e);
                 if (groute.mode == 3) rbFi_Click(sender, e);
+                if (groute.mode == 4) rbMi_Click(sender, e);
                 if (groute.getroute) rbGR_Click(sender, e);
                 if (groute.saveroute) rbSL_Click(sender, e);
             };
@@ -5586,6 +5588,7 @@ namespace KMZRebuilder
             rbStFi.Checked = false;
             rbSt.Checked = false;            
             rbFi.Checked = false;
+            rbMi.Checked = false;
             oncb.Text = rbDN.Text;
         }
 
@@ -5596,6 +5599,7 @@ namespace KMZRebuilder
             rbStFi.Checked = true;
             rbSt.Checked = false;
             rbFi.Checked = false;
+            rbMi.Checked = false;
             oncb.Text = rbStFi.Text;
         }
 
@@ -5606,6 +5610,7 @@ namespace KMZRebuilder
             rbStFi.Checked = false;
             rbSt.Checked = true;
             rbFi.Checked = false;
+            rbMi.Checked = false;
             oncb.Text = rbSt.Text;
         }
 
@@ -5616,6 +5621,7 @@ namespace KMZRebuilder
             rbStFi.Checked = false;
             rbSt.Checked = false;
             rbFi.Checked = true;
+            rbMi.Checked = false;
             oncb.Text = rbFi.Text;
         }
 
@@ -5782,8 +5788,168 @@ namespace KMZRebuilder
                 mapRFinish.Points = new PointF[] { click };
                 groute.finish = new object[] { name, click.X, click.Y };
                 rtFinish.Text = String.IsNullOrEmpty(name) ? String.Format(System.Globalization.CultureInfo.InvariantCulture, "{0},{1}", click.Y, click.X) : name;
+            }
+            else if (groute.mode == 4)
+            {
+                MultiPointFormShow(null);
+                if (String.IsNullOrEmpty(name)) name = String.Format(System.Globalization.CultureInfo.InvariantCulture, "{0},{1}", click.Y, click.X);                                
+                NaviMapNet.MapPoint mapRPoint = new NaviMapNet.MapPoint();
+                mapRPoint.Squared = true;
+                mapRPoint.SizePixels = new Size(16, 16);
+                mapRPoint.Img = GetRouter.ImageFromNumber(mapRMulti.Count + 1);
+                mapRPoint.Points = new PointF[] { click };                
+                mapRPoint.Text = name;                
+                mapRoute.Add(mapRPoint);
+                mapRMulti.AddPoint(new KeyValuePair<string, PointF>(name, click), mapRPoint);
+                MapViewer.DrawOnMapData();
+                return;
             };
             AfterClick();
+        }
+
+        private void MultiPointFormShow(List<KeyValuePair<string, PointF>> pArr)
+        {
+            if (mapRMulti == null)
+            {                
+                mapRMulti = new MultiPointRouteForm();
+                mapRMulti.StartPosition = FormStartPosition.Manual;
+                mapRMulti.Left = this.Left + this.Width - objects.Width;
+                mapRMulti.Top = this.Top + panel1.Height;
+                mapRMulti.buttonOk.Click += new EventHandler(buttonOk_Click);
+                mapRMulti.buttonCancel.Click += new EventHandler(buttonCancel_Click);
+                mapRMulti.FormClosed += new FormClosedEventHandler(mapRMulti_FormClosed);
+                multirouteFromCheckedToolStripMenuItem.Enabled = false;
+                mapRMulti.TopMost = true;
+                mapRMulti.Show();
+            };            
+            if (pArr != null) mapRMulti.Points = pArr;
+        }
+
+        private void buttonCancel_Click(object sender, EventArgs e)
+        {            
+            mapRMulti.Clear();
+            mapRMulti.Close();
+        }
+
+        private void buttonOk_Click(object sender, EventArgs e)
+        {            
+            mapRMulti.Close();
+        }
+
+        private void mapRMulti_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            bool hasMarkers = false;
+            for (int i = 0; i < mapRMulti.OnMapPoints.Count; i++)
+                try { hasMarkers = true; mapRoute.Remove(mapRMulti.OnMapPoints[i]); } catch { };
+
+            List<KeyValuePair<string, PointF>> pArr = mapRMulti.Points;
+            multirouteFromCheckedToolStripMenuItem.Enabled = true;
+            mapRMulti.Dispose();
+            mapRMulti = null;
+
+            if (pArr.Count < 2) 
+            {
+                if(hasMarkers) MapViewer.DrawOnMapData();
+                try
+                {
+                    MapViewer.Focus();
+                    MapViewer.Select();
+                }
+                catch { };
+                return;
+            };
+            List<PointF> pVector = new List<PointF>();
+            for (int i = 0; i < pArr.Count; i++) pVector.Add(pArr[i].Value);
+            wbf.Show("Get Route: Multipoints", "Wait, requesting route of " + pVector.Count.ToString() + " points");
+            PointF[] vector = null;
+            nmsRouteClient.Route route = null;
+            rtStatus.Text = "Request route...";
+            Application.DoEvents();
+            double rLength = groute.GetRoute(pVector.ToArray(), wbf, out vector, out route);
+
+            wbf.Hide();
+            if (mapRVector != null) mapRoute.Remove(mapRVector);
+            Application.DoEvents();
+            if ((rLength == double.MaxValue) || (vector == null))
+            {
+                rtStatus.Text = "No route found";
+                MapViewer.DrawOnMapData();
+                try
+                {
+                    MapViewer.Focus();
+                    MapViewer.Select();
+                }
+                catch { };
+                return;
+            };
+
+            rtStatus.Text = String.Format(System.Globalization.CultureInfo.InvariantCulture, "Route length: {0:0.00} km", rLength / 1000.0);
+
+            mapRVector = new NaviMapNet.MapPolyLine(vector);
+            mapRVector.Color = groute.color;
+            mapRVector.Width = groute.width;
+            mapRVector.UserData = route;
+            mapRoute.Add(mapRVector);
+
+            MapViewer.DrawOnMapData();
+            rbSave.Enabled = true;
+            if (rbSL.Checked) SaveResult(mapRVector, false);
+            try
+            {
+                MapViewer.Focus();
+                MapViewer.Select();
+            }
+            catch { };
+
+            //string XML = "";
+            //string style = "newstyle" + DateTime.UtcNow.ToString("HHmmssfff");
+            //{                
+            //    string polys = "";
+            //    string comms = "";
+
+            //    if (!String.IsNullOrEmpty(route.LastError))
+            //    {
+            //        double ttld = 0;
+            //        for (int j = 0; j < pVector.Count; j++)
+            //        {
+            //            polys += String.Format(System.Globalization.CultureInfo.InvariantCulture, "{0},{1},{2}", pVector[j].X, pVector[j].Y, 0);
+            //            polys += " ";
+            //            if (j > 0)
+            //                ttld += GetLengthMetersC(pVector[j - 1].Y, pVector[j - 1].X, pVector[j].Y, pVector[j].X, false);
+            //        };
+            //        comms = String.Format("Length: {0:0.0}\r\nError: {1}", ttld / 1024.0, route.LastError);
+            //    }
+            //    else
+            //    {
+            //        comms = String.Format(System.Globalization.CultureInfo.InvariantCulture, "Route: {0} - {1}\r\nLength: {2:0.0} km\r\nTime: {3:0.0} min\r\nFrom: {4}\r\nSName: {5}Engine: {6}", rtStart.Text, points[i].Name, route.driveLength / 1024.0, route.driveTime, groute.ServiceURL, groute.ServiceName, groute.ServiceEngine);
+            //        for (int j = 0; j < route.polyline.Length; j++)
+            //        {
+            //            if (polys.Length > 0) polys += " ";
+            //            polys += String.Format(System.Globalization.CultureInfo.InvariantCulture, "{0},{1},{2}", route.polyline[j].x, route.polyline[j].y, 0);
+            //        };
+            //    };
+
+            //    XML += "<Placemark>\r\n";
+            //    XML += "<name><![CDATA[Multiroute]]></name>\r\n";
+            //    XML += "<styleUrl>#" + style + "</styleUrl>\r\n";
+            //    XML += "<description><![CDATA[" + comms + "]]></description>\r\n";
+            //    XML += "<LineString>\r\n";
+            //    XML += "<coordinates>" + polys + "</coordinates>\r\n";
+            //    XML += "</LineString>\r\n";
+            //    XML += "</Placemark>\r\n";
+            //};            
+            //wbf.Hide();
+
+            //KMLayer l = (KMLayer)parent.kmzLayers.Items[laySelect.SelectedIndex];
+            //XmlNode xf = l.file.kmlDoc.SelectNodes("kml/Document/Folder")[l.id];
+            //xf.InnerXml += XML;
+            //l.file.kmlDoc.SelectNodes("kml/Document")[0].InnerXml += style;
+
+            //l.file.SaveKML();
+            //l.placemarks += points.Length;
+            //l.lines += points.Length;
+            //parent.Refresh();
+            //laySelect.Items[laySelect.SelectedIndex] = l.ToString(); 
         }
 
         private void AfterClick()
@@ -6454,102 +6620,7 @@ namespace KMZRebuilder
             foreach (NaviMapNet.MapPoint p in points) pArr.Add(new KeyValuePair<string,PointF>(p.Name, p.Center));
             if (groute.finish != null) pArr.Add(new KeyValuePair<string, PointF>((groute.finish[0] == null ? "FINISH POINT" : (string)groute.finish[0]), new PointF((float)groute.finish[1], (float)groute.finish[2])));
 
-            // SORT POINTS
-            MultiPointRouteForm msf = new MultiPointRouteForm();
-            msf.Points = pArr;
-            DialogResult dr = msf.ShowDialog();
-            pArr = msf.Points;
-            msf.Dispose();
-            if (dr != DialogResult.OK) return;
-            // END SORT POINTS
-
-            if (pArr.Count < 2) return;
-            List<PointF> pVector = new List<PointF>();
-            for (int i = 0; i < pArr.Count; i++) pVector.Add(pArr[i].Value);
-            wbf.Show("Get Route: Multipoints", "Wait, requesting route of " + pVector.Count.ToString() + " points");
-            PointF[] vector = null;
-            nmsRouteClient.Route route = null;
-            rtStatus.Text = "Request route...";
-            Application.DoEvents();           
-            double rLength = groute.GetRoute(pVector.ToArray(), wbf, out vector, out route);
-
-            wbf.Hide();
-            if (mapRVector != null) mapRoute.Remove(mapRVector);
-            Application.DoEvents();
-            if ((rLength == double.MaxValue) || (vector == null))
-            {
-                rtStatus.Text = "No route found";
-                MapViewer.DrawOnMapData();
-                return;
-            };
-
-            rtStatus.Text = String.Format(System.Globalization.CultureInfo.InvariantCulture, "Route length: {0:0.00} km", rLength / 1000.0);
-
-            mapRVector = new NaviMapNet.MapPolyLine(vector);
-            mapRVector.Color = groute.color;
-            mapRVector.Width = groute.width;
-            mapRVector.UserData = route;
-            mapRoute.Add(mapRVector);
-
-            MapViewer.DrawOnMapData();
-            rbSave.Enabled = true;
-            if (rbSL.Checked) SaveResult(mapRVector, false);
-            try
-            {
-                MapViewer.Focus();
-                MapViewer.Select();
-            }
-            catch { };
-
-            //string XML = "";
-            //string style = "newstyle" + DateTime.UtcNow.ToString("HHmmssfff");
-            //{                
-            //    string polys = "";
-            //    string comms = "";
-
-            //    if (!String.IsNullOrEmpty(route.LastError))
-            //    {
-            //        double ttld = 0;
-            //        for (int j = 0; j < pVector.Count; j++)
-            //        {
-            //            polys += String.Format(System.Globalization.CultureInfo.InvariantCulture, "{0},{1},{2}", pVector[j].X, pVector[j].Y, 0);
-            //            polys += " ";
-            //            if (j > 0)
-            //                ttld += GetLengthMetersC(pVector[j - 1].Y, pVector[j - 1].X, pVector[j].Y, pVector[j].X, false);
-            //        };
-            //        comms = String.Format("Length: {0:0.0}\r\nError: {1}", ttld / 1024.0, route.LastError);
-            //    }
-            //    else
-            //    {
-            //        comms = String.Format(System.Globalization.CultureInfo.InvariantCulture, "Route: {0} - {1}\r\nLength: {2:0.0} km\r\nTime: {3:0.0} min\r\nFrom: {4}\r\nSName: {5}Engine: {6}", rtStart.Text, points[i].Name, route.driveLength / 1024.0, route.driveTime, groute.ServiceURL, groute.ServiceName, groute.ServiceEngine);
-            //        for (int j = 0; j < route.polyline.Length; j++)
-            //        {
-            //            if (polys.Length > 0) polys += " ";
-            //            polys += String.Format(System.Globalization.CultureInfo.InvariantCulture, "{0},{1},{2}", route.polyline[j].x, route.polyline[j].y, 0);
-            //        };
-            //    };
-
-            //    XML += "<Placemark>\r\n";
-            //    XML += "<name><![CDATA[Multiroute]]></name>\r\n";
-            //    XML += "<styleUrl>#" + style + "</styleUrl>\r\n";
-            //    XML += "<description><![CDATA[" + comms + "]]></description>\r\n";
-            //    XML += "<LineString>\r\n";
-            //    XML += "<coordinates>" + polys + "</coordinates>\r\n";
-            //    XML += "</LineString>\r\n";
-            //    XML += "</Placemark>\r\n";
-            //};            
-            //wbf.Hide();
-
-            //KMLayer l = (KMLayer)parent.kmzLayers.Items[laySelect.SelectedIndex];
-            //XmlNode xf = l.file.kmlDoc.SelectNodes("kml/Document/Folder")[l.id];
-            //xf.InnerXml += XML;
-            //l.file.kmlDoc.SelectNodes("kml/Document")[0].InnerXml += style;
-
-            //l.file.SaveKML();
-            //l.placemarks += points.Length;
-            //l.lines += points.Length;
-            //parent.Refresh();
-            //laySelect.Items[laySelect.SelectedIndex] = l.ToString(); 
+            MultiPointFormShow(pArr);
         }
 
         private void fromStartToFinishToolStripMenuItem_Click(object sender, EventArgs e)
@@ -6567,6 +6638,17 @@ namespace KMZRebuilder
         {
             if (!rbSave.Enabled) return;
             SaveResult(mapRVector, true);
+        }
+
+        private void rbMi_Click(object sender, EventArgs e)
+        {
+            groute.mode = 4;
+            rbDN.Checked = false;
+            rbStFi.Checked = false;
+            rbSt.Checked = false;
+            rbFi.Checked = false;
+            rbMi.Checked = true;
+            oncb.Text = rbMi.Text;
         }
     }
 
@@ -7149,6 +7231,16 @@ namespace KMZRebuilder
                 result.routes = resrts.ToArray();
                 return result;
             }
+        }
+
+        public static Image ImageFromNumber(int num)
+        {
+            Bitmap im = new Bitmap(16, 16);
+            Graphics g = Graphics.FromImage(im);          
+            g.FillRectangle(new SolidBrush(Color.Black), new Rectangle(0, 0, 16, 16));
+            g.DrawString(String.Format("{0:00}",num), new Font("Tahoma", 8, FontStyle.Regular), new SolidBrush(Color.White), new PointF(0, 1));
+            g.Dispose();
+            return im;
         }
     }
 
