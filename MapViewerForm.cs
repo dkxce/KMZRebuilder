@@ -5621,6 +5621,7 @@ namespace KMZRebuilder
 
         private void setURLToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if (groute == null) return;
             if (groute.service < 0)
             {
                 string url = groute.ServiceURL;
@@ -5700,9 +5701,12 @@ namespace KMZRebuilder
 
         private void rbClear_ButtonClick(object sender, EventArgs e)
         {
-            groute.start = null;
-            groute.finish = null;
-            groute.counter = 0;
+            if (groute != null)
+            {
+                groute.start = null;
+                groute.finish = null;
+                groute.counter = 0;
+            };
             rtStart.Text = "START";
             rtFinish.Text = "FINISH";
             mapRoute.Clear();
@@ -5787,19 +5791,14 @@ namespace KMZRebuilder
             MapViewer.DrawOnMapData();
             if (rbGR.Checked)
             {
-                bool ok = rbSave.Enabled = GetRoute();                
-                if (rbSL.Checked && ok) SaveResult(mapRVector);
-                try
-                {
-                    MapViewer.Focus();
-                    MapViewer.Select();
-                }
-                catch { };
+                bool ok = rbSave.Enabled = GetRoute();
+                if (rbSL.Checked && ok) SaveResult(mapRVector, false);
             };
         }
 
         private bool GetRoute()
         {
+            if (groute == null) return false;
             if ((groute.start == null) || (groute.finish == null)) return false;            
             if (mapRVector != null) mapRoute.Remove(mapRVector);
             //
@@ -5816,6 +5815,12 @@ namespace KMZRebuilder
             {
                 rtStatus.Text = "No route found";
                 MapViewer.DrawOnMapData();
+                try
+                {
+                    MapViewer.Focus();
+                    MapViewer.Select();
+                }
+                catch { };
                 return false;
             };
             
@@ -5828,10 +5833,16 @@ namespace KMZRebuilder
             mapRoute.Add(mapRVector);
 
             MapViewer.DrawOnMapData();
+            try
+            {
+                MapViewer.Focus();
+                MapViewer.Select();
+            }
+            catch { };
             return true;
         }
 
-        private bool SaveResult(NaviMapNet.MapPolyLine polyline)
+        private bool SaveResult(NaviMapNet.MapPolyLine polyline, bool askName)
         {
             if (polyline == null) return false;
             if (polyline.PointsCount < 2) return false;
@@ -5848,8 +5859,17 @@ namespace KMZRebuilder
             string XML = "";
             string stylen = "newstyle" + DateTime.UtcNow.ToString("HHmmss");
             {
+                string NAME = String.Format("{0} - {1}", rtStart.Text, rtFinish.Text);
+                if (askName)
+                {
+                    wbf.Hide();
+                    if(InputBox.Show("Save route to leayer", "Enter route name:", ref NAME) != DialogResult.OK)
+                        NAME = String.Format("{0} - {1}", rtStart.Text, rtFinish.Text);
+                    wbf.Show();
+                };
+
                 XML += "<Placemark>\r\n";
-                XML += "<name><![CDATA[" + String.Format("{0} - {1}", rtStart.Text, rtFinish.Text) + "]]></name>\r\n";
+                XML += "<name><![CDATA[" + NAME + "]]></name>\r\n";
                 XML += "<styleUrl>#" + stylen + "</styleUrl>\r\n";
                 XML += "<description><![CDATA[" + String.Format(System.Globalization.CultureInfo.InvariantCulture, "Route: {0} - {1}\r\nLength: {2:0.0} km\r\nTime: {3:0.0} min\r\nFrom: {4}\r\nSName: {5}\r\nEngine: {6}", rtStart.Text, rtFinish.Text, ((nmsRouteClient.Route)polyline.UserData).driveLength / 1024.0, ((nmsRouteClient.Route)polyline.UserData).driveTime, groute.ServiceURL, groute.ServiceName, groute.ServiceEngine) + "]]></description>\r\n";
                 XML += "<LineString>\r\n";
@@ -5883,7 +5903,7 @@ namespace KMZRebuilder
 
         private void rbSave_ButtonClick(object sender, EventArgs e)
         {
-            SaveResult(mapRVector);
+            SaveResult(mapRVector, false);
         }
 
         private void setToolStripMenuItem_Click(object sender, EventArgs e)
@@ -5969,12 +5989,12 @@ namespace KMZRebuilder
         private void rtt1_Click(object sender, EventArgs e)
         {
             if (objects.Items.Count == 0) { MessageBox.Show("No layer objects found!", "GetRoute", MessageBoxButtons.OK, MessageBoxIcon.Exclamation); return; };
-            if (objects.CheckedItems.Count == 0) { MessageBox.Show("No cheched objects found!", "GetRoute", MessageBoxButtons.OK, MessageBoxIcon.Exclamation); return; };
+            if (objects.CheckedItems.Count == 0) { MessageBox.Show("No checked objects found!", "GetRoute", MessageBoxButtons.OK, MessageBoxIcon.Exclamation); return; };
             if (groute == null) { MessageBox.Show("Route layer not initialized!", "GetRoute", MessageBoxButtons.OK, MessageBoxIcon.Exclamation); return; };
             if (groute.start == null) { MessageBox.Show("Route start point is not set!", "GetRoute", MessageBoxButtons.OK, MessageBoxIcon.Exclamation); return; };
 
             NaviMapNet.MapPoint[] points = GetCheckedPoints();
-            if ((points == null) || (points.Length == 0)) { MessageBox.Show("No cheched points found!", "GetRoute", MessageBoxButtons.OK, MessageBoxIcon.Exclamation); return; };
+            if ((points == null) || (points.Length == 0)) { MessageBox.Show("No checked points found!", "GetRoute", MessageBoxButtons.OK, MessageBoxIcon.Exclamation); return; };
 
             string XML = "";
             List<string> styles = new List<string>();
@@ -6043,12 +6063,12 @@ namespace KMZRebuilder
         private void rtt2_Click(object sender, EventArgs e)
         {
             if (objects.Items.Count == 0) { MessageBox.Show("No layer objects found!", "GetRoute", MessageBoxButtons.OK, MessageBoxIcon.Exclamation); return; };
-            if (objects.CheckedItems.Count == 0) { MessageBox.Show("No cheched objects found!", "GetRoute", MessageBoxButtons.OK, MessageBoxIcon.Exclamation); return; };
+            if (objects.CheckedItems.Count == 0) { MessageBox.Show("No checked objects found!", "GetRoute", MessageBoxButtons.OK, MessageBoxIcon.Exclamation); return; };
             if (groute == null) { MessageBox.Show("Route layer not initialized!", "GetRoute", MessageBoxButtons.OK, MessageBoxIcon.Exclamation); return; };
             if (groute.finish == null) { MessageBox.Show("Route finish point is not set!", "GetRoute", MessageBoxButtons.OK, MessageBoxIcon.Exclamation); return; };
 
             NaviMapNet.MapPoint[] points = GetCheckedPoints();
-            if ((points == null) || (points.Length == 0)) { MessageBox.Show("No cheched points found!", "GetRoute", MessageBoxButtons.OK, MessageBoxIcon.Exclamation); return; };
+            if ((points == null) || (points.Length == 0)) { MessageBox.Show("No checked points found!", "GetRoute", MessageBoxButtons.OK, MessageBoxIcon.Exclamation); return; };
 
             string XML = "";
             List<string> styles = new List<string>();
@@ -6117,13 +6137,13 @@ namespace KMZRebuilder
         private void rtt3_Click(object sender, EventArgs e)
         {
             if (objects.Items.Count == 0) { MessageBox.Show("No layer objects found!", "GetRoute", MessageBoxButtons.OK, MessageBoxIcon.Exclamation); return; };
-            if (objects.CheckedItems.Count == 0) { MessageBox.Show("No cheched objects found!", "GetRoute", MessageBoxButtons.OK, MessageBoxIcon.Exclamation); return; };
+            if (objects.CheckedItems.Count == 0) { MessageBox.Show("No checked objects found!", "GetRoute", MessageBoxButtons.OK, MessageBoxIcon.Exclamation); return; };
             if (groute == null) { MessageBox.Show("Route layer not initialized!", "GetRoute", MessageBoxButtons.OK, MessageBoxIcon.Exclamation); return; };
             
             NaviMapNet.MapPoint[] points = GetCheckedPoints();
-            if ((points == null) || (points.Length == 0)) { MessageBox.Show("No cheched points found!", "GetRoute", MessageBoxButtons.OK, MessageBoxIcon.Exclamation); return; };
+            if ((points == null) || (points.Length == 0)) { MessageBox.Show("No checked points found!", "GetRoute", MessageBoxButtons.OK, MessageBoxIcon.Exclamation); return; };
             NaviMapNet.MapPolyLine[] lines = GetCheckedLines();
-            if ((lines == null) || (lines.Length == 0)) { MessageBox.Show("No cheched lines found!", "GetRoute", MessageBoxButtons.OK, MessageBoxIcon.Exclamation); return; };
+            if ((lines == null) || (lines.Length == 0)) { MessageBox.Show("No checked lines found!", "GetRoute", MessageBoxButtons.OK, MessageBoxIcon.Exclamation); return; };
 
             int sel = lines.Length == 1 ? 0 : SelectLineDialog(lines, "Get Route: Line to Checked");
             if (sel < 0) return;
@@ -6211,13 +6231,13 @@ namespace KMZRebuilder
         private void rtt4_Click(object sender, EventArgs e)
         {
             if (objects.Items.Count == 0) { MessageBox.Show("No layer objects found!", "GetRoute", MessageBoxButtons.OK, MessageBoxIcon.Exclamation); return; }
-            if (objects.CheckedItems.Count == 0) { MessageBox.Show("No cheched objects found!", "GetRoute", MessageBoxButtons.OK, MessageBoxIcon.Exclamation); return; }
+            if (objects.CheckedItems.Count == 0) { MessageBox.Show("No checked objects found!", "GetRoute", MessageBoxButtons.OK, MessageBoxIcon.Exclamation); return; }
             if (groute == null) { MessageBox.Show("Route layer not initialized!", "GetRoute", MessageBoxButtons.OK, MessageBoxIcon.Exclamation); return; }
 
             NaviMapNet.MapPoint[] points = GetCheckedPoints();
-            if ((points == null) || (points.Length == 0)) { MessageBox.Show("No cheched points found!", "GetRoute", MessageBoxButtons.OK, MessageBoxIcon.Exclamation); return; };
+            if ((points == null) || (points.Length == 0)) { MessageBox.Show("No checked points found!", "GetRoute", MessageBoxButtons.OK, MessageBoxIcon.Exclamation); return; };
             NaviMapNet.MapPolyLine[] lines = GetCheckedLines();
-            if ((lines == null) || (lines.Length == 0)) { MessageBox.Show("No cheched lines found!", "GetRoute", MessageBoxButtons.OK, MessageBoxIcon.Exclamation); return; };
+            if ((lines == null) || (lines.Length == 0)) { MessageBox.Show("No checked lines found!", "GetRoute", MessageBoxButtons.OK, MessageBoxIcon.Exclamation); return; };
 
             int sel = lines.Length == 1 ? 0 : SelectLineDialog(lines, "Get Route: Checked to Line");
             if (sel < 0) return;
@@ -6419,6 +6439,135 @@ namespace KMZRebuilder
             rbSet.Text = String.Format("Set ({0})", groute.ServiceIndex);
             rbGet.Text = String.Format("Get ({0})", groute.ServiceIndex);
         }
+
+        private void multirouteFromCheckedToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (objects.Items.Count == 0) { MessageBox.Show("No layer objects found!", "GetRoute", MessageBoxButtons.OK, MessageBoxIcon.Exclamation); return; };
+            if (objects.CheckedItems.Count == 0) { MessageBox.Show("No checked objects found!", "GetRoute", MessageBoxButtons.OK, MessageBoxIcon.Exclamation); return; };
+            if (groute == null) { MessageBox.Show("Route layer not initialized!", "GetRoute", MessageBoxButtons.OK, MessageBoxIcon.Exclamation); return; };
+            
+            NaviMapNet.MapPoint[] points = GetCheckedPoints();
+            if (((points == null ? 0 : points.Length) + (groute.start == null ? 0 : 1) + (groute.finish == null ? 0 : 1)) < 3) { MessageBox.Show("Not enough points for route!", "GetRoute", MessageBoxButtons.OK, MessageBoxIcon.Exclamation); return; };
+
+            List<KeyValuePair<string, PointF>> pArr = new List<KeyValuePair<string, PointF>>();
+            if (groute.start != null) pArr.Add(new KeyValuePair<string,PointF>((groute.start[0] == null ? "START POINT" : (string)groute.start[0]), new PointF((float)groute.start[1], (float)groute.start[2])));
+            foreach (NaviMapNet.MapPoint p in points) pArr.Add(new KeyValuePair<string,PointF>(p.Name, p.Center));
+            if (groute.finish != null) pArr.Add(new KeyValuePair<string, PointF>((groute.finish[0] == null ? "FINISH POINT" : (string)groute.finish[0]), new PointF((float)groute.finish[1], (float)groute.finish[2])));
+
+            // SORT POINTS
+            MultiPointRouteForm msf = new MultiPointRouteForm();
+            msf.Points = pArr;
+            DialogResult dr = msf.ShowDialog();
+            pArr = msf.Points;
+            msf.Dispose();
+            if (dr != DialogResult.OK) return;
+            // END SORT POINTS
+
+            if (pArr.Count < 2) return;
+            List<PointF> pVector = new List<PointF>();
+            for (int i = 0; i < pArr.Count; i++) pVector.Add(pArr[i].Value);
+            wbf.Show("Get Route: Multipoints", "Wait, requesting route of " + pVector.Count.ToString() + " points");
+            PointF[] vector = null;
+            nmsRouteClient.Route route = null;
+            rtStatus.Text = "Request route...";
+            Application.DoEvents();           
+            double rLength = groute.GetRoute(pVector.ToArray(), wbf, out vector, out route);
+
+            wbf.Hide();
+            if (mapRVector != null) mapRoute.Remove(mapRVector);
+            Application.DoEvents();
+            if ((rLength == double.MaxValue) || (vector == null))
+            {
+                rtStatus.Text = "No route found";
+                MapViewer.DrawOnMapData();
+                return;
+            };
+
+            rtStatus.Text = String.Format(System.Globalization.CultureInfo.InvariantCulture, "Route length: {0:0.00} km", rLength / 1000.0);
+
+            mapRVector = new NaviMapNet.MapPolyLine(vector);
+            mapRVector.Color = groute.color;
+            mapRVector.Width = groute.width;
+            mapRVector.UserData = route;
+            mapRoute.Add(mapRVector);
+
+            MapViewer.DrawOnMapData();
+            rbSave.Enabled = true;
+            if (rbSL.Checked) SaveResult(mapRVector, false);
+            try
+            {
+                MapViewer.Focus();
+                MapViewer.Select();
+            }
+            catch { };
+
+            //string XML = "";
+            //string style = "newstyle" + DateTime.UtcNow.ToString("HHmmssfff");
+            //{                
+            //    string polys = "";
+            //    string comms = "";
+
+            //    if (!String.IsNullOrEmpty(route.LastError))
+            //    {
+            //        double ttld = 0;
+            //        for (int j = 0; j < pVector.Count; j++)
+            //        {
+            //            polys += String.Format(System.Globalization.CultureInfo.InvariantCulture, "{0},{1},{2}", pVector[j].X, pVector[j].Y, 0);
+            //            polys += " ";
+            //            if (j > 0)
+            //                ttld += GetLengthMetersC(pVector[j - 1].Y, pVector[j - 1].X, pVector[j].Y, pVector[j].X, false);
+            //        };
+            //        comms = String.Format("Length: {0:0.0}\r\nError: {1}", ttld / 1024.0, route.LastError);
+            //    }
+            //    else
+            //    {
+            //        comms = String.Format(System.Globalization.CultureInfo.InvariantCulture, "Route: {0} - {1}\r\nLength: {2:0.0} km\r\nTime: {3:0.0} min\r\nFrom: {4}\r\nSName: {5}Engine: {6}", rtStart.Text, points[i].Name, route.driveLength / 1024.0, route.driveTime, groute.ServiceURL, groute.ServiceName, groute.ServiceEngine);
+            //        for (int j = 0; j < route.polyline.Length; j++)
+            //        {
+            //            if (polys.Length > 0) polys += " ";
+            //            polys += String.Format(System.Globalization.CultureInfo.InvariantCulture, "{0},{1},{2}", route.polyline[j].x, route.polyline[j].y, 0);
+            //        };
+            //    };
+
+            //    XML += "<Placemark>\r\n";
+            //    XML += "<name><![CDATA[Multiroute]]></name>\r\n";
+            //    XML += "<styleUrl>#" + style + "</styleUrl>\r\n";
+            //    XML += "<description><![CDATA[" + comms + "]]></description>\r\n";
+            //    XML += "<LineString>\r\n";
+            //    XML += "<coordinates>" + polys + "</coordinates>\r\n";
+            //    XML += "</LineString>\r\n";
+            //    XML += "</Placemark>\r\n";
+            //};            
+            //wbf.Hide();
+
+            //KMLayer l = (KMLayer)parent.kmzLayers.Items[laySelect.SelectedIndex];
+            //XmlNode xf = l.file.kmlDoc.SelectNodes("kml/Document/Folder")[l.id];
+            //xf.InnerXml += XML;
+            //l.file.kmlDoc.SelectNodes("kml/Document")[0].InnerXml += style;
+
+            //l.file.SaveKML();
+            //l.placemarks += points.Length;
+            //l.lines += points.Length;
+            //parent.Refresh();
+            //laySelect.Items[laySelect.SelectedIndex] = l.ToString(); 
+        }
+
+        private void fromStartToFinishToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            rbSave.Enabled = GetRoute();
+        }
+
+        private void saveRouteToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (!rbSave.Enabled) return;
+            SaveResult(mapRVector, false);
+        }
+
+        private void saveRouteAsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (!rbSave.Enabled) return;
+            SaveResult(mapRVector, true);
+        }
     }
 
     public class ToolStripSpringTextBox : ToolStripTextBox
@@ -6536,6 +6685,15 @@ namespace KMZRebuilder
         }
         [XmlIgnore]
         public string ServiceEngine { get { if (service > 0) return "OSRM"; else return "dkxce"; } }
+
+        public double GetRoute(PointF[] points, WaitingBoxForm wbf, out PointF[] vector, out nmsRouteClient.Route route)
+        {
+            vector = null;
+            route = null;
+            if (service >= 0) return GetRouteOSRM(points, wbf, out vector, out route, url_osrm[service - 1]);
+            return GetRouteDKXCE(points, wbf, out vector, out route, url_dkxce[-1 * service - 1]);
+            return 0;
+        }
 
         public nmsRouteClient.Route GetRoute(PointF a, PointF b)
         {
@@ -6673,6 +6831,58 @@ namespace KMZRebuilder
             return res;
         }
 
+        public double GetRouteDKXCE(PointF[] points, WaitingBoxForm wbf, out PointF[] vector, out nmsRouteClient.Route route, DRSParams param)
+        {
+            vector = null;
+            route = null;
+            double res = double.MaxValue;
+            if ((points == null) || (points.Length < 2)) return res;
+
+            string furl = param.url;
+            {
+                int iu = furl.ToUpper().IndexOf("/NMS");
+                if (iu > 0) furl = furl.Substring(0, iu + 4) + "/";
+                string xx = "";
+                string yy = "";
+                for (int i = 0; i < points.Length; i++)
+                {
+                    if (xx.Length > 0) xx += ",";
+                    if (yy.Length > 0) yy += ",";
+                    xx += String.Format(System.Globalization.CultureInfo.InvariantCulture, "{0}", points[i].X);
+                    yy += String.Format(System.Globalization.CultureInfo.InvariantCulture, "{0}", points[i].Y);
+                };
+                furl += String.Format("route?k={0}&f=2&p=1&i=0&minby=time&x={1}&y={2}&ra={3}&n=start,dest", param.key.Trim(), xx, yy, param.ra.Trim());
+            };
+            wbf.Show("Request route", param.url);
+            try
+            {
+                System.Net.HttpWebRequest wReq = (System.Net.HttpWebRequest)System.Net.HttpWebRequest.Create(furl);
+                wReq.Timeout = this.timeout * 1000;
+                System.Net.HttpWebResponse wRes = (System.Net.HttpWebResponse)wReq.GetResponse();
+                StreamReader sr = new StreamReader(wRes.GetResponseStream());
+                string xml = sr.ReadToEnd();
+                sr.Close();
+                wRes.Close();
+
+                if (String.IsNullOrEmpty(xml)) throw new Exception("No valid route XML");
+
+                route = nmsRouteClient.RouteClient.XMLToObject(xml);
+                if (!String.IsNullOrEmpty(route.LastError)) throw new Exception(route.LastError);
+                res = route.driveLength;
+                vector = new PointF[route.polyline.Length];
+                for (int i = 0; i < vector.Length; i++)
+                    vector[i] = new PointF((float)route.polyline[i].x, (float)route.polyline[i].y);
+            }
+            catch (Exception ex)
+            {
+                wbf.Hide();
+                MessageBox.Show("Get route failed\r\nError: " + ex.Message, "Get Route", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                return double.MaxValue;
+            };
+            wbf.Hide();
+            return res;
+        }
+
         public double GetRouteOSRM(PointF a, PointF b, WaitingBoxForm wbf, out PointF[] vector, out nmsRouteClient.Route route, OSRMParams param)
         {
             vector = null;
@@ -6699,6 +6909,62 @@ namespace KMZRebuilder
 
                 if (String.IsNullOrEmpty(json)) throw new Exception("No valid route JSON");
                 
+                OSMRResponse osmr = OSMRResponse.FromText(json);
+                if ((!String.IsNullOrEmpty(osmr.code)) && (osmr.code.ToLower() != "ok")) throw new Exception(osmr.code);
+                if ((osmr.routes == null) || (osmr.routes.Length == 0)) return double.MaxValue;
+                res = osmr.routes[0].distance;
+                vector = osmr.routes[0].points;
+
+                route = new nmsRouteClient.Route();
+                route.driveLength = osmr.routes[0].distance;
+                route.driveTime = osmr.routes[0].duration / 60.0;
+                route.polyline = new nmsRouteClient.XYPoint[vector.Length];
+                for (int i = 0; i < vector.Length; i++)
+                    route.polyline[i] = new nmsRouteClient.XYPoint(vector[i].X, vector[i].Y);
+            }
+            catch (Exception ex)
+            {
+                wbf.Hide();
+                MessageBox.Show("Get route failed\r\nError: " + ex.Message, "Get Route", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                return double.MaxValue;
+            };
+            wbf.Hide();
+            return res;
+        }
+
+        public double GetRouteOSRM(PointF[] points, WaitingBoxForm wbf, out PointF[] vector, out nmsRouteClient.Route route, OSRMParams param)
+        {
+            vector = null;
+            route = null;
+            double res = double.MaxValue;
+
+            if ((points == null) || (points.Length < 2)) return res;
+
+            string furl = param.url;
+            {
+                int iu = furl.LastIndexOf("/");
+                if (iu > 0) furl = furl.Substring(0, iu + 1);
+                string xyxy = "";
+                for (int i = 0; i < points.Length; i++)
+                {
+                    if (xyxy.Length > 0) xyxy += ";";
+                    xyxy += String.Format(System.Globalization.CultureInfo.InvariantCulture, "{0},{1}", points[i].X, points[i].Y);
+                };
+                furl += String.Format("{0}?overview=full&geometries=polyline", xyxy);
+            };
+            wbf.Show("Request route", param.url);
+            try
+            {
+                System.Net.HttpWebRequest wReq = (System.Net.HttpWebRequest)System.Net.HttpWebRequest.Create(furl);
+                wReq.Timeout = this.timeout * 1000;
+                System.Net.HttpWebResponse wRes = (System.Net.HttpWebResponse)wReq.GetResponse();
+                StreamReader sr = new StreamReader(wRes.GetResponseStream());
+                string json = sr.ReadToEnd();
+                sr.Close();
+                wRes.Close();
+
+                if (String.IsNullOrEmpty(json)) throw new Exception("No valid route JSON");
+
                 OSMRResponse osmr = OSMRResponse.FromText(json);
                 if ((!String.IsNullOrEmpty(osmr.code)) && (osmr.code.ToLower() != "ok")) throw new Exception(osmr.code);
                 if ((osmr.routes == null) || (osmr.routes.Length == 0)) return double.MaxValue;

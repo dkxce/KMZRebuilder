@@ -242,12 +242,18 @@ namespace KMZRebuilder
             this.toolStripMenuItem35 = new System.Windows.Forms.ToolStripSeparator();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.rbGet = new System.Windows.Forms.ToolStripSplitButton();
+            this.fromStartToFinishToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem38 = new System.Windows.Forms.ToolStripSeparator();
             this.rtt1 = new System.Windows.Forms.ToolStripMenuItem();
             this.rtt2 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem34 = new System.Windows.Forms.ToolStripSeparator();
             this.rtt3 = new System.Windows.Forms.ToolStripMenuItem();
             this.rtt4 = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem32 = new System.Windows.Forms.ToolStripSeparator();
+            this.multirouteFromCheckedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.rbSave = new System.Windows.Forms.ToolStripSplitButton();
+            this.saveRouteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.saveRouteAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.rbClear = new System.Windows.Forms.ToolStripSplitButton();
             this.clearAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.clearWayOnlyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -2030,6 +2036,7 @@ namespace KMZRebuilder
             // selectRouteServiceToolStripMenuItem
             // 
             this.selectRouteServiceToolStripMenuItem.Name = "selectRouteServiceToolStripMenuItem";
+            this.selectRouteServiceToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.F6)));
             this.selectRouteServiceToolStripMenuItem.Size = new System.Drawing.Size(260, 22);
             this.selectRouteServiceToolStripMenuItem.Text = "Select Route Service ...";
             this.selectRouteServiceToolStripMenuItem.Click += new System.EventHandler(this.selectRouteServiceToolStripMenuItem_Click);
@@ -2042,6 +2049,8 @@ namespace KMZRebuilder
             // setURLToolStripMenuItem
             // 
             this.setURLToolStripMenuItem.Name = "setURLToolStripMenuItem";
+            this.setURLToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Alt)
+                        | System.Windows.Forms.Keys.F6)));
             this.setURLToolStripMenuItem.Size = new System.Drawing.Size(260, 22);
             this.setURLToolStripMenuItem.Text = "Set URL ...";
             this.setURLToolStripMenuItem.Click += new System.EventHandler(this.setURLToolStripMenuItem_Click);
@@ -2107,11 +2116,15 @@ namespace KMZRebuilder
             // 
             this.rbGet.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
             this.rbGet.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.fromStartToFinishToolStripMenuItem,
+            this.toolStripMenuItem38,
             this.rtt1,
             this.rtt2,
             this.toolStripMenuItem34,
             this.rtt3,
-            this.rtt4});
+            this.rtt4,
+            this.toolStripMenuItem32,
+            this.multirouteFromCheckedToolStripMenuItem});
             this.rbGet.Image = ((System.Drawing.Image)(resources.GetObject("rbGet.Image")));
             this.rbGet.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.rbGet.Name = "rbGet";
@@ -2120,50 +2133,99 @@ namespace KMZRebuilder
             this.rbGet.ButtonClick += new System.EventHandler(this.rbGet_ButtonClick);
             this.rbGet.DropDownOpening += new System.EventHandler(this.rbGet_DropDownOpening);
             // 
+            // fromStartToFinishToolStripMenuItem
+            // 
+            this.fromStartToFinishToolStripMenuItem.Name = "fromStartToFinishToolStripMenuItem";
+            this.fromStartToFinishToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.R)));
+            this.fromStartToFinishToolStripMenuItem.Size = new System.Drawing.Size(241, 22);
+            this.fromStartToFinishToolStripMenuItem.Text = "From Start to Finish";
+            this.fromStartToFinishToolStripMenuItem.Click += new System.EventHandler(this.fromStartToFinishToolStripMenuItem_Click);
+            // 
+            // toolStripMenuItem38
+            // 
+            this.toolStripMenuItem38.Name = "toolStripMenuItem38";
+            this.toolStripMenuItem38.Size = new System.Drawing.Size(238, 6);
+            // 
             // rtt1
             // 
             this.rtt1.Name = "rtt1";
-            this.rtt1.Size = new System.Drawing.Size(196, 22);
+            this.rtt1.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.B)));
+            this.rtt1.Size = new System.Drawing.Size(241, 22);
             this.rtt1.Text = "From Start to Checked";
             this.rtt1.Click += new System.EventHandler(this.rtt1_Click);
             // 
             // rtt2
             // 
             this.rtt2.Name = "rtt2";
-            this.rtt2.Size = new System.Drawing.Size(196, 22);
+            this.rtt2.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.E)));
+            this.rtt2.Size = new System.Drawing.Size(241, 22);
             this.rtt2.Text = "From Checked to Finish";
             this.rtt2.Click += new System.EventHandler(this.rtt2_Click);
             // 
             // toolStripMenuItem34
             // 
             this.toolStripMenuItem34.Name = "toolStripMenuItem34";
-            this.toolStripMenuItem34.Size = new System.Drawing.Size(193, 6);
+            this.toolStripMenuItem34.Size = new System.Drawing.Size(238, 6);
             // 
             // rtt3
             // 
             this.rtt3.Name = "rtt3";
-            this.rtt3.Size = new System.Drawing.Size(196, 22);
+            this.rtt3.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.I)));
+            this.rtt3.Size = new System.Drawing.Size(241, 22);
             this.rtt3.Text = "From Line to Checked";
             this.rtt3.Click += new System.EventHandler(this.rtt3_Click);
             // 
             // rtt4
             // 
             this.rtt4.Name = "rtt4";
-            this.rtt4.Size = new System.Drawing.Size(196, 22);
+            this.rtt4.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.O)));
+            this.rtt4.Size = new System.Drawing.Size(241, 22);
             this.rtt4.Text = "From Checked to Line";
             this.rtt4.Click += new System.EventHandler(this.rtt4_Click);
+            // 
+            // toolStripMenuItem32
+            // 
+            this.toolStripMenuItem32.Name = "toolStripMenuItem32";
+            this.toolStripMenuItem32.Size = new System.Drawing.Size(238, 6);
+            // 
+            // multirouteFromCheckedToolStripMenuItem
+            // 
+            this.multirouteFromCheckedToolStripMenuItem.Name = "multirouteFromCheckedToolStripMenuItem";
+            this.multirouteFromCheckedToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.M)));
+            this.multirouteFromCheckedToolStripMenuItem.Size = new System.Drawing.Size(241, 22);
+            this.multirouteFromCheckedToolStripMenuItem.Text = "Multipoints from Checked";
+            this.multirouteFromCheckedToolStripMenuItem.Click += new System.EventHandler(this.multirouteFromCheckedToolStripMenuItem_Click);
             // 
             // rbSave
             // 
             this.rbSave.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.rbSave.DropDownButtonWidth = 0;
+            this.rbSave.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.saveRouteToolStripMenuItem,
+            this.saveRouteAsToolStripMenuItem});
             this.rbSave.Enabled = false;
             this.rbSave.Image = ((System.Drawing.Image)(resources.GetObject("rbSave.Image")));
             this.rbSave.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.rbSave.Name = "rbSave";
-            this.rbSave.Size = new System.Drawing.Size(37, 20);
+            this.rbSave.Size = new System.Drawing.Size(48, 20);
             this.rbSave.Text = "SAVE";
             this.rbSave.ButtonClick += new System.EventHandler(this.rbSave_ButtonClick);
+            // 
+            // saveRouteToolStripMenuItem
+            // 
+            this.saveRouteToolStripMenuItem.Name = "saveRouteToolStripMenuItem";
+            this.saveRouteToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.S)));
+            this.saveRouteToolStripMenuItem.Size = new System.Drawing.Size(230, 22);
+            this.saveRouteToolStripMenuItem.Text = "Save Route";
+            this.saveRouteToolStripMenuItem.Click += new System.EventHandler(this.saveRouteToolStripMenuItem_Click);
+            // 
+            // saveRouteAsToolStripMenuItem
+            // 
+            this.saveRouteAsToolStripMenuItem.Name = "saveRouteAsToolStripMenuItem";
+            this.saveRouteAsToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Alt)
+                        | System.Windows.Forms.Keys.S)));
+            this.saveRouteAsToolStripMenuItem.Size = new System.Drawing.Size(230, 22);
+            this.saveRouteAsToolStripMenuItem.Text = "Save Route As ...";
+            this.saveRouteAsToolStripMenuItem.Click += new System.EventHandler(this.saveRouteAsToolStripMenuItem_Click);
             // 
             // rbClear
             // 
@@ -2181,14 +2243,16 @@ namespace KMZRebuilder
             // clearAllToolStripMenuItem
             // 
             this.clearAllToolStripMenuItem.Name = "clearAllToolStripMenuItem";
-            this.clearAllToolStripMenuItem.Size = new System.Drawing.Size(160, 22);
+            this.clearAllToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.X)));
+            this.clearAllToolStripMenuItem.Size = new System.Drawing.Size(198, 22);
             this.clearAllToolStripMenuItem.Text = "Clear All";
             this.clearAllToolStripMenuItem.Click += new System.EventHandler(this.clearAllToolStripMenuItem_Click);
             // 
             // clearWayOnlyToolStripMenuItem
             // 
             this.clearWayOnlyToolStripMenuItem.Name = "clearWayOnlyToolStripMenuItem";
-            this.clearWayOnlyToolStripMenuItem.Size = new System.Drawing.Size(160, 22);
+            this.clearWayOnlyToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.W)));
+            this.clearWayOnlyToolStripMenuItem.Size = new System.Drawing.Size(198, 22);
             this.clearWayOnlyToolStripMenuItem.Text = "Clear Way Only";
             this.clearWayOnlyToolStripMenuItem.Click += new System.EventHandler(this.clearWayOnlyToolStripMenuItem_Click);
             // 
@@ -2476,5 +2540,11 @@ namespace KMZRebuilder
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem37;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem36;
         private System.Windows.Forms.ToolStripMenuItem selectRouteServiceToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem32;
+        private System.Windows.Forms.ToolStripMenuItem multirouteFromCheckedToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem fromStartToFinishToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem38;
+        private System.Windows.Forms.ToolStripMenuItem saveRouteToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem saveRouteAsToolStripMenuItem;
     }
 }
