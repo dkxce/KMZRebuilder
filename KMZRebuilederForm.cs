@@ -2743,6 +2743,19 @@ namespace KMZRebuilder
             kmzLayers.Visible = true;
         }
 
+        private void SortByMouse()
+        {
+            kmzLayers.Sorted = false;
+            kmzLayers.SortBy = (byte)0;
+            sortByAddingToolStripMenuItem.Checked = false;
+            sortASCToolStripMenuItem.Checked = false;
+            sortByObjectsCountToolStripMenuItem.Checked = false;
+            sortByCheckedToolStripMenuItem.Checked = false;
+            sortByO.Checked = false;
+            sortByL.Checked = false;
+            sortByA.Checked = false;        
+        }
+
         private void MoveLayerUp_Click(object sender, EventArgs e)
         {
             if (kmzLayers.SelectedIndex < 1) return;
@@ -7950,6 +7963,47 @@ namespace KMZRebuilder
                 ImportFromSHP(ofd.FileName);
             ofd.Dispose();
         }
+
+        private object kmzl_temp;
+        private int kmzl_trackingItem;
+        private bool kmzl_checked;
+
+        private void kmzLayers_MouseUp(object sender, MouseEventArgs e)
+        {            
+            if (kmzLayers.SelectedIndex < 0) return;
+            if (kmzl_temp != null)
+            {                
+                int tempInd = kmzLayers.SelectedIndex;
+                if ((tempInd >= 0) && (kmzl_trackingItem != tempInd))
+                {
+                    kmzLayers.Items.RemoveAt(kmzl_trackingItem);
+                    kmzLayers.Items.Insert(tempInd, kmzl_temp);                    
+                    kmzLayers.SelectedIndex = tempInd;
+                    kmzLayers.SetItemChecked(tempInd, kmzl_checked);
+                };
+                kmzLayers.Cursor = Cursors.Default;
+                kmzl_temp = null;
+                kmzLayers.MovingItem = null;                
+            };
+        }
+
+        private void kmzLayers_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (kmzLayers.SelectedIndex < 0) return;
+            
+            if ((Control.ModifierKeys & Keys.Alt) == Keys.Alt)
+            {                
+                kmzLayers.Cursor = Cursors.Hand;
+                kmzl_trackingItem = kmzLayers.SelectedIndex;
+                if (kmzl_trackingItem >= 0)
+                {
+                    SortByMouse();
+                    kmzl_temp = kmzLayers.Items[kmzl_trackingItem];
+                    kmzl_checked = kmzLayers.GetItemChecked(kmzl_trackingItem);
+                    kmzLayers.MovingItem = kmzl_temp;
+                };
+            };
+        }
     }
 
     public class FilesListBox : CheckedListBox
@@ -8176,7 +8230,7 @@ namespace KMZRebuilder
                 {
                     bool isChecked = GetItemChecked(e.Index);
                     bool isSelected = ((e.State & DrawItemState.Selected) == DrawItemState.Selected);
-                    KMLayer kml = (KMLayer)this.Items[e.Index];
+                    KMLayer kml = (KMLayer)this.Items[e.Index];                    
 
                     if (isChecked)
                     {
@@ -8190,6 +8244,13 @@ namespace KMZRebuilder
                             e.Graphics.FillRectangle(kml.placemarks > 0 ? Brushes.DarkSlateBlue : Brushes.RosyBrown, e.Bounds);
                         else
                             e.Graphics.FillRectangle(kml.placemarks > 0 ? Brushes.Yellow : Brushes.LightGoldenrodYellow, e.Bounds);                            
+                    };
+
+                    if ((MovingItem != null) && isSelected)
+                    {
+                        e.Graphics.FillRectangle(Brushes.Fuchsia, e.Bounds);
+                        if(isChecked) e.Graphics.DrawString("v", new Font(e.Font, FontStyle.Bold), isSelected ? SystemBrushes.HighlightText : SystemBrushes.WindowText, new PointF(dx + 1, e.Bounds.Top));
+                        kml = (KMLayer)MovingItem;
                     };
 
                     Pen myp = new Pen(new SolidBrush(Color.FromArgb(230,230,250)));
@@ -8208,18 +8269,18 @@ namespace KMZRebuilder
 
                     // DRAW VERT
                     e.Graphics.DrawLine(myp, new Point(offset + txtwi, e.Bounds.Top), new Point(offset + txtwi, e.Bounds.Bottom - 1));
-                    offset += 4;                    
+                    offset += 4;
 
                     // DRAW LAYER NO
                     string layNo = kml.id.ToString("000") + " in";
                     e.Graphics.DrawString(layNo, e.Font, isSelected ? SystemBrushes.HighlightText : Brushes.Silver, new Rectangle(offset + txtwi, e.Bounds.Top, e.Bounds.Width - offset - txtwi, e.Bounds.Height), StringFormat.GenericTypographic);
-                    txtwi += (int)e.Graphics.MeasureString(layNo + ".", e.Font, 0, StringFormat.GenericTypographic).Width;                    
+                    txtwi += (int)e.Graphics.MeasureString(layNo + ".", e.Font, 0, StringFormat.GenericTypographic).Width;
 
                     // DRAW FILE NAME
                     e.Graphics.DrawString(kml.file.src_file_nme, e.Font, isSelected ? SystemBrushes.HighlightText : Brushes.Maroon, new Rectangle(offset + txtwi, e.Bounds.Top, e.Bounds.Width - offset - txtwi, e.Bounds.Height), StringFormat.GenericDefault);
                     txtwi += GetFileLength(e.Index, e.Font, e.Graphics);
-                    if (txtwi < n_W_f) txtwi = n_W_f;                    
-                    
+                    if (txtwi < n_W_f) txtwi = n_W_f;
+
                     // DRAW VERT
                     e.Graphics.DrawLine(myp, new Point(offset + txtwi, e.Bounds.Top), new Point(offset + txtwi, e.Bounds.Bottom - 1));
                     offset += 4;
@@ -8236,15 +8297,15 @@ namespace KMZRebuilder
                     string prefCnt = "000000".Remove(0, kml.placemarks.ToString("").Length > 6 ? 0 : kml.placemarks.ToString("").Length);
                     string mainCnt = kml.placemarks.ToString("");
                     string[] after_text = new string[]{
-                        "000000".Remove(1, kml.points.ToString("").Length > 6 ? 0 : kml.points.ToString("").Length),
-                        kml.points.ToString(""),
-                        "000000".Remove(1, kml.lines.ToString("").Length > 6 ? 0 : kml.lines.ToString("").Length),
-                        kml.lines.ToString(""),
-                        "000000".Remove(1, kml.areas.ToString("").Length > 6 ? 0 : kml.areas.ToString("").Length),
-                        kml.areas.ToString(""),
-                        copyText,
-                        descText
-                    };
+                    "000000".Remove(1, kml.points.ToString("").Length > 6 ? 0 : kml.points.ToString("").Length),
+                    kml.points.ToString(""),
+                    "000000".Remove(1, kml.lines.ToString("").Length > 6 ? 0 : kml.lines.ToString("").Length),
+                    kml.lines.ToString(""),
+                    "000000".Remove(1, kml.areas.ToString("").Length > 6 ? 0 : kml.areas.ToString("").Length),
+                    kml.areas.ToString(""),
+                    copyText,
+                    descText
+                };
                     e.Graphics.DrawString(prefCnt, e.Font, isSelected ? Brushes.Black : Brushes.Silver, new Rectangle(offset + txtwi, e.Bounds.Top, e.Bounds.Width - offset - txtwi, e.Bounds.Height), StringFormat.GenericTypographic);
                     txtwi += (int)e.Graphics.MeasureString(prefCnt, e.Font, 0, StringFormat.GenericTypographic).Width;
                     e.Graphics.DrawString(mainCnt, e.Font, isSelected ? SystemBrushes.HighlightText : (kml.placemarks == 0 ? Brushes.Red : Brushes.Blue), new Rectangle(offset + txtwi, e.Bounds.Top, e.Bounds.Width - offset - txtwi, e.Bounds.Height), StringFormat.GenericTypographic);
@@ -8259,7 +8320,7 @@ namespace KMZRebuilder
                         txtwi += (int)e.Graphics.MeasureString(after_text[at], e.Font, 0, StringFormat.GenericTypographic).Width;
                         if (at % 2 == 1)
                         {
-                            offset += 4; 
+                            offset += 4;
                             e.Graphics.DrawLine(myp, new Point(offset + txtwi, e.Bounds.Top), new Point(offset + txtwi, e.Bounds.Bottom - 1));
                             offset += 3;
                         };
@@ -8278,7 +8339,7 @@ namespace KMZRebuilder
                             bt = isSelected ? SystemBrushes.HighlightText : Brushes.Goldenrod;
                         e.Graphics.DrawString(after_text[at], ft, bt, new Rectangle(offset + txtwi, e.Bounds.Top, e.Bounds.Width - offset - txtwi, e.Bounds.Height), StringFormat.GenericTypographic);
                         txtwi += (int)e.Graphics.MeasureString(after_text[at], ft, 0, StringFormat.GenericTypographic).Width;
-                    };   
+                    };
 
                     // DRAW OBJECTS INFO
                     if (isSelected)
@@ -8293,6 +8354,8 @@ namespace KMZRebuilder
                 };
             };
         }
+
+        public object MovingItem = null;
     }
 
     public class KMFile

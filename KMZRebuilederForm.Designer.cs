@@ -113,6 +113,7 @@ namespace KMZRebuilder
             this.toolStripMenuItem42 = new System.Windows.Forms.ToolStripSeparator();
             this.compareLayersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.sortLayersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.youCanSortByMouseWhenPressingAltToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.sortByAddingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem31 = new System.Windows.Forms.ToolStripSeparator();
             this.sortByCheckedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -939,6 +940,7 @@ namespace KMZRebuilder
             // sortLayersToolStripMenuItem
             // 
             this.sortLayersToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.youCanSortByMouseWhenPressingAltToolStripMenuItem,
             this.sortByAddingToolStripMenuItem,
             this.toolStripMenuItem31,
             this.sortByCheckedToolStripMenuItem,
@@ -955,77 +957,84 @@ namespace KMZRebuilder
             this.sortLayersToolStripMenuItem.Size = new System.Drawing.Size(447, 22);
             this.sortLayersToolStripMenuItem.Text = "Sort Layers ...";
             // 
+            // youCanSortByMouseWhenPressingAltToolStripMenuItem
+            // 
+            this.youCanSortByMouseWhenPressingAltToolStripMenuItem.Enabled = false;
+            this.youCanSortByMouseWhenPressingAltToolStripMenuItem.Name = "youCanSortByMouseWhenPressingAltToolStripMenuItem";
+            this.youCanSortByMouseWhenPressingAltToolStripMenuItem.Size = new System.Drawing.Size(282, 22);
+            this.youCanSortByMouseWhenPressingAltToolStripMenuItem.Text = "You can sort by mouse when pressing Alt";
+            // 
             // sortByAddingToolStripMenuItem
             // 
             this.sortByAddingToolStripMenuItem.Checked = true;
             this.sortByAddingToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
             this.sortByAddingToolStripMenuItem.Name = "sortByAddingToolStripMenuItem";
-            this.sortByAddingToolStripMenuItem.Size = new System.Drawing.Size(260, 22);
+            this.sortByAddingToolStripMenuItem.Size = new System.Drawing.Size(282, 22);
             this.sortByAddingToolStripMenuItem.Text = "Sort by Default";
             this.sortByAddingToolStripMenuItem.Click += new System.EventHandler(this.SortAdd_Click);
             // 
             // toolStripMenuItem31
             // 
             this.toolStripMenuItem31.Name = "toolStripMenuItem31";
-            this.toolStripMenuItem31.Size = new System.Drawing.Size(257, 6);
+            this.toolStripMenuItem31.Size = new System.Drawing.Size(279, 6);
             // 
             // sortByCheckedToolStripMenuItem
             // 
             this.sortByCheckedToolStripMenuItem.Name = "sortByCheckedToolStripMenuItem";
-            this.sortByCheckedToolStripMenuItem.Size = new System.Drawing.Size(260, 22);
+            this.sortByCheckedToolStripMenuItem.Size = new System.Drawing.Size(282, 22);
             this.sortByCheckedToolStripMenuItem.Text = "Sort by Checked";
             this.sortByCheckedToolStripMenuItem.Click += new System.EventHandler(this.sortByCheckedToolStripMenuItem_Click);
             // 
             // sortASCToolStripMenuItem
             // 
             this.sortASCToolStripMenuItem.Name = "sortASCToolStripMenuItem";
-            this.sortASCToolStripMenuItem.Size = new System.Drawing.Size(260, 22);
+            this.sortASCToolStripMenuItem.Size = new System.Drawing.Size(282, 22);
             this.sortASCToolStripMenuItem.Text = "Sort by Name";
             this.sortASCToolStripMenuItem.Click += new System.EventHandler(this.SortAsc_Click);
             // 
             // toolStripMenuItem37
             // 
             this.toolStripMenuItem37.Name = "toolStripMenuItem37";
-            this.toolStripMenuItem37.Size = new System.Drawing.Size(257, 6);
+            this.toolStripMenuItem37.Size = new System.Drawing.Size(279, 6);
             // 
             // sortByObjectsCountToolStripMenuItem
             // 
             this.sortByObjectsCountToolStripMenuItem.Name = "sortByObjectsCountToolStripMenuItem";
-            this.sortByObjectsCountToolStripMenuItem.Size = new System.Drawing.Size(260, 22);
+            this.sortByObjectsCountToolStripMenuItem.Size = new System.Drawing.Size(282, 22);
             this.sortByObjectsCountToolStripMenuItem.Text = "Sort by Objects count";
             this.sortByObjectsCountToolStripMenuItem.Click += new System.EventHandler(this.SortCount_Click);
             // 
             // sortByO
             // 
             this.sortByO.Name = "sortByO";
-            this.sortByO.Size = new System.Drawing.Size(260, 22);
+            this.sortByO.Size = new System.Drawing.Size(282, 22);
             this.sortByO.Text = "Sort by Points count";
             this.sortByO.Click += new System.EventHandler(this.sortByO_Click);
             // 
             // sortByL
             // 
             this.sortByL.Name = "sortByL";
-            this.sortByL.Size = new System.Drawing.Size(260, 22);
+            this.sortByL.Size = new System.Drawing.Size(282, 22);
             this.sortByL.Text = "Sort by Lines count";
             this.sortByL.Click += new System.EventHandler(this.sortByL_Click);
             // 
             // sortByA
             // 
             this.sortByA.Name = "sortByA";
-            this.sortByA.Size = new System.Drawing.Size(260, 22);
+            this.sortByA.Size = new System.Drawing.Size(282, 22);
             this.sortByA.Text = "Sort by Polygons count";
             this.sortByA.Click += new System.EventHandler(this.sortByA_Click);
             // 
             // toolStripMenuItem6
             // 
             this.toolStripMenuItem6.Name = "toolStripMenuItem6";
-            this.toolStripMenuItem6.Size = new System.Drawing.Size(257, 6);
+            this.toolStripMenuItem6.Size = new System.Drawing.Size(279, 6);
             // 
             // moveUpToolStripMenuItem
             // 
             this.moveUpToolStripMenuItem.Name = "moveUpToolStripMenuItem";
             this.moveUpToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.Up)));
-            this.moveUpToolStripMenuItem.Size = new System.Drawing.Size(260, 22);
+            this.moveUpToolStripMenuItem.Size = new System.Drawing.Size(282, 22);
             this.moveUpToolStripMenuItem.Text = "Sort Manual: Move Up";
             this.moveUpToolStripMenuItem.Click += new System.EventHandler(this.MoveLayerUp_Click);
             // 
@@ -1033,7 +1042,7 @@ namespace KMZRebuilder
             // 
             this.moveDownToolStripMenuItem.Name = "moveDownToolStripMenuItem";
             this.moveDownToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.Down)));
-            this.moveDownToolStripMenuItem.Size = new System.Drawing.Size(260, 22);
+            this.moveDownToolStripMenuItem.Size = new System.Drawing.Size(282, 22);
             this.moveDownToolStripMenuItem.Text = "Sort Manual: Move Down";
             this.moveDownToolStripMenuItem.Click += new System.EventHandler(this.MoveLayerDown_Click);
             // 
@@ -2134,9 +2143,11 @@ namespace KMZRebuilder
             this.kmzLayers.Name = "kmzLayers";
             this.kmzLayers.Size = new System.Drawing.Size(867, 152);
             this.kmzLayers.TabIndex = 8;
+            this.kmzLayers.MouseUp += new System.Windows.Forms.MouseEventHandler(this.kmzLayers_MouseUp);
             this.kmzLayers.SelectedIndexChanged += new System.EventHandler(this.kmzLayers_SelectedIndexChanged);
             this.kmzLayers.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.kmzLayers_ItemCheck);
             this.kmzLayers.DragDrop += new System.Windows.Forms.DragEventHandler(this.bgFiles_DragDrop);
+            this.kmzLayers.MouseDown += new System.Windows.Forms.MouseEventHandler(this.kmzLayers_MouseDown);
             this.kmzLayers.DragEnter += new System.Windows.Forms.DragEventHandler(this.bgFiles_DragEnter);
             // 
             // panel10
@@ -2555,6 +2566,7 @@ namespace KMZRebuilder
         private System.Windows.Forms.ToolStripMenuItem importFromDBFToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem importFromShapeFileToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem48;
+        private System.Windows.Forms.ToolStripMenuItem youCanSortByMouseWhenPressingAltToolStripMenuItem;
     }
 }
 

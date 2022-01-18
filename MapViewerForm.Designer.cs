@@ -63,7 +63,7 @@ namespace KMZRebuilder
             this.images = new System.Windows.Forms.ImageList(this.components);
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.MapViewer = new NaviMapNet.NaviMapNetViewer();
-            this.objects = new System.Windows.Forms.ListView();
+            this.objects = new KMZRebuilder.ObjectsListView();
             this.columnHeader1 = new System.Windows.Forms.ColumnHeader();
             this.columnHeader2 = new System.Windows.Forms.ColumnHeader();
             this.columnHeader3 = new System.Windows.Forms.ColumnHeader();
@@ -106,6 +106,7 @@ namespace KMZRebuilder
             this.uncheckCopiesToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem28 = new System.Windows.Forms.ToolStripSeparator();
             this.sortToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.youCanSortMyMouseWithPressingAltToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.sba = new System.Windows.Forms.ToolStripMenuItem();
             this.sbi = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem29 = new System.Windows.Forms.ToolStripSeparator();
@@ -178,6 +179,7 @@ namespace KMZRebuilder
             this.selectNoneToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.toolStripLabel1 = new System.Windows.Forms.ToolStripLabel();
+            this.textBox2 = new KMZRebuilder.ToolStripSpringTextBox();
             this.NCB = new System.Windows.Forms.ToolStripButton();
             this.NDB = new System.Windows.Forms.ToolStripButton();
             this.NPB = new System.Windows.Forms.ToolStripButton();
@@ -260,7 +262,6 @@ namespace KMZRebuilder
             this.toolStripStatusLabel9 = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusLabel11 = new System.Windows.Forms.ToolStripStatusLabel();
             this.rtStatus = new System.Windows.Forms.ToolStripStatusLabel();
-            this.textBox2 = new KMZRebuilder.ToolStripSpringTextBox();
             this.statusStrip2.SuspendLayout();
             this.panel1.SuspendLayout();
             this.splitContainer1.Panel1.SuspendLayout();
@@ -283,7 +284,7 @@ namespace KMZRebuilder
             this.toolStripStatusLabel4,
             this.toolStripStatusLabel5,
             this.toolStripStatusLabel1});
-            this.statusStrip2.Location = new System.Drawing.Point(0, 565);
+            this.statusStrip2.Location = new System.Drawing.Point(0, 587);
             this.statusStrip2.Name = "statusStrip2";
             this.statusStrip2.Size = new System.Drawing.Size(998, 22);
             this.statusStrip2.TabIndex = 6;
@@ -579,7 +580,7 @@ namespace KMZRebuilder
             this.splitContainer1.Panel2.Controls.Add(this.panel2);
             this.splitContainer1.Panel2.Controls.Add(this.panel4);
             this.splitContainer1.Panel2MinSize = 100;
-            this.splitContainer1.Size = new System.Drawing.Size(998, 541);
+            this.splitContainer1.Size = new System.Drawing.Size(998, 563);
             this.splitContainer1.SplitterDistance = 692;
             this.splitContainer1.SplitterIncrement = 5;
             this.splitContainer1.TabIndex = 11;
@@ -628,7 +629,7 @@ namespace KMZRebuilder
             this.MapViewer.ShowMapTypes = false;
             this.MapViewer.ShowScale = true;
             this.MapViewer.ShowZooms = true;
-            this.MapViewer.Size = new System.Drawing.Size(692, 541);
+            this.MapViewer.Size = new System.Drawing.Size(692, 563);
             this.MapViewer.TabIndex = 8;
             this.MapViewer.TilesMaxZoom = ((byte)(21));
             this.MapViewer.TilesMinZoom = ((byte)(1));
@@ -662,9 +663,10 @@ namespace KMZRebuilder
             this.objects.Location = new System.Drawing.Point(0, 27);
             this.objects.MultiSelect = false;
             this.objects.Name = "objects";
+            this.objects.OwnerDraw = true;
             this.objects.ShowGroups = false;
             this.objects.ShowItemToolTips = true;
-            this.objects.Size = new System.Drawing.Size(302, 277);
+            this.objects.Size = new System.Drawing.Size(302, 299);
             this.objects.SmallImageList = this.images;
             this.objects.TabIndex = 12;
             this.objects.UseCompatibleStateImageBehavior = false;
@@ -672,6 +674,8 @@ namespace KMZRebuilder
             this.objects.ItemChecked += new System.Windows.Forms.ItemCheckedEventHandler(this.objects_ItemChecked);
             this.objects.SelectedIndexChanged += new System.EventHandler(this.objects_SelectedIndexChanged);
             this.objects.DoubleClick += new System.EventHandler(this.objects_DoubleClick);
+            this.objects.MouseUp += new System.Windows.Forms.MouseEventHandler(this.objects_MouseUp);
+            this.objects.MouseDown += new System.Windows.Forms.MouseEventHandler(this.objects_MouseDown);
             this.objects.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.objects_KeyPress);
             // 
             // columnHeader1
@@ -1002,6 +1006,7 @@ namespace KMZRebuilder
             // sortToolStripMenuItem
             // 
             this.sortToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.youCanSortMyMouseWithPressingAltToolStripMenuItem,
             this.sba,
             this.sbi,
             this.toolStripMenuItem29,
@@ -1014,6 +1019,13 @@ namespace KMZRebuilder
             this.sortToolStripMenuItem.Name = "sortToolStripMenuItem";
             this.sortToolStripMenuItem.Size = new System.Drawing.Size(298, 22);
             this.sortToolStripMenuItem.Text = "Sort";
+            // 
+            // youCanSortMyMouseWithPressingAltToolStripMenuItem
+            // 
+            this.youCanSortMyMouseWithPressingAltToolStripMenuItem.Enabled = false;
+            this.youCanSortMyMouseWithPressingAltToolStripMenuItem.Name = "youCanSortMyMouseWithPressingAltToolStripMenuItem";
+            this.youCanSortMyMouseWithPressingAltToolStripMenuItem.Size = new System.Drawing.Size(302, 22);
+            this.youCanSortMyMouseWithPressingAltToolStripMenuItem.Text = "You can sort my mouse with pressing Alt";
             // 
             // sba
             // 
@@ -1569,6 +1581,14 @@ namespace KMZRebuilder
             this.toolStripLabel1.Size = new System.Drawing.Size(31, 22);
             this.toolStripLabel1.Text = "Find:";
             // 
+            // textBox2
+            // 
+            this.textBox2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.textBox2.MaxLength = 100;
+            this.textBox2.Name = "textBox2";
+            this.textBox2.Size = new System.Drawing.Size(131, 25);
+            this.textBox2.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBox2_KeyPress);
+            // 
             // NCB
             // 
             this.NCB.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
@@ -1621,7 +1641,7 @@ namespace KMZRebuilder
             // 
             this.textBox1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.textBox1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.textBox1.Location = new System.Drawing.Point(0, 304);
+            this.textBox1.Location = new System.Drawing.Point(0, 326);
             this.textBox1.Name = "textBox1";
             this.textBox1.ReadOnly = true;
             this.textBox1.Size = new System.Drawing.Size(302, 155);
@@ -1636,7 +1656,7 @@ namespace KMZRebuilder
             this.panel2.Controls.Add(this.RegName);
             this.panel2.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.panel2.ForeColor = System.Drawing.Color.White;
-            this.panel2.Location = new System.Drawing.Point(0, 459);
+            this.panel2.Location = new System.Drawing.Point(0, 481);
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(302, 82);
             this.panel2.TabIndex = 14;
@@ -2276,14 +2296,6 @@ namespace KMZRebuilder
             this.rtStatus.Size = new System.Drawing.Size(25, 17);
             this.rtStatus.Text = "Idle";
             // 
-            // textBox2
-            // 
-            this.textBox2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.textBox2.MaxLength = 100;
-            this.textBox2.Name = "textBox2";
-            this.textBox2.Size = new System.Drawing.Size(131, 25);
-            this.textBox2.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBox2_KeyPress);
-            // 
             // ContentViewer
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -2340,7 +2352,7 @@ namespace KMZRebuilder
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.SplitContainer splitContainer1;
         public NaviMapNet.NaviMapNetViewer MapViewer;
-        public System.Windows.Forms.ListView objects;
+        public ObjectsListView objects;
         private System.Windows.Forms.ColumnHeader columnHeader1;
         private System.Windows.Forms.ColumnHeader columnHeader2;
         private System.Windows.Forms.ColumnHeader columnHeader3;
@@ -2556,5 +2568,6 @@ namespace KMZRebuilder
         private System.Windows.Forms.ToolStripMenuItem saveRouteToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem saveRouteAsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem rbMi;
+        private System.Windows.Forms.ToolStripMenuItem youCanSortMyMouseWithPressingAltToolStripMenuItem;
     }
 }

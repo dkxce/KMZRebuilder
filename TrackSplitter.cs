@@ -2254,7 +2254,7 @@ namespace KMZRebuilder
                             xnn = xnf[el].SelectNodes("Point/coordinates")[0];
                         };
                         string[] xyz = null;
-                        if (xnn != null) xyz = xnn.ChildNodes[0].Value.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+                        if (xnn != null) xyz = xnn.ChildNodes[0].Value.Trim('\n').Trim().Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
                         if (!String.IsNullOrEmpty(json))
                         {
                             try

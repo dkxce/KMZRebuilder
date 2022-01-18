@@ -6650,6 +6650,105 @@ namespace KMZRebuilder
             rbMi.Checked = true;
             oncb.Text = rbMi.Text;
         }
+
+        private ListViewItem objects_temp;
+        
+        private void objects_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (objects.Items.Count == 0) return;
+
+            if ((Control.ModifierKeys & Keys.Alt) == Keys.Alt)
+            {                
+                objects_temp = GetItemFromPoint(objects, Cursor.Position);
+                objects.MovingItem = objects_temp;
+                if (objects_temp != null) objects.Cursor = Cursors.Hand;                
+            };
+        }
+
+        private void objects_MouseUp(object sender, MouseEventArgs e)
+        {
+            if (objects.Items.Count == 0) return;
+            if (objects_temp != null)
+            {                
+                ListViewItem toItem = GetItemFromPoint(objects, Cursor.Position);
+                if ((toItem != null) && (objects_temp.Index != toItem.Index))
+                {
+                    int fi = objects_temp.Index;
+                    int ti = toItem.Index;
+                    objects.Items.RemoveAt(fi);
+                    objects.Items.Insert(ti, objects_temp);
+                    ReorderLayer(fi, ti, false);
+                    mapSelect.Clear();
+                };
+                objects.Cursor = Cursors.Default;
+                objects_temp = null;
+                objects.MovingItem = null;
+            };
+        }
+
+        private ListViewItem GetItemFromPoint(ListView listView, Point mousePosition)
+        {
+            Point localPoint = listView.PointToClient(mousePosition);
+            return listView.GetItemAt(localPoint.X, localPoint.Y);
+        }
+
+        private void ReorderLayer(int fi, int ti, bool reload)
+        {
+            if (this.objects.Items.Count == 0) return;
+            
+            KMLayer l = (KMLayer)parent.kmzLayers.Items[laySelect.SelectedIndex];
+            XmlNode x_folder = l.file.kmlDoc.SelectNodes("kml/Document/Folder")[l.id];
+            List<KeyValuePair<XmlNode, double>> placemarks = new List<KeyValuePair<XmlNode, double>>();
+            XmlNodeList nl = x_folder.SelectNodes("Placemark");
+            foreach (XmlNode n in nl)
+            {
+                placemarks.Add(new KeyValuePair<XmlNode, double>(n, 0));
+                x_folder.RemoveChild(n);
+            };
+
+            KeyValuePair<XmlNode, double> kvt = placemarks[fi];
+            placemarks.RemoveAt(fi);
+            placemarks.Insert(ti, kvt);
+            
+            foreach (KeyValuePair<XmlNode, double> n in placemarks)
+                x_folder.AppendChild(n.Key);
+
+            l.file.SaveKML();
+
+            if (reload)
+            {
+                objects.Items.Clear();
+                laySelect.Items[laySelect.SelectedIndex] = l.ToString();
+                parent.Refresh();
+            }
+            else
+            {
+                int el_list = 0;                
+                int el_line = 0;
+                int el_polygon = 0;
+                int el_point = 0;
+                XmlNode xn = l.file.kmlDoc.SelectNodes("kml/Document/Folder")[l.id];
+                XmlNodeList xnf = xn.SelectNodes("Placemark");
+                if (xnf.Count > 0)
+                    for (int el = 0; el < xnf.Count; el++)
+                    {
+                        if (el_list >= objects.Items.Count) break;
+                        if (xnf[el].ChildNodes.Count == 0) continue;
+
+                        if (xnf[el].SelectNodes("LineString").Count > 0)
+                            objects.Items[el_list++].SubItems[7].Text = ("Placemark/LineString/coordinates[" + (el_line++).ToString() + "]");
+						if (xnf[el].SelectNodes("Polygon").Count > 0)
+                            objects.Items[el_list++].SubItems[7].Text = ("Placemark/Polygon/outerBoundaryIs/LinearRing/coordinates[" + (el_polygon++).ToString() + "]");
+                        if (xnf[el].SelectNodes("Point").Count > 0)
+                            objects.Items[el_list++].SubItems[7].Text = ("Placemark/Point/coordinates[" + (el_point++).ToString() + "]");
+                    };
+
+                NaviMapNet.MapObject tempo = mapContent[fi];
+                mapContent.Remove(fi);
+                mapContent.Add(tempo, ti);
+                MapViewer.DrawOnMapData();
+            };
+        }
     }
 
     public class ToolStripSpringTextBox : ToolStripTextBox
@@ -6717,6 +6816,56 @@ namespace KMZRebuilder
             Size size = base.GetPreferredSize(constrainingSize);
             size.Width = width;
             return size;
+        }
+    }
+
+    public class ObjectsListView : ListView
+    {
+        private ListViewItem prItem;
+        public ListViewItem MovingItem = null;
+
+        public ObjectsListView()
+        {
+            this.OwnerDraw = true;
+            this.SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.AllPaintingInWmPaint, true);
+            this.SetStyle(ControlStyles.EnableNotifyMessage, true);
+            this.MouseMove += new MouseEventHandler(ObjectsListView_MouseMove);
+            this.DrawColumnHeader += new DrawListViewColumnHeaderEventHandler(ObjectsListView_DrawColumnHeader);
+        }
+
+        private void ObjectsListView_DrawColumnHeader(object sender, DrawListViewColumnHeaderEventArgs e)
+        {
+            e.DrawDefault = true;
+        }
+
+        private void ObjectsListView_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (this.Items.Count <= 0) return;            
+            if (prItem != null) this.RedrawItems(prItem.Index, prItem.Index, true);
+
+            prItem = null;
+            if (this.MovingItem == null) return;
+
+            prItem = this.GetItemAt(e.X, e.Y);            
+            if (prItem != null) this.RedrawItems(prItem.Index, prItem.Index, true);                            
+        }
+
+        protected override void OnDrawSubItem(DrawListViewSubItemEventArgs e)
+        {
+            e.DrawDefault = true;
+            base.OnDrawSubItem(e);
+            if ((e.ColumnIndex > 0) || (MovingItem == null) || (MovingItem.Index == e.ItemIndex) || (prItem == null) || (prItem.Index != e.ItemIndex))
+            {
+                
+            }
+            else
+            {
+                e.DrawDefault = false;
+                int offset = 19;
+                string name = MovingItem.SubItems[0].Text;
+                e.Graphics.FillRectangle(Brushes.Fuchsia, e.Bounds);
+                e.Graphics.DrawString(name, e.Item.Font, Brushes.White, new Rectangle(offset, e.Bounds.Top + 2, e.Bounds.Width - offset, e.Bounds.Height), StringFormat.GenericDefault);
+            };
         }
     }
 

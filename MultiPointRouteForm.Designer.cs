@@ -32,7 +32,7 @@ namespace KMZRebuilder
             this.buttonOk = new System.Windows.Forms.Button();
             this.buttonCancel = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
-            this.pbox = new System.Windows.Forms.CheckedListBox();
+            this.pbox = new KMZRebuilder.MCLB();
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.checkAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.checkNoneToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -42,6 +42,10 @@ namespace KMZRebuilder
             this.deleteUncheckedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripSeparator();
             this.clearAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem3 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripMenuItem4 = new System.Windows.Forms.ToolStripSeparator();
+            this.importRoutePointsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.exportRoutePointsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.label2 = new System.Windows.Forms.Label();
             this.contextMenuStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -71,9 +75,9 @@ namespace KMZRebuilder
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(9, 7);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(324, 13);
+            this.label1.Size = new System.Drawing.Size(342, 13);
             this.label1.TabIndex = 2;
-            this.label1.Text = "Select points and order (Use Alt+Up/Ctrl+Down or Mouse to move):";
+            this.label1.Text = "Select points and order (Use Alt+Up/Ctrl+Down or Alt+Mouse to move):";
             // 
             // pbox
             // 
@@ -98,61 +102,90 @@ namespace KMZRebuilder
             this.deleteCheckedToolStripMenuItem,
             this.deleteUncheckedToolStripMenuItem,
             this.toolStripMenuItem2,
-            this.clearAllToolStripMenuItem});
+            this.clearAllToolStripMenuItem,
+            this.toolStripMenuItem3,
+            this.toolStripMenuItem4,
+            this.importRoutePointsToolStripMenuItem,
+            this.exportRoutePointsToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(172, 148);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(197, 226);
+            this.contextMenuStrip1.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuStrip1_Opening);
             // 
             // checkAllToolStripMenuItem
             // 
             this.checkAllToolStripMenuItem.Name = "checkAllToolStripMenuItem";
-            this.checkAllToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
+            this.checkAllToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
             this.checkAllToolStripMenuItem.Text = "Check All";
             this.checkAllToolStripMenuItem.Click += new System.EventHandler(this.checkAllToolStripMenuItem_Click);
             // 
             // checkNoneToolStripMenuItem
             // 
             this.checkNoneToolStripMenuItem.Name = "checkNoneToolStripMenuItem";
-            this.checkNoneToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
+            this.checkNoneToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
             this.checkNoneToolStripMenuItem.Text = "Check None";
             this.checkNoneToolStripMenuItem.Click += new System.EventHandler(this.checkNoneToolStripMenuItem_Click);
             // 
             // inverseCheckedToolStripMenuItem
             // 
             this.inverseCheckedToolStripMenuItem.Name = "inverseCheckedToolStripMenuItem";
-            this.inverseCheckedToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
+            this.inverseCheckedToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
             this.inverseCheckedToolStripMenuItem.Text = "Inverse Checking";
             this.inverseCheckedToolStripMenuItem.Click += new System.EventHandler(this.inverseCheckedToolStripMenuItem_Click);
             // 
             // toolStripMenuItem1
             // 
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(168, 6);
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(193, 6);
             // 
             // deleteCheckedToolStripMenuItem
             // 
             this.deleteCheckedToolStripMenuItem.Name = "deleteCheckedToolStripMenuItem";
-            this.deleteCheckedToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
+            this.deleteCheckedToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
             this.deleteCheckedToolStripMenuItem.Text = "Delete Checked";
             this.deleteCheckedToolStripMenuItem.Click += new System.EventHandler(this.deleteCheckedToolStripMenuItem_Click);
             // 
             // deleteUncheckedToolStripMenuItem
             // 
             this.deleteUncheckedToolStripMenuItem.Name = "deleteUncheckedToolStripMenuItem";
-            this.deleteUncheckedToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
+            this.deleteUncheckedToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
             this.deleteUncheckedToolStripMenuItem.Text = "Delete Unchecked";
             this.deleteUncheckedToolStripMenuItem.Click += new System.EventHandler(this.deleteUncheckedToolStripMenuItem_Click);
             // 
             // toolStripMenuItem2
             // 
             this.toolStripMenuItem2.Name = "toolStripMenuItem2";
-            this.toolStripMenuItem2.Size = new System.Drawing.Size(168, 6);
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(193, 6);
             // 
             // clearAllToolStripMenuItem
             // 
             this.clearAllToolStripMenuItem.Name = "clearAllToolStripMenuItem";
-            this.clearAllToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
+            this.clearAllToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
             this.clearAllToolStripMenuItem.Text = "Delete All";
             this.clearAllToolStripMenuItem.Click += new System.EventHandler(this.clearAllToolStripMenuItem_Click);
+            // 
+            // toolStripMenuItem3
+            // 
+            this.toolStripMenuItem3.Name = "toolStripMenuItem3";
+            this.toolStripMenuItem3.Size = new System.Drawing.Size(193, 6);
+            // 
+            // toolStripMenuItem4
+            // 
+            this.toolStripMenuItem4.Name = "toolStripMenuItem4";
+            this.toolStripMenuItem4.Size = new System.Drawing.Size(193, 6);
+            // 
+            // importRoutePointsToolStripMenuItem
+            // 
+            this.importRoutePointsToolStripMenuItem.Name = "importRoutePointsToolStripMenuItem";
+            this.importRoutePointsToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
+            this.importRoutePointsToolStripMenuItem.Text = "Import Route Points ...";
+            this.importRoutePointsToolStripMenuItem.Click += new System.EventHandler(this.importRoutePointsToolStripMenuItem_Click);
+            // 
+            // exportRoutePointsToolStripMenuItem
+            // 
+            this.exportRoutePointsToolStripMenuItem.Name = "exportRoutePointsToolStripMenuItem";
+            this.exportRoutePointsToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
+            this.exportRoutePointsToolStripMenuItem.Text = "Export Route Points ...";
+            this.exportRoutePointsToolStripMenuItem.Click += new System.EventHandler(this.exportRoutePointsToolStripMenuItem_Click);
             // 
             // label2
             // 
@@ -189,7 +222,7 @@ namespace KMZRebuilder
         #endregion
 
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.CheckedListBox pbox;
+        private MCLB pbox;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
         private System.Windows.Forms.ToolStripMenuItem checkAllToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem checkNoneToolStripMenuItem;
@@ -202,5 +235,9 @@ namespace KMZRebuilder
         public System.Windows.Forms.Button buttonOk;
         public System.Windows.Forms.Button buttonCancel;
         private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.ToolStripMenuItem importRoutePointsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem exportRoutePointsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem3;
+        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem4;
     }
 }

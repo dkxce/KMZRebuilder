@@ -108,7 +108,7 @@
       <DependentUpon>GPXTachograph.cs</DependentUpon>
     </Compile>
     <Compile Include="InputBox.cs">
-      <SubType>Form</SubType>
+      <SubType>Component</SubType>
     </Compile>
     <Compile Include="InterpolateLess.cs">
       <SubType>Form</SubType>
@@ -163,7 +163,7 @@
     <Compile Include="MemoryFile.cs" />
     <Compile Include="MruList.cs" />
     <Compile Include="MultiPointRouteForm.cs">
-      <SubType>Form</SubType>
+      <SubType>Component</SubType>
     </Compile>
     <Compile Include="MultiPointRouteForm.Designer.cs">
       <DependentUpon>MultiPointRouteForm.cs</DependentUpon>
