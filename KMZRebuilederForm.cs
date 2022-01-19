@@ -7289,6 +7289,9 @@ namespace KMZRebuilder
             help += "\r\nFor Route Planner\r\n";
             help += "  route_planner_skip=true\r\n";
             help += "  route_planner_skip=false\r\n";
+            help += "  route_planner_delay=minutes\r\n";
+            help += "  route_planner_doubled=true\r\n";
+            help += "  route_planner_speed=kmph\r\n";
             help += "  route_planner_source=route\r\n";
             System.Windows.Forms.InputBox.QueryText("Mini Help", "Used tags in layers descriptions:", ref help);
         }

@@ -31,7 +31,7 @@ namespace KMZRebuilder
             this.components = new System.ComponentModel.Container();
             this.buttonOk = new System.Windows.Forms.Button();
             this.buttonCancel = new System.Windows.Forms.Button();
-            this.label1 = new System.Windows.Forms.Label();
+            this.labelTop = new System.Windows.Forms.Label();
             this.pbox = new KMZRebuilder.MCLB();
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.checkAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -46,14 +46,17 @@ namespace KMZRebuilder
             this.toolStripMenuItem4 = new System.Windows.Forms.ToolStripSeparator();
             this.importRoutePointsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exportRoutePointsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.label2 = new System.Windows.Forms.Label();
+            this.labelBottom = new System.Windows.Forms.Label();
+            this.contextMenuStrip2 = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.savePointToMapToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuStrip1.SuspendLayout();
+            this.contextMenuStrip2.SuspendLayout();
             this.SuspendLayout();
             // 
             // buttonOk
             // 
             this.buttonOk.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.buttonOk.Location = new System.Drawing.Point(341, 368);
+            this.buttonOk.Location = new System.Drawing.Point(341, 348);
             this.buttonOk.Name = "buttonOk";
             this.buttonOk.Size = new System.Drawing.Size(75, 23);
             this.buttonOk.TabIndex = 0;
@@ -63,21 +66,21 @@ namespace KMZRebuilder
             // buttonCancel
             // 
             this.buttonCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.buttonCancel.Location = new System.Drawing.Point(12, 368);
+            this.buttonCancel.Location = new System.Drawing.Point(260, 348);
             this.buttonCancel.Name = "buttonCancel";
             this.buttonCancel.Size = new System.Drawing.Size(75, 23);
             this.buttonCancel.TabIndex = 1;
             this.buttonCancel.Text = "Cancel";
             this.buttonCancel.UseVisualStyleBackColor = true;
             // 
-            // label1
+            // labelTop
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(9, 7);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(342, 13);
-            this.label1.TabIndex = 2;
-            this.label1.Text = "Select points and order (Use Alt+Up/Ctrl+Down or Alt+Mouse to move):";
+            this.labelTop.AutoSize = true;
+            this.labelTop.Location = new System.Drawing.Point(9, 7);
+            this.labelTop.Name = "labelTop";
+            this.labelTop.Size = new System.Drawing.Size(342, 13);
+            this.labelTop.TabIndex = 2;
+            this.labelTop.Text = "Select points and order (Use Alt+Up/Ctrl+Down or Alt+Mouse to move):";
             // 
             // pbox
             // 
@@ -89,6 +92,7 @@ namespace KMZRebuilder
             this.pbox.Size = new System.Drawing.Size(404, 317);
             this.pbox.TabIndex = 3;
             this.pbox.MouseUp += new System.Windows.Forms.MouseEventHandler(this.pbox_MouseUp);
+            this.pbox.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.pbox_MouseDoubleClick);
             this.pbox.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pbox_MouseDown);
             this.pbox.KeyUp += new System.Windows.Forms.KeyEventHandler(this.pbox_KeyUp);
             // 
@@ -108,7 +112,7 @@ namespace KMZRebuilder
             this.importRoutePointsToolStripMenuItem,
             this.exportRoutePointsToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(197, 226);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(197, 204);
             this.contextMenuStrip1.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuStrip1_Opening);
             // 
             // checkAllToolStripMenuItem
@@ -187,25 +191,40 @@ namespace KMZRebuilder
             this.exportRoutePointsToolStripMenuItem.Text = "Export Route Points ...";
             this.exportRoutePointsToolStripMenuItem.Click += new System.EventHandler(this.exportRoutePointsToolStripMenuItem_Click);
             // 
-            // label2
+            // labelBottom
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(267, 346);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(150, 13);
-            this.label2.TabIndex = 4;
-            this.label2.Text = "Click on map to add new point";
+            this.labelBottom.AutoSize = true;
+            this.labelBottom.Location = new System.Drawing.Point(9, 353);
+            this.labelBottom.Name = "labelBottom";
+            this.labelBottom.Size = new System.Drawing.Size(150, 13);
+            this.labelBottom.TabIndex = 4;
+            this.labelBottom.Text = "Click on map to add new point";
+            // 
+            // contextMenuStrip2
+            // 
+            this.contextMenuStrip2.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.savePointToMapToolStripMenuItem});
+            this.contextMenuStrip2.Name = "contextMenuStrip2";
+            this.contextMenuStrip2.Size = new System.Drawing.Size(188, 48);
+            this.contextMenuStrip2.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuStrip2_Opening);
+            // 
+            // savePointToMapToolStripMenuItem
+            // 
+            this.savePointToMapToolStripMenuItem.Name = "savePointToMapToolStripMenuItem";
+            this.savePointToMapToolStripMenuItem.Size = new System.Drawing.Size(187, 22);
+            this.savePointToMapToolStripMenuItem.Text = "Save Point to Map ...";
+            this.savePointToMapToolStripMenuItem.Click += new System.EventHandler(this.savePointToMapToolStripMenuItem_Click);
             // 
             // MultiPointRouteForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(428, 396);
-            this.Controls.Add(this.label2);
+            this.ClientSize = new System.Drawing.Size(428, 377);
             this.Controls.Add(this.pbox);
-            this.Controls.Add(this.label1);
-            this.Controls.Add(this.buttonCancel);
+            this.Controls.Add(this.labelBottom);
+            this.Controls.Add(this.labelTop);
             this.Controls.Add(this.buttonOk);
+            this.Controls.Add(this.buttonCancel);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
@@ -214,6 +233,7 @@ namespace KMZRebuilder
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Multipoint Route";
             this.contextMenuStrip1.ResumeLayout(false);
+            this.contextMenuStrip2.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -221,7 +241,6 @@ namespace KMZRebuilder
 
         #endregion
 
-        private System.Windows.Forms.Label label1;
         private MCLB pbox;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
         private System.Windows.Forms.ToolStripMenuItem checkAllToolStripMenuItem;
@@ -234,10 +253,13 @@ namespace KMZRebuilder
         private System.Windows.Forms.ToolStripMenuItem clearAllToolStripMenuItem;
         public System.Windows.Forms.Button buttonOk;
         public System.Windows.Forms.Button buttonCancel;
-        private System.Windows.Forms.Label label2;
         private System.Windows.Forms.ToolStripMenuItem importRoutePointsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem exportRoutePointsToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem3;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem4;
+        public System.Windows.Forms.Label labelTop;
+        public System.Windows.Forms.Label labelBottom;
+        private System.Windows.Forms.ContextMenuStrip contextMenuStrip2;
+        private System.Windows.Forms.ToolStripMenuItem savePointToMapToolStripMenuItem;
     }
 }

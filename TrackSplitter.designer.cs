@@ -33,6 +33,7 @@ namespace KMZRebuilder
             this.statusStrip2 = new System.Windows.Forms.StatusStrip();
             this.toolStripDropDownButton1 = new System.Windows.Forms.ToolStripDropDownButton();
             this.èçìåíèòüUserDefinedUrlToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.selectMBTilesFilesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripSeparator();
             this.èçìåíèòüToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.âûáðàòüÏàïêóÊýøàSASPlanetToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -77,6 +78,18 @@ namespace KMZRebuilder
             this.splitTrackBySegmentsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.sortASCToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripSeparator();
+            this.modifiToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.delayToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.speedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.modifyAllPointsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.map1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.map2 = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem12 = new System.Windows.Forms.ToolStripSeparator();
+            this.map3 = new System.Windows.Forms.ToolStripMenuItem();
+            this.map4 = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem13 = new System.Windows.Forms.ToolStripSeparator();
+            this.map5 = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem11 = new System.Windows.Forms.ToolStripSeparator();
             this.swap2PointToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.deletePointsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.clearSegmentsListToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -100,9 +113,10 @@ namespace KMZRebuilder
             this.columnHeader6 = new System.Windows.Forms.ColumnHeader();
             this.columnHeader7 = new System.Windows.Forms.ColumnHeader();
             this.columnHeader8 = new System.Windows.Forms.ColumnHeader();
+            this.columnHeader9 = new System.Windows.Forms.ColumnHeader();
+            this.columnHeader10 = new System.Windows.Forms.ColumnHeader();
             this.panel2 = new System.Windows.Forms.Panel();
             this.label2 = new System.Windows.Forms.Label();
-            this.selectMBTilesFilesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip2.SuspendLayout();
             this.panel1.SuspendLayout();
             this.contextMenuStrip1.SuspendLayout();
@@ -156,6 +170,13 @@ namespace KMZRebuilder
             this.èçìåíèòüUserDefinedUrlToolStripMenuItem.Size = new System.Drawing.Size(261, 22);
             this.èçìåíèòüUserDefinedUrlToolStripMenuItem.Text = "Èçìåíèòü User-Defined Url...";
             this.èçìåíèòüUserDefinedUrlToolStripMenuItem.Click += new System.EventHandler(this.èçìåíèòüUserDefinedUrlToolStripMenuItem_Click);
+            // 
+            // selectMBTilesFilesToolStripMenuItem
+            // 
+            this.selectMBTilesFilesToolStripMenuItem.Name = "selectMBTilesFilesToolStripMenuItem";
+            this.selectMBTilesFilesToolStripMenuItem.Size = new System.Drawing.Size(261, 22);
+            this.selectMBTilesFilesToolStripMenuItem.Text = "Âûáðàòü MBTiles ôàéë...";
+            this.selectMBTilesFilesToolStripMenuItem.Click += new System.EventHandler(this.selectMBTilesFilesToolStripMenuItem_Click);
             // 
             // toolStripMenuItem1
             // 
@@ -394,7 +415,7 @@ namespace KMZRebuilder
             // 
             this.splitContainer1.Panel2.Controls.Add(this.tabControl1);
             this.splitContainer1.Size = new System.Drawing.Size(998, 563);
-            this.splitContainer1.SplitterDistance = 794;
+            this.splitContainer1.SplitterDistance = 771;
             this.splitContainer1.TabIndex = 10;
             // 
             // MView
@@ -441,7 +462,7 @@ namespace KMZRebuilder
             this.MView.ShowMapTypes = false;
             this.MView.ShowScale = true;
             this.MView.ShowZooms = true;
-            this.MView.Size = new System.Drawing.Size(794, 563);
+            this.MView.Size = new System.Drawing.Size(771, 563);
             this.MView.TabIndex = 10;
             this.MView.TilesMaxZoom = ((byte)(21));
             this.MView.TilesMinZoom = ((byte)(1));
@@ -466,7 +487,7 @@ namespace KMZRebuilder
             this.tabControl1.Location = new System.Drawing.Point(0, 0);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(200, 563);
+            this.tabControl1.Size = new System.Drawing.Size(223, 563);
             this.tabControl1.TabIndex = 0;
             this.tabControl1.SelectedIndexChanged += new System.EventHandler(this.tabControl1_SelectedIndexChanged);
             // 
@@ -486,6 +507,9 @@ namespace KMZRebuilder
             this.splitTrackBySegmentsToolStripMenuItem,
             this.sortASCToolStripMenuItem,
             this.toolStripMenuItem2,
+            this.modifiToolStripMenuItem,
+            this.modifyAllPointsToolStripMenuItem,
+            this.toolStripMenuItem11,
             this.swap2PointToolStripMenuItem,
             this.deletePointsToolStripMenuItem,
             this.clearSegmentsListToolStripMenuItem,
@@ -495,7 +519,7 @@ namespace KMZRebuilder
             this.toolStripMenuItem10,
             this.selectNoneToolStripMenuItem1});
             this.contextMenuStrip2.Name = "contextMenuStrip2";
-            this.contextMenuStrip2.Size = new System.Drawing.Size(325, 370);
+            this.contextMenuStrip2.Size = new System.Drawing.Size(325, 442);
             this.contextMenuStrip2.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuStrip2_Opening);
             // 
             // splitTrackToSegmentsAndCreateWaypointsFileToolStripMenuItem
@@ -586,6 +610,95 @@ namespace KMZRebuilder
             this.toolStripMenuItem2.Name = "toolStripMenuItem2";
             this.toolStripMenuItem2.Size = new System.Drawing.Size(321, 6);
             // 
+            // modifiToolStripMenuItem
+            // 
+            this.modifiToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.delayToolStripMenuItem,
+            this.speedToolStripMenuItem});
+            this.modifiToolStripMenuItem.Name = "modifiToolStripMenuItem";
+            this.modifiToolStripMenuItem.Size = new System.Drawing.Size(324, 22);
+            this.modifiToolStripMenuItem.Text = "Modify Selected Point";
+            // 
+            // delayToolStripMenuItem
+            // 
+            this.delayToolStripMenuItem.Name = "delayToolStripMenuItem";
+            this.delayToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F2;
+            this.delayToolStripMenuItem.Size = new System.Drawing.Size(258, 22);
+            this.delayToolStripMenuItem.Text = "Change Selected Delay ...";
+            this.delayToolStripMenuItem.Click += new System.EventHandler(this.delayToolStripMenuItem_Click);
+            // 
+            // speedToolStripMenuItem
+            // 
+            this.speedToolStripMenuItem.Name = "speedToolStripMenuItem";
+            this.speedToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.F2)));
+            this.speedToolStripMenuItem.Size = new System.Drawing.Size(258, 22);
+            this.speedToolStripMenuItem.Text = "Change Selected Speed ...";
+            this.speedToolStripMenuItem.Click += new System.EventHandler(this.speedToolStripMenuItem_Click);
+            // 
+            // modifyAllPointsToolStripMenuItem
+            // 
+            this.modifyAllPointsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.map1,
+            this.map2,
+            this.toolStripMenuItem12,
+            this.map3,
+            this.map4,
+            this.toolStripMenuItem13,
+            this.map5});
+            this.modifyAllPointsToolStripMenuItem.Name = "modifyAllPointsToolStripMenuItem";
+            this.modifyAllPointsToolStripMenuItem.Size = new System.Drawing.Size(324, 22);
+            this.modifyAllPointsToolStripMenuItem.Text = "Modify All Points";
+            // 
+            // map1
+            // 
+            this.map1.Name = "map1";
+            this.map1.Size = new System.Drawing.Size(317, 22);
+            this.map1.Text = "Set Delay to All ...";
+            this.map1.Click += new System.EventHandler(this.map1_Click);
+            // 
+            // map2
+            // 
+            this.map2.Name = "map2";
+            this.map2.Size = new System.Drawing.Size(317, 22);
+            this.map2.Text = "Set Speed to All ...";
+            this.map2.Click += new System.EventHandler(this.map2_Click);
+            // 
+            // toolStripMenuItem12
+            // 
+            this.toolStripMenuItem12.Name = "toolStripMenuItem12";
+            this.toolStripMenuItem12.Size = new System.Drawing.Size(314, 6);
+            // 
+            // map3
+            // 
+            this.map3.Name = "map3";
+            this.map3.Size = new System.Drawing.Size(317, 22);
+            this.map3.Text = "Increase\\Decrease Delay to All ...";
+            this.map3.Click += new System.EventHandler(this.map3_Click);
+            // 
+            // map4
+            // 
+            this.map4.Name = "map4";
+            this.map4.Size = new System.Drawing.Size(317, 22);
+            this.map4.Text = "Increase\\Decrease Speed to All ...";
+            this.map4.Click += new System.EventHandler(this.map4_Click);
+            // 
+            // toolStripMenuItem13
+            // 
+            this.toolStripMenuItem13.Name = "toolStripMenuItem13";
+            this.toolStripMenuItem13.Size = new System.Drawing.Size(314, 6);
+            // 
+            // map5
+            // 
+            this.map5.Name = "map5";
+            this.map5.Size = new System.Drawing.Size(317, 22);
+            this.map5.Text = "Remove where Distance to Route is less than ...";
+            this.map5.Click += new System.EventHandler(this.map5_Click);
+            // 
+            // toolStripMenuItem11
+            // 
+            this.toolStripMenuItem11.Name = "toolStripMenuItem11";
+            this.toolStripMenuItem11.Size = new System.Drawing.Size(321, 6);
+            // 
             // swap2PointToolStripMenuItem
             // 
             this.swap2PointToolStripMenuItem.Enabled = false;
@@ -650,7 +763,7 @@ namespace KMZRebuilder
             this.tabPage1.Location = new System.Drawing.Point(4, 22);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(192, 537);
+            this.tabPage1.Size = new System.Drawing.Size(215, 537);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Splitter";
             this.tabPage1.UseVisualStyleBackColor = true;
@@ -672,7 +785,7 @@ namespace KMZRebuilder
             this.plist.Name = "plist";
             this.plist.ShowGroups = false;
             this.plist.ShowItemToolTips = true;
-            this.plist.Size = new System.Drawing.Size(186, 497);
+            this.plist.Size = new System.Drawing.Size(209, 497);
             this.plist.SmallImageList = this.images;
             this.plist.TabIndex = 15;
             this.plist.UseCompatibleStateImageBehavior = false;
@@ -703,7 +816,7 @@ namespace KMZRebuilder
             this.panel3.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.panel3.Location = new System.Drawing.Point(3, 500);
             this.panel3.Name = "panel3";
-            this.panel3.Size = new System.Drawing.Size(186, 34);
+            this.panel3.Size = new System.Drawing.Size(209, 34);
             this.panel3.TabIndex = 18;
             // 
             // ttllbl
@@ -731,7 +844,7 @@ namespace KMZRebuilder
             this.tabPage2.Location = new System.Drawing.Point(4, 22);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(192, 537);
+            this.tabPage2.Size = new System.Drawing.Size(215, 537);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Planner";
             this.tabPage2.UseVisualStyleBackColor = true;
@@ -744,7 +857,9 @@ namespace KMZRebuilder
             this.columnHeader5,
             this.columnHeader6,
             this.columnHeader7,
-            this.columnHeader8});
+            this.columnHeader8,
+            this.columnHeader9,
+            this.columnHeader10});
             this.segView.ContextMenuStrip = this.contextMenuStrip2;
             this.segView.Dock = System.Windows.Forms.DockStyle.Fill;
             this.segView.FullRowSelect = true;
@@ -755,7 +870,7 @@ namespace KMZRebuilder
             this.segView.Name = "segView";
             this.segView.ShowGroups = false;
             this.segView.ShowItemToolTips = true;
-            this.segView.Size = new System.Drawing.Size(186, 474);
+            this.segView.Size = new System.Drawing.Size(209, 474);
             this.segView.SmallImageList = this.images;
             this.segView.TabIndex = 16;
             this.segView.UseCompatibleStateImageBehavior = false;
@@ -789,13 +904,21 @@ namespace KMZRebuilder
             // 
             this.columnHeader8.Text = "To Line";
             // 
+            // columnHeader9
+            // 
+            this.columnHeader9.Text = "Delay";
+            // 
+            // columnHeader10
+            // 
+            this.columnHeader10.Text = "Speed";
+            // 
             // panel2
             // 
             this.panel2.Controls.Add(this.label2);
             this.panel2.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.panel2.Location = new System.Drawing.Point(3, 477);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(186, 57);
+            this.panel2.Size = new System.Drawing.Size(209, 57);
             this.panel2.TabIndex = 17;
             // 
             // label2
@@ -806,13 +929,6 @@ namespace KMZRebuilder
             this.label2.Size = new System.Drawing.Size(298, 52);
             this.label2.TabIndex = 0;
             this.label2.Text = resources.GetString("label2.Text");
-            // 
-            // selectMBTilesFilesToolStripMenuItem
-            // 
-            this.selectMBTilesFilesToolStripMenuItem.Name = "selectMBTilesFilesToolStripMenuItem";
-            this.selectMBTilesFilesToolStripMenuItem.Size = new System.Drawing.Size(261, 22);
-            this.selectMBTilesFilesToolStripMenuItem.Text = "Âûáðàòü MBTiles ôàéë...";
-            this.selectMBTilesFilesToolStripMenuItem.Click += new System.EventHandler(this.selectMBTilesFilesToolStripMenuItem_Click);
             // 
             // TrackSplitter
             // 
@@ -926,5 +1042,19 @@ namespace KMZRebuilder
         private System.Windows.Forms.ToolStripMenuItem clearPaywaysToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem loadRoutePlannerProjectNoPaywaysToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem selectMBTilesFilesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem modifiToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem delayToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem speedToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem11;
+        private System.Windows.Forms.ToolStripMenuItem modifyAllPointsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem map3;
+        private System.Windows.Forms.ToolStripMenuItem map4;
+        private System.Windows.Forms.ToolStripMenuItem map1;
+        private System.Windows.Forms.ToolStripMenuItem map2;
+        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem12;
+        private System.Windows.Forms.ColumnHeader columnHeader9;
+        private System.Windows.Forms.ColumnHeader columnHeader10;
+        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem13;
+        private System.Windows.Forms.ToolStripMenuItem map5;
     }
 }

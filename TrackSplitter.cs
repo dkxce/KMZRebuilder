@@ -714,7 +714,7 @@ namespace KMZRebuilder
                     deletePointToolStripMenuItem.Enabled =
                         splitPointToolStripMenuItem.Enabled =
                             removeStepToolStripMenuItem.Enabled =
-                                plist.SelectedIndices.Count > 0;
+                                plist.SelectedIndices.Count > 0;            
         }
 
         private void SaveResults()
@@ -1100,6 +1100,8 @@ namespace KMZRebuilder
             public double dist; // distance from start to point on nearest line
             public ulong unical; // using for identify line start and end
             public string tIndex; // Table Index (from route_planner_index = ... )
+            public int delay; // Delay in minutes
+            public int speed;
 
             public SBS(string name, PointF point, string tip, ulong unical)
             {
@@ -1112,6 +1114,8 @@ namespace KMZRebuilder
                 this.pointOnLine = new PointF(); // point on nearest line
                 this.unical = unical;
                 this.tIndex = "";
+                this.delay = 0;
+                this.speed = 60;
             }
 
             public override string ToString()
@@ -1159,16 +1163,25 @@ namespace KMZRebuilder
             for (int i = 0; i < segmentsList.Count; i++)
             {
                 SBS sbs = segmentsList[i];
-                ListViewItem lvi = new ListViewItem(new string[] { 
+                CustomListViewItem lvi = new CustomListViewItem(new string[] { 
                     (i+1).ToString(), 
                     sbs.tip, 
                     sbs.dist == double.MaxValue ? "" : ((int)(sbs.dist / 1000)).ToString() + " km", 
                     sbs.name,
-                    sbs.toline == double.MaxValue ? "" : ((int)(sbs.toline / 1000)).ToString() + " km"});
+                    sbs.toline == double.MaxValue ? "" : ((int)(sbs.toline / 1000)).ToString() + " km",
+                    sbs.delay.ToString(),
+                    sbs.speed.ToString()
+                });
                 if (segmentsList[i].tip != "X")
                     lvi.BackColor = Color.LightSkyBlue;
                 segView.Items.Add(lvi);
             };
+        }
+
+        private void UpdateSegmentOnView(SBS sbs, ListViewItem lview)
+        {
+            lview.SubItems[5].Text = sbs.delay.ToString();
+            lview.SubItems[6].Text = sbs.speed.ToString();
         }
 
         private void ReloadSegmentIndexes()
@@ -1195,6 +1208,9 @@ namespace KMZRebuilder
             sortASCToolStripMenuItem.Enabled = 
                 exportProjectToKMLToolStripMenuItem.Enabled =
                     segCalculated && (segmentsList.Count > 0);
+
+            delayToolStripMenuItem.Enabled = speedToolStripMenuItem.Enabled = segView.SelectedIndices.Count == 1;
+            map1.Enabled = map2.Enabled = map3.Enabled = map4.Enabled = map5.Enabled = segView.Items.Count > 0;
         }
 
         private void deletePointsToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1305,6 +1321,53 @@ namespace KMZRebuilder
             // SORT BY LENGTH
             pts2spl.Sort(new SBSSorter());
 
+            if (wbf != null)
+                wbf.Hide();
+
+            if (MessageBox.Show("Get Segment Speed by Requesting Route?", "Calculate Track Waypoints by Segments", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+            {
+                if (wbf != null) wbf.Show("Track Planner", String.Format("Requesting route {0}/{1} ...", 1, pts2spl.Count + 1));
+                KMZRebuilder.GetRouter groute = GetRouter.Load();
+                nmsRouteClient.Route rt;
+                double speed = 60;
+                try
+                {
+                    rt = groute.GetRoute(originalLine[0], pts2spl[0].pointOnLine);
+                    if (rt.driveTime != 0) speed = (rt.driveLength / 1000.0) / (rt.driveTime / 60.0);
+                    SBS sbs = pts2spl[0];
+                    sbs.speed = (int)speed;
+                    pts2spl[0] = sbs;
+                }
+                catch { };
+                for (int i = 1; i < pts2spl.Count; i++)
+                {
+                    if (wbf != null) wbf.Show("Track Planner", String.Format("Requesting route {0}/{1} ...", i + 1, pts2spl.Count + 1));
+                    speed = 60;
+                    try
+                    {
+                        rt = groute.GetRoute(pts2spl[i - 1].pointOnLine, pts2spl[i].pointOnLine);
+                        if (rt.driveTime != 0) speed = (rt.driveLength / 1000.0) / (rt.driveTime / 60.0);
+                        SBS sbs = pts2spl[i];
+                        sbs.speed = (int)speed;
+                        pts2spl[i] = sbs;
+                    }
+                    catch { };
+                };
+                speed = 60;
+                try
+                {
+                    if (wbf != null) wbf.Show("Track Planner", String.Format("Requesting route {0}/{1} ...", pts2spl.Count + 1, pts2spl.Count + 1));
+                    rt = groute.GetRoute(pts2spl[pts2spl.Count - 1].pointOnLine, originalLine[originalLine.Count - 1]);
+                    if (rt.driveTime != 0) speed = (rt.driveLength / 1000.0) / (rt.driveTime / 60.0);
+                    SBS sbs = pts2spl[pts2spl.Count - 1];
+                    sbs.speed = (int)speed;
+                    pts2spl[pts2spl.Count - 1] = sbs;
+                }
+                catch { };
+            };
+
+            if (wbf != null)
+                wbf.Show("Track Planner", "Wait, calculating waypoints ...");
             LoadSegments2View();
             segCalculated = true;
             if (wbf != null)
@@ -1323,12 +1386,12 @@ namespace KMZRebuilder
             segmentsList[b] = sa;
             sa = segmentsList[a];
             sb = segmentsList[b];
-            ListViewItem la = new ListViewItem(new string[] { (a + 1).ToString(), sa.tip, 
+            CustomListViewItem la = new CustomListViewItem(new string[] { (a + 1).ToString(), sa.tip, 
                 sa.dist == double.MaxValue ? "" : ((int)(sa.dist / 1000)).ToString() + " km", 
                 sa.name,
                 sa.toline == double.MaxValue ? "" : ((int)(sa.toline / 1000)).ToString() + " km"});
             la.Selected = true;
-            ListViewItem lb = new ListViewItem(new string[] { (b + 1).ToString(), sb.tip, 
+            CustomListViewItem lb = new CustomListViewItem(new string[] { (b + 1).ToString(), sb.tip, 
                 sb.dist == double.MaxValue ? "" : ((int)(sb.dist / 1000)).ToString() + " km", 
                 sb.name,
                 sb.toline == double.MaxValue ? "" : ((int)(sb.toline / 1000)).ToString() + " km"});
@@ -1437,7 +1500,8 @@ namespace KMZRebuilder
                 //G - ENTRY TIME
                 sw.Write(String.Format(System.Globalization.CultureInfo.InvariantCulture, "=K{0};", row - 1));
                 //H - DELAY TIME
-                sw.Write(String.Format(System.Globalization.CultureInfo.InvariantCulture, "{0};", "00:00"));
+                TimeSpan ts = new TimeSpan(0, pts2spl[si].delay, 0);
+                sw.Write(String.Format(System.Globalization.CultureInfo.InvariantCulture, "{0:00}:{1:00};", ts.Hours, ts.Minutes));
                 //I - MOVE TIME
                 sw.Write(String.Format(System.Globalization.CultureInfo.InvariantCulture, "=D{0}/L{0}/24;", row));
                 //J - SEGMENT TIME
@@ -1445,7 +1509,7 @@ namespace KMZRebuilder
                 //K - LEAVE TIME
                 sw.Write(String.Format(System.Globalization.CultureInfo.InvariantCulture, "=G{0}+J{0};", row));
                 //L - AVG SPEED
-                sw.Write(String.Format(System.Globalization.CultureInfo.InvariantCulture, "{0};", "60"));
+                sw.Write(String.Format(System.Globalization.CultureInfo.InvariantCulture, "{0};", pts2spl[si].speed.ToString()));
                 //M - DIST 2 ROUTE
                 sw.Write(String.Format(System.Globalization.CultureInfo.InvariantCulture, "{0};", (int)(pts2spl[si].toline / 1000)));
                 //N - REGION 
@@ -1709,7 +1773,8 @@ namespace KMZRebuilder
                 //H - ENTRY TIME
                 sw.WriteLine(String.Format(System.Globalization.CultureInfo.InvariantCulture, "    <Cell ss:StyleID=\"sDt{1}\" ss:Formula=\"=R[-1]C[4]\"><Data ss:Type=\"DateTime\"></Data></Cell>", row - 1, tb));
                 //I - DELAY TIME
-                sw.WriteLine(String.Format(System.Globalization.CultureInfo.InvariantCulture, "    <Cell ss:StyleID=\"sTm{1}\"><Data ss:Type=\"String\">{0}</Data></Cell>", "00:00", tb));
+                TimeSpan ts = new TimeSpan(0, pts2spl[si].delay, 0);
+                sw.WriteLine(String.Format(System.Globalization.CultureInfo.InvariantCulture, "    <Cell ss:StyleID=\"sTm{1}\"><Data ss:Type=\"String\">{0}</Data></Cell>", String.Format("{0:00}:{1:00}", ts.Hours, ts.Minutes), tb));
                 //J - MOVE TIME
                 sw.WriteLine(String.Format(System.Globalization.CultureInfo.InvariantCulture, "    <Cell ss:StyleID=\"sTm{1}\" ss:Formula=\"=R[0]C[-6]/R[0]C[3]/24\"><Data ss:Type=\"DateTime\"></Data></Cell>", row, tb));
                 //K - SEGMENT TIME
@@ -1717,7 +1782,7 @@ namespace KMZRebuilder
                 //L - LEAVE TIME
                 sw.WriteLine(String.Format(System.Globalization.CultureInfo.InvariantCulture, "    <Cell ss:StyleID=\"sDt{1}\" ss:Formula=\"=R[0]C[-4]+R[0]C[-1]\"><Data ss:Type=\"DateTime\"></Data></Cell>", row, tb));
                 //M - AVG SPEED
-                sw.WriteLine(String.Format(System.Globalization.CultureInfo.InvariantCulture, "    <Cell ss:StyleID=\"sSp{1}\"><Data ss:Type=\"Number\">{0}</Data></Cell>", "60", tb));
+                sw.WriteLine(String.Format(System.Globalization.CultureInfo.InvariantCulture, "    <Cell ss:StyleID=\"sSp{1}\"><Data ss:Type=\"Number\">{0}</Data></Cell>", pts2spl[si].speed.ToString(), tb));
                 //N - DIST 2 ROUTE
                 sw.WriteLine(String.Format(System.Globalization.CultureInfo.InvariantCulture, "    <Cell ss:StyleID=\"sKm{1}\"><Data ss:Type=\"Number\">{0}</Data></Cell>", (int)(pts2spl[si].toline / 1000), tb));
                 //O - REGION 
@@ -2137,6 +2202,7 @@ namespace KMZRebuilder
             sf.subtext.Text = "Additional tags in description:\r\n";
             sf.subtext.Text += "  route_planner_skip=true -- skip point\r\n";
             sf.subtext.Text += "  route_planner_skip=false -- check layer on import\r\n";
+            sf.subtext.Text += "  route_planner_delay=value -- delay in minutes\r\n";
             sf.subtext.Text += "  route_planner_source=route -- source route";
             sf.Text = "Flag Route by Objects from Layers";
             sf.layers.MultiSelect = true;
@@ -2144,7 +2210,7 @@ namespace KMZRebuilder
             foreach (KMLayer lay in kmf.kmLayers)
             {
                 objc += lay.placemarks;
-                ListViewItem lvi = new ListViewItem(lay.name + "[" + lay.placemarks.ToString() + "]");
+                CustomListViewItem lvi = new CustomListViewItem(lay.name + "[" + lay.placemarks.ToString() + "]");
                 XmlNode pmk = lay.file.kmlDoc.SelectNodes("kml/Document/Folder")[lay.id];
                 string description = "";
                 try
@@ -2221,6 +2287,9 @@ namespace KMZRebuilder
                         string description = "";
                         string idex = "";
                         string json = "";
+                        int delay = 0;
+                        int speed = 60;
+                        bool doubled = false;
                         try
                         {
                             description = xnf[el].SelectSingleNode("description").ChildNodes[0].Value;
@@ -2231,6 +2300,9 @@ namespace KMZRebuilder
                                     if ((mx.Groups["name"].Value.ToLower() == "skip") && (mx.Groups["value"].Value.ToLower() == "true")) todo = false;
                                     if ((mx.Groups["name"].Value.ToLower() == "skip") && (mx.Groups["value"].Value.ToLower() == "1")) todo = false;
                                     if ((mx.Groups["name"].Value.ToLower() == "skip") && (mx.Groups["value"].Value.ToLower() == "yes")) todo = false;
+                                    if ((mx.Groups["name"].Value.ToLower() == "delay") && (mx.Groups["value"].Value.ToLower() != "0")) int.TryParse(mx.Groups["value"].Value.ToLower(), out delay);
+                                    if ((mx.Groups["name"].Value.ToLower() == "speed") && (mx.Groups["value"].Value.ToLower() != "0")) int.TryParse(mx.Groups["value"].Value.ToLower(), out speed);
+                                    if (mx.Groups["name"].Value.ToLower() == "doubled") bool.TryParse(mx.Groups["value"].Value.ToLower(), out doubled);
                                     if (mx.Groups["name"].Value.ToLower() == "json") json = mx.Groups["value"].Value;
                                     if ((mx.Groups["name"].Value.ToLower() == "source") && (mx.Groups["value"].Value.ToLower() == "route")) { todo = false; source = true; };
                                 };
@@ -2280,12 +2352,20 @@ namespace KMZRebuilder
                             string[] cc = xyz[0].Split(new char[] { ',' });
                             SBS sbs = new SBS(name, new PointF((float)double.Parse(cc[0], System.Globalization.CultureInfo.InvariantCulture), (float)double.Parse(cc[1], System.Globalization.CultureInfo.InvariantCulture)), xyz.Length == 1 ? "X" : "W", unical);
                             sbs.tIndex = idex;
+                            sbs.delay = delay;
+                            sbs.speed = speed;
                             pts2spl.Add(sbs);
                             if (xyz.Length > 1)
                             {
                                 cc = xyz[xyz.Length - 1].Split(new char[] { ',' });
                                 sbs = new SBS(name, new PointF((float)double.Parse(cc[0], System.Globalization.CultureInfo.InvariantCulture), (float)double.Parse(cc[1], System.Globalization.CultureInfo.InvariantCulture)), "W", unical);
                                 sbs.tIndex = idex;
+                                pts2spl.Add(sbs);
+                            }
+                            else if (doubled)
+                            {
+                                sbs.unical = ++unical;
+                                sbs.delay = 0;
                                 pts2spl.Add(sbs);
                             };
                         };
@@ -2353,7 +2433,10 @@ namespace KMZRebuilder
                 {
                     SBS sbs = segmentsList[i];
                     sw.Write("<Placemark><name><![CDATA[" + sbs.name + "]]></name>");
-                    string desc = "route_planner_skip=false\r\nroute_planner_json=" + Newtonsoft.Json.JsonConvert.SerializeObject(sbs);
+                    string desc = "route_planner_skip=false\r\n";
+                    desc += "route_planner_delay="+sbs.delay.ToString()+"\r\n";
+                    desc += "route_planner_speed=" + sbs.speed.ToString() + "\r\n";
+                    desc += "route_planner_json=" + Newtonsoft.Json.JsonConvert.SerializeObject(sbs);
                     sw.WriteLine("<description><![CDATA[" + desc + "]]></description>");
                     sw.Write("<Point><coordinates>");
                     sw.Write(string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0},{1},0 ", sbs.pointOnLine.X, sbs.pointOnLine.Y));
@@ -2689,6 +2772,128 @@ namespace KMZRebuilder
                     iStorages.SelectedIndex = iStorages.Items.Count - 3;
             };
         }
+
+        private void delayToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ModifySegment(true, false);
+        }
+
+        private void speedToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ModifySegment(false, true);
+        }
+
+        private void ModifySegment(bool del, bool sp)
+        {
+            if (segView.SelectedIndices.Count != 1) return;
+            int si = segView.SelectedIndices[0];
+            SBS sbs = segmentsList[si];
+            if (del)
+            {
+                int delay = sbs.delay;
+                if (InputBox.Show(sbs.name, "Delay (in minutes):", ref delay, 0, 2880) == DialogResult.OK)
+                {
+                    sbs.delay = delay;
+                    segmentsList[si] = sbs;
+                };
+            };
+            if (sp)
+            {
+                int speed = sbs.speed;
+                if (InputBox.Show(sbs.name, "Speed (in kmph):", ref speed, 0, 150) == DialogResult.OK)
+                {
+                    sbs.speed = speed;
+                    segmentsList[si] = sbs;
+                };
+            };
+            UpdateSegmentOnView(sbs, segView.Items[si]);
+        }
+
+        private void map1_Click(object sender, EventArgs e)
+        {
+            if (segView.Items.Count == 0) return;
+            int delay = 0;
+            if (InputBox.Show("Set Delay to All", "Delay (in minutes):", ref delay, 0, 2880) == DialogResult.OK)
+            {
+                for (int i = 0; i < segmentsList.Count; i++)
+                {
+                    SBS sbs = segmentsList[i];
+                    sbs.delay = delay;
+                    segmentsList[i] = sbs;
+                };
+                LoadSegments2View();
+            };
+        }
+
+        private void map2_Click(object sender, EventArgs e)
+        {
+            if (segView.Items.Count == 0) return;
+            int speed = 0;
+            if (InputBox.Show("Set Speed to All", "Speed (in kmph):", ref speed, 0, 150) == DialogResult.OK)
+            {
+                for (int i = 0; i < segmentsList.Count; i++)
+                {
+                    SBS sbs = segmentsList[i];
+                    sbs.speed = speed;
+                    segmentsList[i] = sbs;
+                };
+                LoadSegments2View();
+            };
+        }
+
+        private void map3_Click(object sender, EventArgs e)
+        {
+            if (segView.Items.Count == 0) return;
+            int delay = 0;
+            if (InputBox.Show("Increase\\Decrease Delay to All", "Delay (in minutes +\\-):", ref delay, -2880, 2880) == DialogResult.OK)
+            {
+                for (int i = 0; i < segmentsList.Count; i++)
+                {
+                    SBS sbs = segmentsList[i];
+                    sbs.delay += delay;
+                    if (sbs.delay < 0) sbs.delay = 0;
+                    segmentsList[i] = sbs;
+                };
+                LoadSegments2View();
+            };
+        }
+
+        private void map4_Click(object sender, EventArgs e)
+        {
+            if (segView.Items.Count == 0) return;
+            int speed = 0;
+            if (InputBox.Show("Increase\\Decrease Speed to All", "Speed (in kmph +\\-):", ref speed, -150, 150) == DialogResult.OK)
+            {
+                for (int i = 0; i < segmentsList.Count; i++)
+                {
+                    SBS sbs = segmentsList[i];
+                    sbs.speed += speed;
+                    if (sbs.speed < 0) sbs.speed = 0;
+                    segmentsList[i] = sbs;
+                };
+                LoadSegments2View();
+            };
+        }
+
+        private void map5_Click(object sender, EventArgs e)
+        {
+            if (segView.Items.Count == 0) return;
+            int dist = 3500;
+            if (InputBox.Show("Remove where Distance to Route is less than", "Distance to Route (in meters):", ref dist, 0, 300000) == DialogResult.OK)
+            {
+                for (int i = segmentsList.Count - 1; i >= 0 ; i--)
+                    if (segmentsList[i].toline > dist) 
+                        segmentsList.RemoveAt(i);
+                LoadSegments2View();
+            };
+        }
+    }
+
+    public class CustomListViewItem : ListViewItem
+    {
+        public CustomListViewItem(): base(){}
+        public CustomListViewItem(string text) : base(text) { }
+        public CustomListViewItem(string[] items) : base(items) { }
     }
 }
 
