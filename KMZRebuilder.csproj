@@ -137,13 +137,13 @@
     </Compile>
     <Compile Include="MapsForgeReader.cs" />
     <Compile Include="MapViewerForm.cs">
-      <SubType>Form</SubType>
+      <SubType>Component</SubType>
     </Compile>
     <Compile Include="MapViewerForm.Designer.cs">
       <DependentUpon>MapViewerForm.cs</DependentUpon>
     </Compile>
     <Compile Include="KMZRebuilederForm.cs">
-      <SubType>Form</SubType>
+      <SubType>Component</SubType>
     </Compile>
     <Compile Include="KMZRebuilederForm.Designer.cs">
       <DependentUpon>KMZRebuilederForm.cs</DependentUpon>

@@ -18,6 +18,7 @@ namespace KMZRebuilder
     public partial class MultiPointRouteForm : Form
     {
         public List<NaviMapNet.MapPoint> OnMapPoints = new List<NaviMapNet.MapPoint>();
+        public bool EnableSorting = true;
 
         object temp;
         int trackingItem;
@@ -28,6 +29,20 @@ namespace KMZRebuilder
             InitializeComponent();
             this.DialogResult = DialogResult.Cancel;
         }
+
+        public void SetListOfSearchResults()
+        {
+            this.Text = "OSM Search";
+            this.labelTop.Text = "OSM Search Results:";
+            this.labelBottom.Text = "Double click on item to show on map";
+            this.EnableSorting = false;
+            this.Width += 300;
+            this.pbox.Width += 300;
+            this.buttonCancel.Left += 300;
+            this.buttonOk.Left += 300;
+            this.pbox.ContextMenuStrip = this.contextMenuStrip2;
+            pbox.ItemCheck += (delegate(object sender, ItemCheckEventArgs e) { e.NewValue = CheckState.Checked; });
+        }        
 
         private const int WS_SYSMENU = 0x80000;
         protected override CreateParams CreateParams
@@ -97,6 +112,7 @@ namespace KMZRebuilder
 
         public void MoveItem(int direction)
         {
+            if (!EnableSorting) return;
             if (pbox.SelectedItem == null || pbox.SelectedIndex < 0) return;
             int newIndex = pbox.SelectedIndex + direction;
             if (newIndex < 0 || newIndex >= pbox.Items.Count) return;
@@ -121,7 +137,8 @@ namespace KMZRebuilder
             if (pbox.SelectedIndex < 0) return;
 
             if ((Control.ModifierKeys & Keys.Alt) == Keys.Alt)
-            {                
+            {
+                if (!EnableSorting) return;
                 pbox.Cursor = Cursors.Hand;
                 trackingItem = pbox.SelectedIndex;
                 if (trackingItem >= 0)
@@ -321,6 +338,27 @@ namespace KMZRebuilder
             return outerXml;
         }
 
+        private void pbox_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            if (pbox.SelectedIndex < 0) return;
+            if (onItemDoubleClick != null) onItemDoubleClick(this, e);
+        }
+
+        public EventHandler onSaveOnMap;
+        public MouseEventHandler onItemDoubleClick;
+        public int SelectedIndex { get { return pbox.SelectedIndex; } }
+        public object SelectedItem { get { return pbox.SelectedIndex < 0 ? null : pbox.SelectedItem;  } }
+         
+        private void contextMenuStrip2_Opening(object sender, CancelEventArgs e)
+        {
+            savePointToMapToolStripMenuItem.Enabled = pbox.SelectedIndex >= 0;
+        }
+
+        private void savePointToMapToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (pbox.SelectedIndex < 0) return;
+            if (onSaveOnMap != null) onSaveOnMap(this, e);
+        }
     }
 
 

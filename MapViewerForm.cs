@@ -1203,6 +1203,7 @@ namespace KMZRebuilder
             sbd.Enabled = (objects.Items.Count > 1) && (objects.SelectedItems.Count > 0) && (objects.SelectedItems[0].SubItems[1].Text == "Point");
             sbl.Enabled = (objects.Items.Count > 1) && (objects.SelectedItems.Count > 0) && (objects.SelectedItems[0].SubItems[1].Text.StartsWith("Line"));
             sbls.Enabled = (objects.Items.Count > 1) && (objects.SelectedItems.Count > 0) && (objects.SelectedItems[0].SubItems[1].Text.StartsWith("Line"));
+            sortByRouteLengthToThisPointToolStripMenuItem.Enabled = (objects.Items.Count > 1) && (objects.SelectedItems.Count > 0) && (objects.SelectedItems[0].SubItems[1].Text == "Point");
             sbrn.Enabled = objects.Items.Count > 1;
             sbrs.Enabled = objects.Items.Count > 1;
         }
@@ -1624,6 +1625,45 @@ namespace KMZRebuilder
             };
         }
 
+        public class XYTextBox : TextBox 
+        { 
+            public TextBox xBox; 
+            public TextBox yBox;
+            public XYTextBox()
+            {
+                this.Validating += new CancelEventHandler(XYTextBox_Validating);
+            }
+
+            private void XYTextBox_Validating(object sender, CancelEventArgs e)
+            {
+                XYTextBox tb = (sender as XYTextBox);
+
+                PointD pd = LatLonParser.Parse(tb.Text.Trim());
+                if ((pd != null) && (pd.X != pd.Y) && (pd.X != 0) && (pd.Y != 0) && (tb.xBox != null) && (tb.yBox != null))
+                {
+                    tb.xBox.Text = LatLonParser.DoubleToStringMax(pd.X, 8);
+                    tb.yBox.Text = LatLonParser.DoubleToStringMax(pd.Y, 8);
+                    tb.SelectAll();
+                };
+
+                double d = 0.0;
+                if (double.TryParse(tb.Text, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out d)) return;
+
+                string wast = tb.Text.Trim();
+                string text = tb.Text.Replace(",", ".").Trim();
+                if (tb.Name == "xBox")
+                    try { d = LatLonParser.Parse(text, false); }
+                    catch { };
+                if (tb.Name == "yBox")
+                    try { d = LatLonParser.Parse(text, true); }
+                    catch { };
+                tb.Text = LatLonParser.DoubleToStringMax(d, 8);
+                if (wast != tb.Text)
+                    e.Cancel = true;
+                tb.SelectAll();
+            }
+        }
+
         public DialogResult InputXY(bool changeXY, ref string value, ref string lat, ref string lon, ref string desc, ref string style)
         {
             Form form = new Form();
@@ -1635,9 +1675,9 @@ namespace KMZRebuilder
             PictureBox pBox = new PictureBox();
             ComboBox cBox = new ComboBox(); cBox.DropDownStyle = ComboBoxStyle.DropDownList; cBox.FlatStyle = FlatStyle.Flat;
             TextBox nameBox = new TextBox(); nameBox.BorderStyle = BorderStyle.FixedSingle;
-            TextBox xBox = new TextBox(); xBox.BorderStyle = BorderStyle.FixedSingle;
+            XYTextBox xBox = new XYTextBox(); xBox.BorderStyle = BorderStyle.FixedSingle;
             xBox.Name = "xBox";
-            TextBox yBox = new TextBox(); yBox.BorderStyle = BorderStyle.FixedSingle;
+            XYTextBox yBox = new XYTextBox(); yBox.BorderStyle = BorderStyle.FixedSingle;
             yBox.Name = "yBox";
             TextBox dBox = new TextBox(); dBox.BorderStyle = BorderStyle.FixedSingle;
             dBox.Multiline = true;
@@ -1668,8 +1708,8 @@ namespace KMZRebuilder
 
             if (!changeXY) xBox.Enabled = yBox.Enabled = false;
 
-            xBox.Validating += new CancelEventHandler(xBox_Validating);
-            yBox.Validating += new CancelEventHandler(xBox_Validating);
+            xBox.xBox = xBox; xBox.yBox = yBox;
+            yBox.xBox = xBox; yBox.yBox = yBox;
             
             buttonOk.Text = "OK";
             buttonCancel.Text = "Cancel";
@@ -1727,25 +1767,7 @@ namespace KMZRebuilder
             };
             return dialogResult;
         }
-
-        private static void xBox_Validating(object sender, CancelEventArgs e)
-        {
-            TextBox tb = (sender as TextBox);
-            double d = 0.0;
-            if (double.TryParse(tb.Text,System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out d)) return;
-
-            string wast = tb.Text.Trim();
-            string text = tb.Text.Replace(",", ".").Trim();
-            if (tb.Name == "xBox")
-                try { d = LatLonParser.Parse(text, false); } catch { };
-            if (tb.Name == "yBox")
-                try { d = LatLonParser.Parse(text, true); } catch { };
-            tb.Text = LatLonParser.DoubleToStringMax(d, 8);
-            if (wast != tb.Text)
-                e.Cancel = true;
-            tb.SelectAll();
-        }        
-
+       
         private void cBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             ComboBox cBox = sender as ComboBox;
@@ -1832,7 +1854,7 @@ namespace KMZRebuilder
         private void textBox2_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (e.KeyChar != (Char)13) return;
-            e.Handled = true;
+            e.Handled = true;            
 
             if (objects.Items.Count == 0) return;
             string st = textBox2.Text.ToLower();
@@ -2322,6 +2344,71 @@ namespace KMZRebuilder
                         objects.Items[objects.Items.Count - 1].Selected = true;
                 };
             };
+        }
+
+        private bool addNewPointByNXY(string name, string desc, PointF point)
+        {
+            KMLayer l = (KMLayer)parent.kmzLayers.Items[laySelect.SelectedIndex];
+            XmlNode xf = l.file.kmlDoc.SelectNodes("kml/Document/Folder")[l.id];
+
+            string style = "#none";
+            XmlNode st = null;
+            if (objects.SelectedIndices.Count > 0)
+            {
+                string XPath = objects.SelectedItems[0].SubItems[7].Text;
+                string indx = XPath.Substring(XPath.IndexOf("["));
+                XPath = XPath.Remove(XPath.IndexOf("["));
+                int ind = int.Parse(indx.Substring(1, indx.Length - 2));
+                st = xf.SelectNodes(XPath)[ind].ParentNode.ParentNode.SelectSingleNode("styleUrl");
+                if ((st != null) && (st.ChildNodes.Count > 0))
+                    style = st.ChildNodes[0].Value;
+            };
+
+            XmlNode el = l.file.kmlDoc.CreateElement("Placemark");
+            el.AppendChild(l.file.kmlDoc.CreateElement("name"));
+            el.AppendChild(l.file.kmlDoc.CreateElement("styleUrl").AppendChild(l.file.kmlDoc.CreateTextNode(style)).ParentNode);
+            el.AppendChild(l.file.kmlDoc.CreateElement("Point").AppendChild(l.file.kmlDoc.CreateElement("coordinates")).ParentNode);
+            el.AppendChild(l.file.kmlDoc.CreateElement("description"));
+            st = el.SelectSingleNode("styleUrl");
+            XmlNode xy = el.SelectSingleNode("Point/coordinates");
+            XmlNode xn = el.SelectSingleNode("name");
+            XmlNode xd = el.SelectSingleNode("description");
+
+            string nam = name;
+            string x = point.X.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            string y = point.Y.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            if ((xd != null) && (xd.ChildNodes.Count > 0)) desc = xd.ChildNodes[0].Value;
+            string dw = desc;
+
+            if (InputXY(true, ref nam, ref y, ref x, ref desc, ref style) == DialogResult.OK)
+            {
+                bool ch = false;
+                if (!String.IsNullOrEmpty(nam)) ch = true;
+                if (!String.IsNullOrEmpty(desc)) ch = true;
+                x = x.Trim().Replace(",", ".");
+                y = y.Trim().Replace(",", ".");
+                if (!String.IsNullOrEmpty(x)) ch = true;
+                if (!String.IsNullOrEmpty(y)) ch = true;
+                if (ch)
+                {
+                    xn.AppendChild(l.file.kmlDoc.CreateTextNode(nam));
+                    xd.AppendChild(l.file.kmlDoc.CreateTextNode(desc));
+                    xy.AppendChild(l.file.kmlDoc.CreateTextNode(String.Format("{0},{1},0", x, y)));
+                    st.ChildNodes[0].Value = style;
+                    xf.AppendChild(el);
+
+                    l.file.SaveKML();
+                    l.placemarks++;
+                    l.points++;
+                    parent.Refresh();
+                    laySelect.Items[laySelect.SelectedIndex] = l.ToString();
+                    if (objects.Items.Count > 0)
+                        objects.Items[objects.Items.Count - 1].Selected = true;
+                };
+                return true;
+            }
+            else
+                return false;
         }
 
         private void addNewPointWithNewStyleToolStripMenuItem_Click(object sender, EventArgs e)
@@ -6749,6 +6836,149 @@ namespace KMZRebuilder
                 MapViewer.DrawOnMapData();
             };
         }
+
+        private void sortByRouteLengthToThisPointToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (objects.SelectedItems.Count == 0) return;
+            if (objects.Items.Count < 2) return;
+            if (!(mapContent[objects.SelectedIndices[0]] is NaviMapNet.MapPoint)) return;
+
+            if (groute == null) groute = GetRouter.Load();
+            wbf.Show("Sorting by route", "Wait, loading...");
+
+            NaviMapNet.MapPoint mp = (NaviMapNet.MapPoint)mapContent[objects.SelectedIndices[0]];
+
+            KMLayer l = (KMLayer)parent.kmzLayers.Items[laySelect.SelectedIndex];
+            XmlNode x_folder = l.file.kmlDoc.SelectNodes("kml/Document/Folder")[l.id];
+            List<KeyValuePair<XmlNode, double>> placemarks = new List<KeyValuePair<XmlNode, double>>();
+            XmlNodeList nl = x_folder.SelectNodes("Placemark");
+            int nrc = 0;
+            foreach (XmlNode n in nl)
+            {
+                wbf.Show("Sorting by route", String.Format("Wait, getting route {0}/{1}...", ++nrc, nl.Count));
+                double dist = double.MaxValue;
+                XmlNode xn = n.SelectNodes("*/coordinates")[0];
+                string[] xy = xn.ChildNodes[0].Value.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+                foreach (string ln in xy)
+                {
+                    try
+                    {
+                        string[] xyz = ln.Split(new char[] { ',' }, StringSplitOptions.None);
+                        PointF cp = new PointF((float)double.Parse(xyz[0], System.Globalization.CultureInfo.InvariantCulture), (float)double.Parse(xyz[1], System.Globalization.CultureInfo.InvariantCulture));
+                        nmsRouteClient.Route route = groute.GetRoute(mp.Points[0], cp);
+                        if (route.driveLength < dist) dist = route.driveLength;                        
+                    }
+                    catch { };
+                };
+                placemarks.Add(new KeyValuePair<XmlNode, double>(n, dist));
+                x_folder.RemoveChild(n);
+            };
+            wbf.Show("Sorting by route", "Wait, sorting...");
+            placemarks.Sort(PlaceMarkAtFolderSorter.ByDistance);
+            foreach (KeyValuePair<XmlNode, double> n in placemarks)
+                x_folder.AppendChild(n.Key);
+            wbf.Hide();
+
+            l.file.SaveKML();
+            objects.Items.Clear();
+            laySelect.Items[laySelect.SelectedIndex] = l.ToString();
+            parent.Refresh();
+        }
+
+        private void osmf_Click(object sender, EventArgs e)
+        {
+            string text = textBox2.Text.Trim();
+            if (String.IsNullOrEmpty(text)) return;
+            {
+                wbf.Show("OSM Search", "Wait, getting OSM data...");
+                GEOOSMJSON result = null;
+                try
+                {
+                    // &bbox=33.75%2C52.221069523572794%2C48.768310546875%2C55.986091533808384
+                    string bbox = String.Format(System.Globalization.CultureInfo.InvariantCulture, "{0}%2C{1}%2C{2}%2C{3}", MapViewer.MapBoundsRectOversizeDegrees.Left, MapViewer.MapBoundsRectOversizeDegrees.Bottom, MapViewer.MapBoundsRectOversizeDegrees.Right, MapViewer.MapBoundsRectOversizeDegrees.Top);
+                    string slat = String.Format(System.Globalization.CultureInfo.InvariantCulture, "{0}", MapViewer.CenterDegreesLat);
+                    string slon = String.Format(System.Globalization.CultureInfo.InvariantCulture, "{0}", MapViewer.CenterDegreesLon);
+                    System.Net.HttpWebRequest wq = (System.Net.HttpWebRequest)System.Net.HttpWebRequest.Create(@"http://openstreetmap.ru/api/search?q=" + System.Security.SecurityElement.Escape(text) + "&bbox=" + bbox + "&lat=" + slat + "&lon=" + slon);
+                    System.Net.HttpWebResponse wr = (System.Net.HttpWebResponse)wq.GetResponse();
+                    StreamReader sr = new StreamReader(wr.GetResponseStream(), System.Text.Encoding.ASCII);
+                    string response = sr.ReadToEnd();
+                    result = (GEOOSMJSON)Newtonsoft.Json.JsonConvert.DeserializeObject(response, typeof(GEOOSMJSON));
+                    sr.Close();
+                    wr.Close();                    
+                }
+                catch (Exception ex)
+                {
+                    wbf.Hide();
+                    MessageBox.Show(ex.Message, "Геопоиск OSM", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                };                
+                if ((result == null) || (result.matches == null) || (result.matches.Length == 0))
+                {
+                    wbf.Hide();
+                    MessageBox.Show("Ничего не найдено", "Геопоиск OSM", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                };
+                result.Sort(MapViewer.CenterDegrees);
+                wbf.Hide();
+                
+                PointF mapCWas = MapViewer.CenterDegrees;
+                byte mapZWas = MapViewer.ZoomID;
+                MultiPointRouteForm mprf = new MultiPointRouteForm();
+                mprf.SetListOfSearchResults();
+                mprf.StartPosition = FormStartPosition.Manual;
+                mprf.Left = this.Left + this.Width - mprf.Width;
+                if (mprf.Left < 0) mprf.Left = this.Left;
+                mprf.Top = this.Top + panel1.Height;
+                mprf.TopMost = true;
+                mprf.buttonOk.Click += (delegate(object subsender, EventArgs sube) { mprf.Close(); });
+                mprf.buttonCancel.Click += (delegate(object subsender, EventArgs sube) { mprf.Close(); MapViewer.CenterDegrees = mapCWas; MapViewer.ZoomID = mapZWas; });
+                mprf.onItemDoubleClick += (delegate(object subsender, MouseEventArgs sube) { if (mprf.SelectedIndex >= 0) MapViewer.CenterDegrees = mprf.OnMapPoints[mprf.SelectedIndex].Center; });
+                mprf.onSaveOnMap += (delegate(object subsender, EventArgs sube)
+                {
+                    if (mprf.SelectedIndex >= 0)
+                    {
+                        mprf.TopMost = false;
+                        try
+                        {
+                            bool svd = addNewPointByNXY(result.matches[mprf.SelectedIndex].name, result.matches[mprf.SelectedIndex].display_name, mprf.OnMapPoints[mprf.SelectedIndex].Center);
+                            if (svd) mprf.buttonCancel.Visible = false;
+                        }
+                        catch { };
+                        mprf.TopMost = true;
+                    };
+                });
+                mprf.FormClosed += (delegate(object subsender, FormClosedEventArgs sube) 
+                {
+                    for (int i = 0; i < mprf.OnMapPoints.Count; i++) try { mapRoute.Remove(mprf.OnMapPoints[i]); } catch { };
+                    try { MapViewer.DrawOnMapData(); MapViewer.Focus(); MapViewer.Select(); }catch { };
+                    mprf.Dispose();
+                    osmf.Enabled = true;
+                });                                
+                PointF center = new PointF();                
+                for (int i = 0; i < result.matches.Length; i++)
+                {
+                    string nm = result.matches[i].display_name;
+                    PointD pd = new PointD(result.matches[i].lon, result.matches[i].lat);
+                    if (i == 0) center = pd.PointF;
+                    NaviMapNet.MapPoint mapRPoint = new NaviMapNet.MapPoint();
+                    mapRPoint.Squared = true;
+                    mapRPoint.SizePixels = new Size(16, 16);
+                    mapRPoint.Img = GetRouter.ImageFromNumber(i + 1);
+                    mapRPoint.Points = new PointF[] { pd.PointF };
+                    mapRPoint.Text = nm;
+                    mapRoute.Add(mapRPoint);
+                    mprf.AddPoint(new KeyValuePair<string, PointF>(nm, pd.PointF), mapRPoint);
+                };
+                MapViewer.DrawOnMapData();
+                mprf.Show();
+                osmf.Enabled = false;                
+            };
+        }
+
+        private void textBox2_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.Control && (e.KeyValue == 13) && (osmf.Enabled)) osmf_Click(sender, e);
+        }
     }
 
     public class ToolStripSpringTextBox : ToolStripTextBox
@@ -7390,6 +7620,73 @@ namespace KMZRebuilder
             g.DrawString(String.Format("{0:00}",num), new Font("Tahoma", 8, FontStyle.Regular), new SolidBrush(Color.White), new PointF(0, 1));
             g.Dispose();
             return im;
+        }
+    }
+
+    public class GEOOSMJSON
+    {
+        public GEOMATCH[] matches;
+        public string search;
+        public string ver;
+        public bool find;
+
+        public class GEOMATCH
+        {
+            public string display_name;
+            public string addr_type;
+            public string name;
+            public string weight;
+            public double lon;
+            public double lat;
+        }
+
+        public void Sort(PointF center)
+        {
+            if (matches == null) return;
+            if (matches.Length == 0) return;
+            Array.Sort(matches, new MComparer(center));
+        }
+
+        private class MComparer: IComparer<GEOMATCH>
+        {
+            private PointF center;
+
+            public MComparer(PointF center)
+            {
+                this.center = center;
+            }
+            public int Compare(GEOMATCH a, GEOMATCH b)
+            {
+                double la = GetLengthMetersC(center.Y, center.X, a.lat, a.lon, false);
+                double lb = GetLengthMetersC(center.Y, center.X, b.lat, b.lon, false);
+                return la.CompareTo(lb);
+            }
+            private double GetLengthMetersC(double StartLat, double StartLong, double EndLat, double EndLong, bool radians)
+            {
+                double D2R = Math.PI / 180;
+                if (radians) D2R = 1;
+                double dDistance = Double.MinValue;
+                double dLat1InRad = StartLat * D2R;
+                double dLong1InRad = StartLong * D2R;
+                double dLat2InRad = EndLat * D2R;
+                double dLong2InRad = EndLong * D2R;
+
+                double dLongitude = dLong2InRad - dLong1InRad;
+                double dLatitude = dLat2InRad - dLat1InRad;
+
+                // Intermediate result a.
+                double a = Math.Pow(Math.Sin(dLatitude / 2.0), 2.0) +
+                           Math.Cos(dLat1InRad) * Math.Cos(dLat2InRad) *
+                           Math.Pow(Math.Sin(dLongitude / 2.0), 2.0);
+
+                // Intermediate result c (great circle distance in Radians).
+                double c = 2.0 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1.0 - a));
+
+                const double kEarthRadiusKms = 6378137.0000;
+                dDistance = kEarthRadiusKms * c;
+
+                return Math.Round(dDistance);
+            }
         }
     }
 
