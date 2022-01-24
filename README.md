@@ -13,7 +13,7 @@ This is a special tool to edit kmz files:
 - Change icons.
 - Move points.
 - Split and merge kmz files.
-- Direct Import & Export GPI files.    
+- Direct Import & Export GPI files (GPI Converter).    
 - Get Routes (dkxce & [OSRM](http://project-osrm.org/docs/v5.15.2/api/)).    
 - Import data from plugins.
 
