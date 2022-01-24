@@ -52,6 +52,8 @@ namespace KMZRebuilder
 
         private MemFile.MemoryFile memFile = null;
 
+        public Preferences Properties = Preferences.Load();
+
         public static PointInRegionUtils PIRU = new PointInRegionUtils();
 
         public static string CurrentDirectory()
@@ -84,8 +86,14 @@ namespace KMZRebuilder
 
             RegisterFileAsses();
             prepareTranslit();
+            LoadPreferences();
             MapIcons.InitZip(CurrentDirectory() + @"\mapicons\default.zip");
-        }      
+        }
+
+        private void LoadPreferences()
+        {
+            GPIReader.LOCALE_LANGUAGE = Properties["gpi_localization"].ToUpper();
+        }
 
         private void RegisterFileAsses()
         {
@@ -158,7 +166,7 @@ namespace KMZRebuilder
         private void AddFiles_Click(object sender, EventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog();
-            ofd.Filter = "Main Supported Files|*.kml;*.kmz;*.gpx;*.dat;*.wpt;*.db3;*.osm;*.gdb;*.fit;*.zip;*.rpp;*.dxml|KML Format (*.kml)|*.kml|KMZ Format (*.kmz)|*.kmz|GPX Exchange Format (*.gpx)|*.gpx|ProGorod Favorites.dat (*.dat)|*.dat|OziExplorer Waypoint File (*.wpt)|*.wpt|SASPlanet SQLite (*.db3)|*.db3|OSM Export File (*.osm)|*.osm|Navitel Waypoints (*.gdb)|*.gdb|Garmin Ant Fit (*.fit)|*.fit";
+            ofd.Filter = "Main Supported Files|*.kml;*.kmz;*.gpx;*.dat;*.wpt;*.db3;*.osm;*.gdb;*.fit;*.zip;*.rpp;*.dxml;*.gpi|KML Format (*.kml)|*.kml|KMZ Format (*.kmz)|*.kmz|GPX Exchange Format (*.gpx)|*.gpx|ProGorod Favorites.dat (*.dat)|*.dat|OziExplorer Waypoint File (*.wpt)|*.wpt|SASPlanet SQLite (*.db3)|*.db3|OSM Export File (*.osm)|*.osm|Navitel Waypoints (*.gdb)|*.gdb|Garmin Ant Fit (*.fit)|*.fit|Garmin POI (*.gpi)|*.gpi";
             ofd.DefaultExt = ".kmz";
             ofd.Multiselect = true;
             if (ofd.ShowDialog() == DialogResult.OK) LoadFiles(ofd.FileNames);
@@ -244,9 +252,10 @@ namespace KMZRebuilder
                 ImportDB3(files[0]);
                 return;
             };
+            
             foreach (string file in files)
             {
-                waitBox.Show("Loading", "Wait, loading file(s)...");
+                waitBox.Show("Loading", "Wait, loading file `" + Path.GetFileName(file) + "` ...");
                 bool skip = false;
                 foreach (object oj in kmzFiles.Items)
                 {
@@ -1719,6 +1728,163 @@ namespace KMZRebuilder
             }
         }
 
+        private void Save2GPIInt(string gpifile, KMFile kmfile)
+        {
+            string proj_name = kmfile.kmldocName;
+            if (proj_name == "") proj_name = outName.Text;
+            proj_name = proj_name.Trim();
+            if (proj_name == "") proj_name = "KMZRebuilder Data";
+
+            AddToLog("Creating Garmin POI file...");
+            GPIWriter gw = new GPIWriter();
+            gw.Name = proj_name;
+            gw.DataSource = proj_name;
+
+            //POI
+            AddToLog("Saving POI...");
+            waitBox.Show("Export to GPI", "Wait, saving POIs...");
+            int poi_added = 0;
+            {
+                XmlNodeList nl = kmfile.kmlDoc.SelectNodes("kml/Document/Folder/Placemark/Point/coordinates");
+                foreach (XmlNode n in nl)
+                {
+                    waitBox.Show("Export to GPI", String.Format("Wait, saving POIs {0}/{1} ...", poi_added + 1, nl.Count));
+
+                    string fnam = "";
+                    try { fnam = n.ParentNode.ParentNode.ParentNode.SelectSingleNode("name").ChildNodes[0].Value; }
+                    catch { };
+
+                    string poi = n.ParentNode.ParentNode.SelectSingleNode("name").ChildNodes[0].Value;
+                    string desc = "";
+                    try { desc = n.ParentNode.ParentNode.SelectSingleNode("description").ChildNodes[0].Value; }
+                    catch { };
+                    string[] ll = n.ChildNodes[0].Value.Split(new string[] { "," }, StringSplitOptions.None);
+
+                    string styleUrl = "";
+                    if (n.ParentNode.ParentNode.SelectSingleNode("styleUrl") != null) styleUrl = n.ParentNode.ParentNode.SelectSingleNode("styleUrl").ChildNodes[0].Value;
+                    if (styleUrl.IndexOf("#") == 0) styleUrl = styleUrl.Remove(0, 1);
+
+                    double lat = double.Parse(ll[1].Replace("\r", "").Replace("\n", "").Replace(" ", ""), System.Globalization.CultureInfo.InvariantCulture);
+                    double lon = double.Parse(ll[0].Replace("\r", "").Replace("\n", "").Replace(" ", ""), System.Globalization.CultureInfo.InvariantCulture);
+                    gw.AddPOI(fnam, poi, desc, styleUrl, lat, lon);
+                    poi_added++;
+                };
+            };
+
+            AddToLog("Collecting Styles...");
+            waitBox.Show("Export to GPI", "Wait, collecting styles...");
+            List<KMIcon> icons = new List<KMIcon>();
+            int sty_added = 0;
+            {
+                XmlNodeList xns = kmfile.kmlDoc.SelectNodes("kml/Document/Style/IconStyle/Icon/href");
+                if (xns.Count > 0)
+                    for (int x = 0; x < xns.Count; x++)
+                    {
+                        waitBox.Show("Export to GPI", String.Format("Wait, collecting styles {0}/{1}...", x + 1, xns.Count));
+
+                        XmlNode xn2 = xns[x];
+                        string style = xn2.ParentNode.ParentNode.ParentNode.Attributes["id"].Value;
+                        string href = xn2.ChildNodes[0].Value;
+
+                        bool isurl = Uri.IsWellFormedUriString(href, UriKind.Absolute);
+                        KMIcon ki = new KMIcon(href, kmfile, href, style);
+                        Image img = null;
+
+                        if (!isurl)
+                        {
+                            try
+                            {
+                                img = Image.FromFile(kmfile.tmp_file_dir + href);
+                                ki.image = (Image)new Bitmap(img);
+                            }
+                            catch { };
+                        }
+                        else
+                        {
+                            System.Net.HttpWebRequest request = (System.Net.HttpWebRequest)System.Net.HttpWebRequest.Create(ki.href);
+                            try
+                            {
+                                using (System.Net.HttpWebResponse response = (System.Net.HttpWebResponse)request.GetResponse())
+                                using (Stream stream = response.GetResponseStream())
+                                    img = Bitmap.FromStream(stream);
+                                ki.image = (Image)new Bitmap(img);
+                            }
+                            catch
+                            {
+                            };
+                        };
+                        if (img != null) img.Dispose();
+
+                        bool skip = false;
+                        foreach (KMIcon get in icons)
+                        {
+                            if (get.ToString() == ki.ToString())
+                            {
+                                skip = true;
+                                get.styles.Add(style); sty_added++;                                
+                                break;
+                            };
+
+                            if ((ki.image != null) && (get.image != null))
+                                if (CompareMemCmp((Bitmap)ki.image, (Bitmap)get.image))
+                                {
+                                    skip = true;
+                                    get.styles.Add(style); sty_added++;                                    
+                                    break;                                    
+                                };
+                        };
+                        if (!skip) { icons.Add(ki); sty_added++; };
+                    };
+            };
+
+            // STYLE MAPS
+            AddToLog("Collecting Style Maps...");
+            waitBox.Show("Export to GPI", "Wait, collecting style maps...");
+            {
+                XmlNodeList xns = kmfile.kmlDoc.SelectNodes("kml/Document/StyleMap");
+                if (xns.Count > 0)
+                    for (int x = 0; x < xns.Count; x++)
+                    {
+                        waitBox.Show("Export to GPI", String.Format("Wait, collecting style maps {0}/{1}...", x + 1, xns.Count));
+
+                        string style = xns[x].Attributes["id"].Value;
+                        foreach (XmlNode xn2 in xns[x].SelectNodes("Pair/styleUrl"))
+                        {
+                            string su = xn2.ChildNodes[0].Value;
+                            if (su.IndexOf("#") == 0) su = su.Remove(0, 1);
+                            foreach (KMIcon ki in icons)
+                                if (ki.styles.IndexOf(su) >= 0)
+                                {
+                                    ki.styles.Add(style);
+                                    sty_added++;
+                                };
+                        };
+                    };
+            };
+
+            // Saving Images
+            AddToLog("Collecting Images...");
+            waitBox.Show("Export to GPI", "Wait, collecting images...");
+            int img_saved = 0;
+            {
+                for (int i = 0; i < icons.Count; i++)
+                {
+                    for (int x = 0; x < icons[i].styles.Count; x++)
+                    {
+                        waitBox.Show("Export to GPI", String.Format("Wait, collecting images {0}/{1}...", img_saved + 1, sty_added));
+                        string sty = icons[i].styles[x];
+                        gw.AddImage(sty, icons[i].image);
+                        img_saved++;
+                    };
+                };
+            };
+            AddToLog("Saving...");
+            waitBox.Show("Export to GPI", "Wait, saving gpi...");
+            gw.Save(gpifile);
+            waitBox.Hide();
+            AddToLog("Done");
+        }
+
         private void Save2GPI(string gpifile, KMFile kmfile)
         {
             string proj_name = kmfile.kmldocName;
@@ -2580,6 +2746,7 @@ namespace KMZRebuilder
             viewInWebBrowserToolStripMenuItem1.Enabled = applyFilterSelectionToolStripMenuItem.Enabled = kmzFiles.SelectedIndices.Count > 0;            
             saveBtnGML.Enabled = kmzFiles.SelectedIndices.Count > 0;
             saveBtnGPI.Enabled = kmzFiles.SelectedIndices.Count > 0;
+            saveBtnGPIN.Enabled = kmzFiles.SelectedIndices.Count > 0;
             setAsOutputKmzFileDocuemntNameToolStripMenuItem.Enabled = kmzFiles.SelectedIndices.Count > 0;
             openSourceFileDirectoryToolStripMenuItem.Enabled = kmzFiles.SelectedIndices.Count > 0;
             openToolStripMenuItem.Enabled = kmzFiles.SelectedIndices.Count > 0;
@@ -2905,6 +3072,7 @@ namespace KMZRebuilder
         private void FormKMZ_FormClosed(object sender, FormClosedEventArgs e)
         {
             waitBox.Hide();
+            Properties.Save();
             try { if (memFile != null) memFile.Close(); } catch { };
             try { if (Directory.Exists(TempDirectory())) System.IO.Directory.Delete(TempDirectory(), true); } catch { };
         }
@@ -3379,6 +3547,7 @@ namespace KMZRebuilder
             export2GDBToolStripMenuItem.Enabled = kmzLayers.CheckedIndices.Count > 0;
             export2WPTnoIconsToolStripMenuItem.Enabled = kmzLayers.CheckedIndices.Count > 0;
             convertToGarminPointsOfInterestsFileGPIToolStripMenuItem.Enabled = saveBTNG.Enabled;
+            c2DGPIToolStripMenuItem.Enabled = saveBTNG.Enabled;
         }
 
         private void saveBtnKMZO_Click(object sender, EventArgs e)
@@ -4654,8 +4823,11 @@ namespace KMZRebuilder
             };
             waitBox.Hide();
 
-            f.LoadKML(true);
             f.kmldocName = Path.GetFileName(fileName);
+            f.src_file_pth = Path.GetDirectoryName(fileName); ;
+            f.src_file_nme = System.IO.Path.GetFileName(fileName);
+            f.src_file_ext = System.IO.Path.GetExtension(fileName).ToLower();
+            f.LoadKML(true);            
             kmzFiles.Items.Add(f, f.isCheck);
             if (outName.Text == String.Empty) outName.Text = f.kmldocName;
         }
@@ -4694,7 +4866,7 @@ namespace KMZRebuilder
             bytes[7] = data[pos + 7];
             return BitConverter.ToDouble(bytes, 0);
         }
-
+    
         private void ImportFromDBF(string fileName)
         {
             // STEP 1/4
@@ -4831,8 +5003,11 @@ namespace KMZRebuilder
             waitBox.Hide();
             fs.Close();
             
-            f.LoadKML(true);
             f.kmldocName = Path.GetFileName(fileName);
+            f.src_file_pth = Path.GetDirectoryName(fileName); ;
+            f.src_file_nme = System.IO.Path.GetFileName(fileName);
+            f.src_file_ext = System.IO.Path.GetExtension(fileName).ToLower();
+            f.LoadKML(true);            
             kmzFiles.Items.Add(f, f.isCheck);
             if (outName.Text == String.Empty) outName.Text = f.kmldocName;
         }
@@ -8007,6 +8182,47 @@ namespace KMZRebuilder
                 };
             };
         }
+
+        private void pREFERENCESToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Properties.ShowChangeDialog();
+            LoadPreferences();
+        }
+
+        private void c2DGPIToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (kmzLayers.CheckedItems.Count == 0) return;
+
+            SaveFileDialog sfd = new SaveFileDialog();
+            sfd.Title = "Export to GPI";
+            sfd.Filter = "Garmin Points of Interests File (*.gpi)|*.gpi";
+            sfd.DefaultExt = ".gpi";
+            if (sfd.ShowDialog() == DialogResult.OK)
+            {
+                log.Text = "";
+                string zdir = Save2KMZ(sfd.FileName, true);
+                ReloadXMLOnly_NoUpdateLayers();
+                KMFile kmf = KMFile.FromZDir(zdir);
+                Save2GPIInt(sfd.FileName, kmf);
+            };
+            sfd.Dispose(); 
+        }
+
+        private void saveBtnGPIN_Click(object sender, EventArgs e)
+        {
+            if (kmzFiles.SelectedIndices.Count == 0) return;
+
+            SaveFileDialog sfd = new SaveFileDialog();
+            sfd.Title = "Select GPI file";
+            sfd.Filter = "Garmin Points of Interests File (*.gpi)|*.gpi";
+            sfd.DefaultExt = ".gpi";
+            if (sfd.ShowDialog() == DialogResult.OK)
+            {
+                log.Text = "";
+                Save2GPIInt(sfd.FileName, (KMFile)kmzFiles.SelectedItems[0]);
+            };
+            sfd.Dispose();
+        }
     }
 
     public class FilesListBox : CheckedListBox
@@ -8418,7 +8634,7 @@ namespace KMZRebuilder
                 return (src_file_ext == ".kmz") || (src_file_ext == ".kml") ||
                     (src_file_ext == ".gpx") || (src_file_ext == ".dat") || (src_file_ext == ".wpt") || (src_file_ext == ".osm")
                     || (src_file_ext == ".db3") || (src_file_ext == ".poi") || (src_file_ext == ".map") || (src_file_ext == ".gdb")
-                    || (src_file_ext == ".fit"); 
+                        || (src_file_ext == ".fit") || (src_file_ext == ".shp") || (src_file_ext == ".dbf") || (src_file_ext == ".gpi");
             }
         }
 
@@ -8428,7 +8644,9 @@ namespace KMZRebuilder
             string src_file_ext = Path.GetExtension(filename).ToLower();
             return (src_file_ext == ".kmz") || (src_file_ext == ".kml") ||
                     (src_file_ext == ".gpx") || (src_file_ext == ".dat") || (src_file_ext == ".wpt")
-                    || (src_file_ext == ".osm") || (src_file_ext == ".gdb") || (src_file_ext == ".fit");
+                    || (src_file_ext == ".osm") || (src_file_ext == ".gdb") || (src_file_ext == ".fit")
+                        || (src_file_ext == ".gpi");
+
         }
 
         public bool AllowReloadOriginal
@@ -8439,7 +8657,7 @@ namespace KMZRebuilder
                 if ((src_file_csv != null) && (src_file_nme != "Clipboard_Text_Data.txt")) return true;
                 return (src_file_ext == ".kmz") || (src_file_ext == ".kml") ||
                     (src_file_ext == ".gpx") || (src_file_ext == ".dat") || (src_file_ext == ".wpt")
-                     || (src_file_ext == ".gdb") || (src_file_ext == ".fit"); 
+                     || (src_file_ext == ".gdb") || (src_file_ext == ".fit") || (src_file_ext == ".gpi");
             }
         }
 
@@ -8676,6 +8894,10 @@ namespace KMZRebuilder
             {
                 UnZipKMZ(this.src_file_pth, this.tmp_file_dir);
                 this.PrepareNormalKML();
+            }
+            else if (this.src_file_ext == ".gpi")
+            {
+                GPI2KML();
             }
             else
             {
@@ -9768,6 +9990,18 @@ namespace KMZRebuilder
             File.Copy(KMZRebuilederForm.CurrentDirectory() + @"KMZRebuilder.gpx.png", this.tmp_file_dir + @"images\noicon.png", true);
         }
 
+        public void GPI2KML()
+        {
+            try
+            {
+                GPIReader gpi = new GPIReader(this.src_file_pth);
+                gpi.SaveToKML(this.tmp_file_dir + "doc.kml");
+            }
+            catch (Exception ex)
+            {
+                return;
+            };            
+        }
         
         public void OSM2KML()
         {

@@ -100,6 +100,7 @@
     <Compile Include="fit_FastCrc.cs" />
     <Compile Include="fit_Parser.cs" />
     <Compile Include="FontPath.cs" />
+    <Compile Include="GPIReader.cs" />
     <Compile Include="GPXReader.cs" />
     <Compile Include="GPXTachograph.cs">
       <SubType>Form</SubType>
@@ -137,13 +138,13 @@
     </Compile>
     <Compile Include="MapsForgeReader.cs" />
     <Compile Include="MapViewerForm.cs">
-      <SubType>Component</SubType>
+      <SubType>Form</SubType>
     </Compile>
     <Compile Include="MapViewerForm.Designer.cs">
       <DependentUpon>MapViewerForm.cs</DependentUpon>
     </Compile>
     <Compile Include="KMZRebuilederForm.cs">
-      <SubType>Form</SubType>
+      <SubType>Component</SubType>
     </Compile>
     <Compile Include="KMZRebuilederForm.Designer.cs">
       <DependentUpon>KMZRebuilederForm.cs</DependentUpon>
@@ -178,6 +179,7 @@
     </Compile>
     <Compile Include="PolyCreatorClipper.cs" />
     <Compile Include="PolyLineBuffer.cs" />
+    <Compile Include="Preferences.cs" />
     <Compile Include="ProcessingForm.cs">
       <SubType>Form</SubType>
     </Compile>

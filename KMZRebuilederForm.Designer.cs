@@ -189,7 +189,6 @@ namespace KMZRebuilder
             this.export2DatToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.export2GDBToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveToCSVHTMLReportToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripMenuItem44 = new System.Windows.Forms.ToolStripSeparator();
             this.convertToGarminPointsOfInterestsFileGPIToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveBTNG = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuStrip4 = new System.Windows.Forms.ContextMenuStrip(this.components);
@@ -245,7 +244,6 @@ namespace KMZRebuilder
             this.panel6 = new System.Windows.Forms.Panel();
             this.label7 = new System.Windows.Forms.Label();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.kmzFiles = new KMZRebuilder.FilesListBox();
             this.panel7 = new System.Windows.Forms.Panel();
             this.panel8 = new System.Windows.Forms.Panel();
             this.panel5 = new System.Windows.Forms.Panel();
@@ -260,7 +258,6 @@ namespace KMZRebuilder
             this.HelpDesc = new System.Windows.Forms.LinkLabel();
             this.panel13 = new System.Windows.Forms.Panel();
             this.panel9 = new System.Windows.Forms.Panel();
-            this.kmzLayers = new KMZRebuilder.LayersListBox();
             this.panel10 = new System.Windows.Forms.Panel();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.STT0 = new System.Windows.Forms.ToolStripStatusLabel();
@@ -276,6 +273,15 @@ namespace KMZRebuilder
             this.toolStripStatusLabel4 = new System.Windows.Forms.ToolStripStatusLabel();
             this.panel11 = new System.Windows.Forms.Panel();
             this.saveURLIcons = new System.Windows.Forms.CheckBox();
+            this.toolStripMenuItem49 = new System.Windows.Forms.ToolStripSeparator();
+            this.pREFERENCESToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem51 = new System.Windows.Forms.ToolStripSeparator();
+            this.c2DGPIToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.kmzLayers = new KMZRebuilder.LayersListBox();
+            this.kmzFiles = new KMZRebuilder.FilesListBox();
+            this.saveBtnGPIN = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem44 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripMenuItem50 = new System.Windows.Forms.ToolStripSeparator();
             this.contextMenuStrip1.SuspendLayout();
             this.contextMenuStrip2.SuspendLayout();
             this.panel1.SuspendLayout();
@@ -735,7 +741,9 @@ namespace KMZRebuilder
             // saveAsToolStripMenuItem
             // 
             this.saveAsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.saveBtnGPIN,
             this.saveBtnGPI,
+            this.toolStripMenuItem44,
             this.saveBtnGML,
             this.toolStripMenuItem10,
             this.saveAsKMLToolStripMenuItem});
@@ -746,26 +754,26 @@ namespace KMZRebuilder
             // saveBtnGPI
             // 
             this.saveBtnGPI.Name = "saveBtnGPI";
-            this.saveBtnGPI.Size = new System.Drawing.Size(327, 22);
-            this.saveBtnGPI.Text = "Convert to Garmin Points of Interests File (GPI) ...";
+            this.saveBtnGPI.Size = new System.Drawing.Size(404, 22);
+            this.saveBtnGPI.Text = "Convert to Garmin Points of Interests File (GPI) [Old, External] ...";
             this.saveBtnGPI.Click += new System.EventHandler(this.gPIFileToolStripMenuItem_Click);
             // 
             // saveBtnGML
             // 
             this.saveBtnGML.Name = "saveBtnGML";
-            this.saveBtnGML.Size = new System.Drawing.Size(327, 22);
+            this.saveBtnGML.Size = new System.Drawing.Size(404, 22);
             this.saveBtnGML.Text = "Convert to Garmin XML project for GPI Creator...";
             this.saveBtnGML.Click += new System.EventHandler(this.prepareGarminXMLForGPIBuilderToolStripMenuItem_Click);
             // 
             // toolStripMenuItem10
             // 
             this.toolStripMenuItem10.Name = "toolStripMenuItem10";
-            this.toolStripMenuItem10.Size = new System.Drawing.Size(324, 6);
+            this.toolStripMenuItem10.Size = new System.Drawing.Size(401, 6);
             // 
             // saveAsKMLToolStripMenuItem
             // 
             this.saveAsKMLToolStripMenuItem.Name = "saveAsKMLToolStripMenuItem";
-            this.saveAsKMLToolStripMenuItem.Size = new System.Drawing.Size(327, 22);
+            this.saveAsKMLToolStripMenuItem.Size = new System.Drawing.Size(404, 22);
             this.saveAsKMLToolStripMenuItem.Text = "Save as KML (with no icons)...";
             this.saveAsKMLToolStripMenuItem.Click += new System.EventHandler(this.saveFileToKML_click);
             // 
@@ -1461,33 +1469,35 @@ namespace KMZRebuilder
             this.saveBtnKMZM,
             this.saveBtnKMZO,
             this.toolStripMenuItem9,
+            this.c2DGPIToolStripMenuItem,
+            this.toolStripMenuItem50,
             this.exportToToolStripMenuItem,
             this.saveToCSVHTMLReportToolStripMenuItem,
-            this.toolStripMenuItem44,
+            this.toolStripMenuItem51,
             this.convertToGarminPointsOfInterestsFileGPIToolStripMenuItem,
             this.saveBTNG});
             this.contextMenuStrip3.Name = "contextMenuStrip3";
-            this.contextMenuStrip3.Size = new System.Drawing.Size(328, 148);
+            this.contextMenuStrip3.Size = new System.Drawing.Size(402, 198);
             this.contextMenuStrip3.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuStrip3_Opening);
             // 
             // saveBtnKMZM
             // 
             this.saveBtnKMZM.Name = "saveBtnKMZM";
-            this.saveBtnKMZM.Size = new System.Drawing.Size(327, 22);
+            this.saveBtnKMZM.Size = new System.Drawing.Size(404, 22);
             this.saveBtnKMZM.Text = "Save to multi layer KMZ...";
             this.saveBtnKMZM.Click += new System.EventHandler(this.saveCheckedLayersToKMZToolStripMenuItem_Click);
             // 
             // saveBtnKMZO
             // 
             this.saveBtnKMZO.Name = "saveBtnKMZO";
-            this.saveBtnKMZO.Size = new System.Drawing.Size(327, 22);
+            this.saveBtnKMZO.Size = new System.Drawing.Size(404, 22);
             this.saveBtnKMZO.Text = "Save to single layer KMZ...";
             this.saveBtnKMZO.Click += new System.EventHandler(this.saveBtnKMZO_Click);
             // 
             // toolStripMenuItem9
             // 
             this.toolStripMenuItem9.Name = "toolStripMenuItem9";
-            this.toolStripMenuItem9.Size = new System.Drawing.Size(324, 6);
+            this.toolStripMenuItem9.Size = new System.Drawing.Size(401, 6);
             // 
             // exportToToolStripMenuItem
             // 
@@ -1497,7 +1507,7 @@ namespace KMZRebuilder
             this.export2DatToolStripMenuItem,
             this.export2GDBToolStripMenuItem});
             this.exportToToolStripMenuItem.Name = "exportToToolStripMenuItem";
-            this.exportToToolStripMenuItem.Size = new System.Drawing.Size(327, 22);
+            this.exportToToolStripMenuItem.Size = new System.Drawing.Size(404, 22);
             this.exportToToolStripMenuItem.Text = "Export to ...";
             // 
             // export2WPTnoIconsToolStripMenuItem
@@ -1531,26 +1541,21 @@ namespace KMZRebuilder
             // saveToCSVHTMLReportToolStripMenuItem
             // 
             this.saveToCSVHTMLReportToolStripMenuItem.Name = "saveToCSVHTMLReportToolStripMenuItem";
-            this.saveToCSVHTMLReportToolStripMenuItem.Size = new System.Drawing.Size(327, 22);
+            this.saveToCSVHTMLReportToolStripMenuItem.Size = new System.Drawing.Size(404, 22);
             this.saveToCSVHTMLReportToolStripMenuItem.Text = "Save to CSV/HTML Report ...";
             this.saveToCSVHTMLReportToolStripMenuItem.Click += new System.EventHandler(this.saveToCSVHTMLReportToolStripMenuItem_Click);
-            // 
-            // toolStripMenuItem44
-            // 
-            this.toolStripMenuItem44.Name = "toolStripMenuItem44";
-            this.toolStripMenuItem44.Size = new System.Drawing.Size(324, 6);
             // 
             // convertToGarminPointsOfInterestsFileGPIToolStripMenuItem
             // 
             this.convertToGarminPointsOfInterestsFileGPIToolStripMenuItem.Name = "convertToGarminPointsOfInterestsFileGPIToolStripMenuItem";
-            this.convertToGarminPointsOfInterestsFileGPIToolStripMenuItem.Size = new System.Drawing.Size(327, 22);
-            this.convertToGarminPointsOfInterestsFileGPIToolStripMenuItem.Text = "Convert to Garmin Points of Interests File (GPI) ...";
+            this.convertToGarminPointsOfInterestsFileGPIToolStripMenuItem.Size = new System.Drawing.Size(404, 22);
+            this.convertToGarminPointsOfInterestsFileGPIToolStripMenuItem.Text = "Convert to Garmin Points of Interests File (GPI) [Old, External] ...";
             this.convertToGarminPointsOfInterestsFileGPIToolStripMenuItem.Click += new System.EventHandler(this.convertToGarminPointsOfInterestsFileGPIToolStripMenuItem_Click);
             // 
             // saveBTNG
             // 
             this.saveBTNG.Name = "saveBTNG";
-            this.saveBTNG.Size = new System.Drawing.Size(327, 22);
+            this.saveBTNG.Size = new System.Drawing.Size(404, 22);
             this.saveBTNG.Text = "Convert to Garmin XML project for GPI Creator...";
             this.saveBTNG.Click += new System.EventHandler(this.saveBTNG_Click);
             // 
@@ -1582,9 +1587,11 @@ namespace KMZRebuilder
             this.latLonConverterToolStripMenuItem,
             this.iTNConverterToolStripMenuItem,
             this.shapeViewerToolStripMenuItem,
-            this.akelPadToolStripMenuItem});
+            this.akelPadToolStripMenuItem,
+            this.toolStripMenuItem49,
+            this.pREFERENCESToolStripMenuItem});
             this.contextMenuStrip4.Name = "contextMenuStrip4";
-            this.contextMenuStrip4.Size = new System.Drawing.Size(418, 480);
+            this.contextMenuStrip4.Size = new System.Drawing.Size(418, 508);
             // 
             // tOOLSToolStripMenuItem
             // 
@@ -1975,21 +1982,6 @@ namespace KMZRebuilder
             this.pictureBox1.TabStop = false;
             this.pictureBox1.Click += new System.EventHandler(this.pictureBox1_Click);
             // 
-            // kmzFiles
-            // 
-            this.kmzFiles.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.kmzFiles.ContextMenuStrip = this.contextMenuStrip1;
-            this.kmzFiles.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.kmzFiles.FormattingEnabled = true;
-            this.kmzFiles.Location = new System.Drawing.Point(12, 0);
-            this.kmzFiles.Name = "kmzFiles";
-            this.kmzFiles.Size = new System.Drawing.Size(867, 137);
-            this.kmzFiles.TabIndex = 38;
-            this.kmzFiles.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.kmzFiles_ItemCheck);
-            this.kmzFiles.Enter += new System.EventHandler(this.kmzFiles_Enter);
-            this.kmzFiles.DragDrop += new System.Windows.Forms.DragEventHandler(this.bgFiles_DragDrop);
-            this.kmzFiles.DragEnter += new System.Windows.Forms.DragEventHandler(this.bgFiles_DragEnter);
-            // 
             // panel7
             // 
             this.panel7.Dock = System.Windows.Forms.DockStyle.Left;
@@ -2132,24 +2124,6 @@ namespace KMZRebuilder
             this.panel9.Size = new System.Drawing.Size(892, 183);
             this.panel9.TabIndex = 27;
             // 
-            // kmzLayers
-            // 
-            this.kmzLayers.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.kmzLayers.ContextMenuStrip = this.contextMenuStrip2;
-            this.kmzLayers.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.kmzLayers.FormattingEnabled = true;
-            this.kmzLayers.Location = new System.Drawing.Point(12, 19);
-            this.kmzLayers.Margin = new System.Windows.Forms.Padding(3, 3, 3, 0);
-            this.kmzLayers.Name = "kmzLayers";
-            this.kmzLayers.Size = new System.Drawing.Size(867, 152);
-            this.kmzLayers.TabIndex = 8;
-            this.kmzLayers.MouseUp += new System.Windows.Forms.MouseEventHandler(this.kmzLayers_MouseUp);
-            this.kmzLayers.SelectedIndexChanged += new System.EventHandler(this.kmzLayers_SelectedIndexChanged);
-            this.kmzLayers.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.kmzLayers_ItemCheck);
-            this.kmzLayers.DragDrop += new System.Windows.Forms.DragEventHandler(this.bgFiles_DragDrop);
-            this.kmzLayers.MouseDown += new System.Windows.Forms.MouseEventHandler(this.kmzLayers_MouseDown);
-            this.kmzLayers.DragEnter += new System.Windows.Forms.DragEventHandler(this.bgFiles_DragEnter);
-            // 
             // panel10
             // 
             this.panel10.Controls.Add(this.statusStrip1);
@@ -2268,6 +2242,80 @@ namespace KMZRebuilder
             this.saveURLIcons.TabIndex = 18;
             this.saveURLIcons.Text = "Save URL icons to KMZ";
             this.saveURLIcons.UseVisualStyleBackColor = true;
+            // 
+            // toolStripMenuItem49
+            // 
+            this.toolStripMenuItem49.Name = "toolStripMenuItem49";
+            this.toolStripMenuItem49.Size = new System.Drawing.Size(414, 6);
+            // 
+            // pREFERENCESToolStripMenuItem
+            // 
+            this.pREFERENCESToolStripMenuItem.Name = "pREFERENCESToolStripMenuItem";
+            this.pREFERENCESToolStripMenuItem.Size = new System.Drawing.Size(417, 22);
+            this.pREFERENCESToolStripMenuItem.Text = "PREFERENCES ...";
+            this.pREFERENCESToolStripMenuItem.Click += new System.EventHandler(this.pREFERENCESToolStripMenuItem_Click);
+            // 
+            // toolStripMenuItem51
+            // 
+            this.toolStripMenuItem51.Name = "toolStripMenuItem51";
+            this.toolStripMenuItem51.Size = new System.Drawing.Size(401, 6);
+            // 
+            // c2DGPIToolStripMenuItem
+            // 
+            this.c2DGPIToolStripMenuItem.Name = "c2DGPIToolStripMenuItem";
+            this.c2DGPIToolStripMenuItem.Size = new System.Drawing.Size(401, 22);
+            this.c2DGPIToolStripMenuItem.Text = "Export to GPI...";
+            this.c2DGPIToolStripMenuItem.Click += new System.EventHandler(this.c2DGPIToolStripMenuItem_Click);
+            // 
+            // kmzLayers
+            // 
+            this.kmzLayers.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.kmzLayers.ContextMenuStrip = this.contextMenuStrip2;
+            this.kmzLayers.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.kmzLayers.FormattingEnabled = true;
+            this.kmzLayers.Location = new System.Drawing.Point(12, 19);
+            this.kmzLayers.Margin = new System.Windows.Forms.Padding(3, 3, 3, 0);
+            this.kmzLayers.Name = "kmzLayers";
+            this.kmzLayers.Size = new System.Drawing.Size(867, 152);
+            this.kmzLayers.TabIndex = 8;
+            this.kmzLayers.MouseUp += new System.Windows.Forms.MouseEventHandler(this.kmzLayers_MouseUp);
+            this.kmzLayers.SelectedIndexChanged += new System.EventHandler(this.kmzLayers_SelectedIndexChanged);
+            this.kmzLayers.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.kmzLayers_ItemCheck);
+            this.kmzLayers.DragDrop += new System.Windows.Forms.DragEventHandler(this.bgFiles_DragDrop);
+            this.kmzLayers.MouseDown += new System.Windows.Forms.MouseEventHandler(this.kmzLayers_MouseDown);
+            this.kmzLayers.DragEnter += new System.Windows.Forms.DragEventHandler(this.bgFiles_DragEnter);
+            // 
+            // kmzFiles
+            // 
+            this.kmzFiles.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.kmzFiles.ContextMenuStrip = this.contextMenuStrip1;
+            this.kmzFiles.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.kmzFiles.FormattingEnabled = true;
+            this.kmzFiles.Location = new System.Drawing.Point(12, 0);
+            this.kmzFiles.Name = "kmzFiles";
+            this.kmzFiles.Size = new System.Drawing.Size(867, 137);
+            this.kmzFiles.TabIndex = 38;
+            this.kmzFiles.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.kmzFiles_ItemCheck);
+            this.kmzFiles.Enter += new System.EventHandler(this.kmzFiles_Enter);
+            this.kmzFiles.DragDrop += new System.Windows.Forms.DragEventHandler(this.bgFiles_DragDrop);
+            this.kmzFiles.DragEnter += new System.Windows.Forms.DragEventHandler(this.bgFiles_DragEnter);
+            // 
+            // saveBtnGPIN
+            // 
+            this.saveBtnGPIN.Name = "saveBtnGPIN";
+            this.saveBtnGPIN.Size = new System.Drawing.Size(404, 22);
+            this.saveBtnGPIN.Text = "Convert to Garmin Points of Interests File (GPI) [New, Internal] ...";
+            this.saveBtnGPIN.Click += new System.EventHandler(this.saveBtnGPIN_Click);
+            // 
+            // toolStripMenuItem44
+            // 
+            this.toolStripMenuItem44.Name = "toolStripMenuItem44";
+            this.toolStripMenuItem44.Size = new System.Drawing.Size(401, 6);
+            // 
+            // toolStripMenuItem50
+            // 
+            this.toolStripMenuItem50.Name = "toolStripMenuItem50";
+            this.toolStripMenuItem50.Size = new System.Drawing.Size(398, 6);
             // 
             // KMZRebuilederForm
             // 
@@ -2541,7 +2589,6 @@ namespace KMZRebuilder
         private System.Windows.Forms.ToolStripMenuItem removeEmptyLayersToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem trackSplitterToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem changeLayerDescriptionToolStripMenuItem;
-        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem44;
         private System.Windows.Forms.ToolStripMenuItem exportToToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem export2WPTnoIconsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem exportToWPTToolStripMenuItem;
@@ -2567,6 +2614,13 @@ namespace KMZRebuilder
         private System.Windows.Forms.ToolStripMenuItem importFromShapeFileToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem48;
         private System.Windows.Forms.ToolStripMenuItem youCanSortByMouseWhenPressingAltToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem49;
+        private System.Windows.Forms.ToolStripMenuItem pREFERENCESToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem51;
+        private System.Windows.Forms.ToolStripMenuItem c2DGPIToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem saveBtnGPIN;
+        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem44;
+        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem50;
     }
 }
 
