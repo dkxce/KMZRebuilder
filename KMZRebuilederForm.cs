@@ -101,6 +101,7 @@ namespace KMZRebuilder
             FileAss.SetFileAssociation("kml", "KMLFile", "Open in KMZRebuilder", CurrentDirectory() + @"\KMZRebuilder.exe");
             FileAss.SetFileAssociation("wpt", "WPTFile", "Open in KMZRebuilder", CurrentDirectory() + @"\KMZRebuilder.exe");
             FileAss.SetFileAssociation("gpx", "GPXFile", "Open in KMZRebuilder", CurrentDirectory() + @"\KMZRebuilder.exe");
+            FileAss.SetFileAssociation("gpi", "KMZFile", "Open in KMZRebuilder", CurrentDirectory() + @"\KMZRebuilder.exe");
             FileAss.SetFileAssociation("rpp", "RPPFile", "Open in KMZRebuilder", CurrentDirectory() + @"\KMZRebuilder.exe");
             FileAss.SetFileOpenWith("dat", CurrentDirectory() + @"\KMZRebuilder.exe");
             FileAss.SetFileOpenWith("gdb", CurrentDirectory() + @"\KMZRebuilder.exe");

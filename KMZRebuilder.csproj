@@ -138,13 +138,13 @@
     </Compile>
     <Compile Include="MapsForgeReader.cs" />
     <Compile Include="MapViewerForm.cs">
-      <SubType>Form</SubType>
+      <SubType>Component</SubType>
     </Compile>
     <Compile Include="MapViewerForm.Designer.cs">
       <DependentUpon>MapViewerForm.cs</DependentUpon>
     </Compile>
     <Compile Include="KMZRebuilederForm.cs">
-      <SubType>Component</SubType>
+      <SubType>Form</SubType>
     </Compile>
     <Compile Include="KMZRebuilederForm.Designer.cs">
       <DependentUpon>KMZRebuilederForm.cs</DependentUpon>
@@ -164,7 +164,7 @@
     <Compile Include="MemoryFile.cs" />
     <Compile Include="MruList.cs" />
     <Compile Include="MultiPointRouteForm.cs">
-      <SubType>Component</SubType>
+      <SubType>Form</SubType>
     </Compile>
     <Compile Include="MultiPointRouteForm.Designer.cs">
       <DependentUpon>MultiPointRouteForm.cs</DependentUpon>
