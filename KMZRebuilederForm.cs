@@ -9410,8 +9410,8 @@ namespace KMZRebuilder
                                     name += " (" + on + ")";
                             };
                         };
-                        string dlat = dr["LAT"].ToString();
-                        string dlon = dr["LON"].ToString();
+                        string dlat = dr["LAT"].ToString().Replace(",",".");
+                        string dlon = dr["LON"].ToString().Replace(",", ".");
                         sw.WriteLine("\t\t\t<Placemark>");
                         sw.WriteLine("\t\t\t\t<name><![CDATA[" + name + "]]></name>");
                         sw.WriteLine("\t\t\t\t<description><![CDATA[" + text + "]]></description>");
