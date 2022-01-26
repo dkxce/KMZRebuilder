@@ -19,6 +19,16 @@ namespace KMZRebuilder
 {
     public partial class KMZRebuilederForm : Form
     {
+        static KMZRebuilederForm()
+        {
+            try
+            {
+                if (IntPtr.Size == 4) File.Copy(KMZRebuilederForm.CurrentDirectory() + @"\SQLite.Interop.x86.dll", KMZRebuilederForm.CurrentDirectory() + @"\SQLite.Interop.dll", true);
+                else File.Copy(KMZRebuilederForm.CurrentDirectory() + @"\SQLite.Interop.x64.dll", KMZRebuilederForm.CurrentDirectory() + @"\SQLite.Interop.dll", true);
+            }
+            catch (Exception ex) { };
+        }
+
         // P/Invoke constants
         private const int WM_SYSCOMMAND = 0x112;
         private const int MF_STRING = 0x0;
@@ -3615,8 +3625,11 @@ namespace KMZRebuilder
                 System.Diagnostics.FileVersionInfo fvi = System.Diagnostics.FileVersionInfo.GetVersionInfo(assembly.Location);
                 string text = fvi.ProductName + " " + fvi.FileVersion + " by " + fvi.CompanyName + "\r\n";
                 text += fvi.LegalCopyright + "\r\n";
-                text += "\r\n-- with GPI Direct Import/Export Support --";
+                text += "\r\n-- with GPI Direct Import/Export Support --";                
                 text += "\r\n-- with dkxce Route Engine Support --";
+                text += "\r\n-- with OSRM Engine Support --";
+                text += "\r\n-- with MapsForge File Support --";
+                text += "\r\n-- with OSM POI File Support --";
                 text += "\r\n-- support Raster MBTiles --\r\n";
                 try
                 {
@@ -5520,9 +5533,10 @@ namespace KMZRebuilder
         }
 
         private void ImportPOI(string openfile)
-        {
+        {            
             Dictionary<int, object[]> lcats = new Dictionary<int, object[]>();
-            List<string[]> cats = new List<string[]>();
+            List<string[]> cats = new List<string[]>();            
+            waitBox.Show("Loading POI", "Wait, loading `" + Path.GetFileName(openfile) + "`...");
             try
             {
                 System.Data.SQLite.SQLiteConnection sqlc = new System.Data.SQLite.SQLiteConnection(@"Data Source=" + openfile + ";Version=3;");
@@ -5555,12 +5569,14 @@ namespace KMZRebuilder
             }
             catch (Exception ex)
             {
+                waitBox.Hide();
                 MessageBox.Show(ex.Message, "Open POI File", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
-            };
+            };            
 
             if (cats.Count == 0)
             {
+                waitBox.Hide();
                 MessageBox.Show("No Categories found", "Open POI File", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                 return;
             };
@@ -5591,6 +5607,7 @@ namespace KMZRebuilder
             sf.layers.SmallImageList = null;
             sf.layers.StateImageList = null;
             sf.layers.MultiSelect = true;
+            waitBox.Hide();
             if ((sf.ShowDialog() != DialogResult.OK) || (sf.layers.CheckedIndices.Count == 0))
             {
                 sf.Dispose();
@@ -5608,6 +5625,8 @@ namespace KMZRebuilder
             };
             sf.Dispose();
 
+
+            waitBox.Show("Loading POI", "Wait, reading POIs from `" + Path.GetFileName(openfile) + "`...");
             int marks_count = 0;
             try
             {
@@ -5625,23 +5644,39 @@ namespace KMZRebuilder
             }
             catch (Exception ex)
             {
+                waitBox.Hide();
                 MessageBox.Show(ex.Message, "Open POI File", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             };
 
             if (marks_count == 0)
             {
+                waitBox.Hide();
                 MessageBox.Show("No Any POI Found", "Open POI File", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                 return;
             }
             else
-                if (MessageBox.Show("Import " + marks_count.ToString() + " objects in " + l_co.ToString() + " layers from POI file?", "Open POI File", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.No) return;
+            {
+                waitBox.Hide();
+                if (MessageBox.Show("Import " + marks_count.ToString() + " objects in " + l_co.ToString() + " layers from POI file?", "Open POI File", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.No) 
+                    return;
+            };
 
-            KMFile f = KMFile.FromMapsForgePOIFile(openfile, cats);
-            kmzFiles.Items.Add(f, f.isCheck);
-            if (outName.Text == String.Empty) outName.Text = f.kmldocName;
-            if (f.parseError)
-                MessageBox.Show("Data loaded with errors!", "Loading", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+            waitBox.Show("Loading POI", "Wait, saving POIs from `" + Path.GetFileName(openfile) + "`...");
+            try
+            {
+                KMFile f = KMFile.FromMapsForgePOIFile(openfile, cats);
+                kmzFiles.Items.Add(f, f.isCheck);
+                if (outName.Text == String.Empty) outName.Text = f.kmldocName;
+                waitBox.Hide();
+                if (f.parseError)
+                    MessageBox.Show("Data loaded with errors!", "Loading", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+            }
+            catch (Exception ex)
+            {
+                waitBox.Hide();
+                MessageBox.Show(ex.Message, "Open POI File", MessageBoxButtons.OK, MessageBoxIcon.Error);                
+            };
         }
 
         private void ImportDB3(string filename)
