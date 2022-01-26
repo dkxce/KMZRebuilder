@@ -1477,7 +1477,7 @@ namespace KMZRebuilder
         private double MaxLat = 90;
         private double MinLon = -180;
         private double MaxLon = 180;
-        private Color TransColor = Color.FromArgb(0xFE,0xFE,0xFE);
+        private Color TransColor = Color.FromArgb(0xFE,0xFE,0xFE); // Almost white
 
         private List<string> Categories = new List<string>();
         private List<string> Styles = new List<string>();
@@ -1578,6 +1578,7 @@ namespace KMZRebuilder
             public int sty;
 
             public POI() { }
+            public POI(string name, double lat, double lon) { this.name = name; this.description = null; this.lat = lat; this.lon = lon; }
             public POI(string name, string description, double lat, double lon) { this.name = name; this.description = description; this.lat = lat; this.lon = lon; }
         }
 
@@ -1593,9 +1594,9 @@ namespace KMZRebuilder
                     List<byte> res = new List<byte>();
                     res.AddRange(BitConverter.GetBytes(bType));
                     if(ExtraData.Count > 0)
-                        res.AddRange(BitConverter.GetBytes((ushort)0x08));
+                        res.AddRange(BitConverter.GetBytes((ushort)0x08)); // Has Extra
                     else
-                        res.AddRange(BitConverter.GetBytes((ushort)0x00));
+                        res.AddRange(BitConverter.GetBytes((ushort)0x00)); // No Extra
                     res.AddRange(BitConverter.GetBytes(((uint)(MainData.Count + ExtraData.Count))));
                     if(ExtraData.Count > 0)
                         res.AddRange(BitConverter.GetBytes(((uint)(MainData.Count))));
@@ -1617,14 +1618,14 @@ namespace KMZRebuilder
                 TimeSpan tsec = DateTime.Now.Subtract(new DateTime(1990, 1, 1));
                 uint sec = (uint)tsec.TotalSeconds;
                 fb.MainData.AddRange(BitConverter.GetBytes(((uint)(sec)))); // Time
-                fb.MainData.AddRange(new byte[] { 1, 0 });
-                fb.MainData.AddRange(ToPString(String.IsNullOrEmpty(this.Name) ? "Exported Data" : this.Name, true));
+                fb.MainData.AddRange(new byte[] { 1, 0 }); // Must Have
+                fb.MainData.AddRange(ToPString(String.IsNullOrEmpty(this.Name) ? "Exported Data" : this.Name, true)); // File Name
             };
             // EXTRA
             {
                 FileBlock b15 = new FileBlock();
                 b15.bType = 15;
-                b15.MainData.AddRange(new byte[] { 1, 7, 9, 0, 0 });
+                b15.MainData.AddRange(new byte[] { 1, 7, 9, 0, 0 }); // Must Have
                 fb.ExtraData.AddRange(b15.Data);
             };
             return fb;
@@ -1636,19 +1637,20 @@ namespace KMZRebuilder
             fb.bType = 0x01;
             //Main
             {
-                fb.MainData.AddRange(Encoding.ASCII.GetBytes("POI\0"));
-                fb.MainData.AddRange(new byte[] { 0, 0 });
-                fb.MainData.AddRange(Encoding.ASCII.GetBytes("01"));
+                fb.MainData.AddRange(Encoding.ASCII.GetBytes("POI\0")); // Header Text
+                fb.MainData.AddRange(new byte[] { 0, 0 }); // Reserved
+                fb.MainData.AddRange(Encoding.ASCII.GetBytes("01")); // Version
                 fb.MainData.AddRange(BitConverter.GetBytes(((ushort)(0xFDE9)))); //UTF-8 Encoding
                 fb.MainData.AddRange(BitConverter.GetBytes(((ushort)(17)))); // Copyrights Exists
             };
             // Extra
             {
-                FileBlock b17 = new FileBlock();
+                FileBlock b17 = new FileBlock(); // COPYRIGHTS
                 b17.bType = 17;
-                b17.MainData.AddRange(new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 });
-                b17.MainData.AddRange(ToLString(String.IsNullOrEmpty(this.DataSource) ? "KMZRebuilder" : this.DataSource));
-                b17.MainData.AddRange(ToLString("Created with KMZRebuilder"));
+                b17.MainData.AddRange(new byte[] { 20, 0, 0, 0, 0, 0, 0, 0 }); // Must Have Data
+                b17.MainData.AddRange(ToLString(String.IsNullOrEmpty(this.DataSource) ? "KMZRebuilder" : this.DataSource)); // Data Source
+                b17.MainData.AddRange(ToLString("Created with KMZRebuilder")); // Copyrights
+                b17.MainData.AddRange(new byte[] { 0x01, 0x01, 0xE7, 0x4E }); // Must Have
                 fb.ExtraData.AddRange(b17.Data);
             };
             return fb;
@@ -1660,8 +1662,8 @@ namespace KMZRebuilder
             fb.bType = 9;
             // Main
             {
-                fb.MainData.AddRange(ToLString(String.IsNullOrEmpty(this.DataSource) ? "KMZRebuilder" : this.DataSource));
-                fb.MainData.AddRange(GetMainAreaBlock().Data);
+                fb.MainData.AddRange(ToLString(String.IsNullOrEmpty(this.DataSource) ? "KMZRebuilder" : this.DataSource)); // POI Group Name
+                fb.MainData.AddRange(GetMainAreaBlock().Data); // Main Area Block
             };
             // Extra
             {
@@ -1683,8 +1685,7 @@ namespace KMZRebuilder
                 fb.MainData.AddRange(BitConverter.GetBytes(((uint)(MaxLon * Math.Pow(2, 32) / 360.0))));
                 fb.MainData.AddRange(BitConverter.GetBytes(((uint)(MinLat * Math.Pow(2, 32) / 360.0))));
                 fb.MainData.AddRange(BitConverter.GetBytes(((uint)(MinLon * Math.Pow(2, 32) / 360.0))));
-                fb.MainData.AddRange(new byte[] { 0, 0, 0, 0, 1, 0, 0 });
-                fb.MainData.Add(0);
+                fb.MainData.AddRange(new byte[] { 0, 0, 0, 0, 1, 0, 2 }); // Must Have
             };
             // Extra
             {
@@ -1707,7 +1708,7 @@ namespace KMZRebuilder
                 f08.MainData.AddRange(BitConverter.GetBytes(((uint)((lon + 1) * Math.Pow(2, 32) / 360.0))));
                 f08.MainData.AddRange(BitConverter.GetBytes(((uint)(lat * Math.Pow(2, 32) / 360.0))));
                 f08.MainData.AddRange(BitConverter.GetBytes(((uint)(lon * Math.Pow(2, 32) / 360.0))));
-                f08.MainData.AddRange(new byte[] { 0, 0, 0, 0, 1, 0, 0 });
+                f08.MainData.AddRange(new byte[] { 0, 0, 0, 0, 1, 0, 2 }); // Must Have
             };
             // Extra
             {
@@ -1726,8 +1727,8 @@ namespace KMZRebuilder
             {
                 f02.MainData.AddRange(BitConverter.GetBytes(((uint)(poi.lat * Math.Pow(2, 32) / 360.0))));
                 f02.MainData.AddRange(BitConverter.GetBytes(((uint)(poi.lon * Math.Pow(2, 32) / 360.0))));
-                f02.MainData.AddRange(new byte[] { 1, 0, 0 });
-                f02.MainData.AddRange(ToLString(String.IsNullOrEmpty(poi.name) ? "Unknown" : poi.name));
+                f02.MainData.AddRange(new byte[] { 1, 0, 0 }); // Reserved
+                f02.MainData.AddRange(ToLString(String.IsNullOrEmpty(poi.name) ? "Unknown" : poi.name)); // POI Name
             };
             // Extra
             {
@@ -1756,8 +1757,8 @@ namespace KMZRebuilder
         {
             FileBlock f07 = new FileBlock();
             f07.bType = 7;
-            f07.MainData.AddRange(BitConverter.GetBytes((ushort)cat));
-            f07.MainData.AddRange(ToLString(Categories[cat]));
+            f07.MainData.AddRange(BitConverter.GetBytes((ushort)cat)); // ID
+            f07.MainData.AddRange(ToLString(Categories[cat])); // Name
             return f07;
         }
 
@@ -1765,7 +1766,7 @@ namespace KMZRebuilder
         {
             FileBlock f06 = new FileBlock();
             f06.bType = 6;
-            f06.MainData.AddRange(BitConverter.GetBytes((ushort)cat));
+            f06.MainData.AddRange(BitConverter.GetBytes((ushort)cat)); // ID
             return f06;
         }
 
@@ -1773,6 +1774,7 @@ namespace KMZRebuilder
         {
             FileBlock f05 = new FileBlock();
             f05.bType = 5;
+            
             List<Color> palette;
             Bitmap im = GetBitmapFromStyle(sty, out palette);
             
@@ -1816,7 +1818,7 @@ namespace KMZRebuilder
         {
             FileBlock f04 = new FileBlock();
             f04.bType = 4;
-            f04.MainData.AddRange(BitConverter.GetBytes((ushort)sty));
+            f04.MainData.AddRange(BitConverter.GetBytes((ushort)sty)); // ID
             return f04;
         }
 
@@ -1824,8 +1826,8 @@ namespace KMZRebuilder
         {
             FileBlock f14 = new FileBlock();
             f14.bType = 14;
-            f14.MainData.Add(1);
-            f14.MainData.AddRange(ToLString(desc));
+            f14.MainData.Add(1); // Reserved
+            f14.MainData.AddRange(ToLString(desc)); // Text
             return f14;
         }
 
@@ -1870,7 +1872,7 @@ namespace KMZRebuilder
             return mi.ToBitmap();
         }        
 
-        private byte[] ToPString(string value, bool translit)
+        private byte[] ToPString(string value, bool translit) // Pascal-like String
         {
             List<byte> res = new List<byte>();
             byte[] tnArr = Encoding.UTF8.GetBytes(translit ? ml.Translit(value) : value);
@@ -1879,7 +1881,7 @@ namespace KMZRebuilder
             return res.ToArray();
         }
 
-        private byte[] ToLString(string value)
+        private byte[] ToLString(string value) // Multilang String
         {
             List<byte> res = new List<byte>();
             res.AddRange(Encoding.ASCII.GetBytes("EN"));
@@ -1947,6 +1949,9 @@ namespace KMZRebuilder
         }
     }
 
+    /// <summary>
+    ///     Lang Translit (RU -> EN)
+    /// </summary>
     public class Translitter
     {
         private Dictionary<string, string> words = new Dictionary<string, string>();
