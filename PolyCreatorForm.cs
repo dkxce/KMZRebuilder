@@ -266,10 +266,10 @@ namespace KMZRebuilder
             xText.SetBounds(9, 90, 372, 13);
             xBox.SetBounds(12, 106, 372, 20);
             dText.SetBounds(9, 130, 372, 13);
-            dBox.SetBounds(12, 146, 372, 80);
+            dBox.SetBounds(12, 146, 372, 180);
 
-            buttonOk.SetBounds(228, 237, 75, 23);
-            buttonCancel.SetBounds(309, 237, 75, 23);
+            buttonOk.SetBounds(228, 337, 75, 23);
+            buttonCancel.SetBounds(309, 337, 75, 23);
             
             nameText.AutoSize = true;
             nameBox.Anchor = nameBox.Anchor | AnchorStyles.Right;
@@ -279,7 +279,7 @@ namespace KMZRebuilder
             buttonOk.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             buttonCancel.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
 
-            form.ClientSize = new Size(396, 270);
+            form.ClientSize = new Size(396, 370);
             form.Controls.AddRange(new Control[] { nameText, nameBox, yText, yBox, xText, xBox, dText, dBox, buttonOk, buttonCancel });
             form.ClientSize = new Size(Math.Max(300, nameText.Right + 10), form.ClientSize.Height);
             form.FormBorderStyle = FormBorderStyle.FixedDialog;

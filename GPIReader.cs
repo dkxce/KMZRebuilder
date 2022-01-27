@@ -16,6 +16,7 @@ using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace KMZRebuilder
 {
@@ -629,6 +630,7 @@ namespace KMZRebuilder
     {
         public static string LOCALE_LANGUAGE  = "EN"; // 2-SYMBOLS
         public static string DEFAULT_LANGUAGE = "EN"; // 2-SYMBOLS
+        public static bool SAVE_MEDIA = false;
 
         private string fileName;
         public string FileName { get { return fileName; } }
@@ -647,6 +649,7 @@ namespace KMZRebuilder
 
         public Dictionary<ushort, RecCategory> Categories = new Dictionary<ushort, RecCategory>();
         public Dictionary<ushort, RecBitmap> Bitmaps = new Dictionary<ushort, RecBitmap>();
+        public Dictionary<ushort, RecMedia> Medias = new Dictionary<ushort, RecMedia>();        
 
         public string DataSource
         {
@@ -697,6 +700,7 @@ namespace KMZRebuilder
             sw.WriteLine("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
             sw.WriteLine("<kml><Document>");
             string caption = (String.IsNullOrEmpty(this.Name) ? "GPI Has No Name" : this.Name);
+            if (!String.IsNullOrEmpty(this.DataSource)) caption = this.DataSource;
             sw.WriteLine("<name><![CDATA[" + caption +  "]]></name><createdby>KMZ Rebuilder GPI Reader</createdby>");
             string desc = "Created: " + this.Created.ToString() + "\r\n";
             foreach (KeyValuePair<string, string> langval in this.cDataSource)
@@ -717,9 +721,12 @@ namespace KMZRebuilder
                 desc += "Objects: " + kCat.Value.Waypoints.Count.ToString() + "\r\n";
                 foreach (KeyValuePair<string, string> langval in kCat.Value.Category)
                     desc += String.Format("name:{0}={1}\r\n", langval.Key.ToLower(), langval.Value);
-                if (kCat.Value.Description != null)
+                if ((kCat.Value.Description != null) && (kCat.Value.Description.Description.Count > 0))
+                {
+                    desc += "\r\n";
                     foreach (KeyValuePair<string, string> langval in kCat.Value.Description.Description)
-                        desc += String.Format("desc:{0}={1}\r\n", langval.Key.ToLower(), langval.Value);
+                        desc += String.Format("desc:{0}={1}\r\n\r\n", langval.Key.ToLower(), TrimDesc(langval.Value));
+                };
                 if (kCat.Value.Comment != null)
                     foreach (KeyValuePair<string, string> langval in kCat.Value.Comment.Comment)
                         desc += String.Format("comm:{0}={1}\r\n", langval.Key.ToLower(), langval.Value);
@@ -744,9 +751,12 @@ namespace KMZRebuilder
                     string text = "";
                     foreach (KeyValuePair<string, string> langval in wp.ShortName)
                         text += String.Format("name:{0}={1}\r\n", langval.Key.ToLower(), langval.Value);
-                    if (wp.Description != null)
+                    if ((wp.Description != null) && (wp.Description.Description.Count > 0))
+                    {
+                        text += "\r\n";
                         foreach (KeyValuePair<string, string> langval in wp.Description.Description)
-                            text += String.Format("desc:{0}={1}\r\n", langval.Key.ToLower(), langval.Value);
+                            text += String.Format("desc:{0}={1}\r\n\r\n", langval.Key.ToLower(), TrimDesc(langval.Value));
+                    };
                     if (wp.Comment != null)
                         foreach (KeyValuePair<string, string> langval in wp.Comment.Comment)
                             text += String.Format("comm:{0}={1}\r\n", langval.Key.ToLower(), langval.Value);
@@ -779,11 +789,24 @@ namespace KMZRebuilder
                             text += String.Format("addr_house={0}\r\n", wp.Address.Postal);
                     };
                     if (wp.Alert != null)
-                    {
+                    {                        
                         text += String.Format("alert_proximity={0}\r\n", wp.Alert.Proximity);
                         text += String.Format("alert_speed={0}\r\n", wp.Alert.Speed);
                         text += String.Format("alert_ison={0}\r\n", wp.Alert.Alert);
-                        text += String.Format("alert_type={0}\r\n", wp.Alert.IsType);
+                        text += String.Format("alert_type={0}\r\n", wp.Alert.IsType);                        
+                        if (SAVE_MEDIA)
+                        {
+                            ushort sn = (ushort)(wp.Alert.SoundNumber + (wp.Alert.AudioAlert << 8));
+                            if (Medias.ContainsKey(sn))
+                            {
+                                string ext = "bin";
+                                if (Medias[sn].Format == 0) ext = "wav";
+                                if (Medias[sn].Format == 1) ext = "mp3";
+                                string fName = String.Format("{0}-{1}.{2}", Medias[sn].MediaID, Medias[sn].Content[0].Key, ext);
+                                text += String.Format("alert_sound=media/{0}\r\n", fName);
+                            };
+                        };
+
                     };
                     if (wp.Bitmap != null) style = "imgid" + wp.Bitmap.BitmapID.ToString();
                     if ((wp.Image != null) && (wp.Image.Length > 0))
@@ -892,10 +915,35 @@ namespace KMZRebuilder
                     };
                 }; 
             };
+            if (SAVE_MEDIA && (Medias.Count > 0))
+            {
+                string medias_file_dir = Path.GetDirectoryName(fileName) + @"\media\";
+                Directory.CreateDirectory(medias_file_dir);
+                foreach (KeyValuePair<ushort, RecMedia> rm in Medias)
+                {
+                    for (int i = 0; i < rm.Value.Content.Count; i++)
+                    {
+                        string ext = "bin";
+                        if(rm.Value.Format == 0) ext = "wav";
+                        if(rm.Value.Format == 1) ext = "mp3";
+                        string fName = String.Format("{0}{1}-{2}.{3}", medias_file_dir, rm.Value.MediaID, rm.Value.Content[i].Key, ext);
+                        FileStream fsw = new FileStream(fName, FileMode.Create, FileAccess.Write);
+                        fsw.Write(rm.Value.Content[i].Value, 0, rm.Value.Content[i].Value.Length);
+                        fsw.Close();
+                    };
+                };
+            };
             sw.WriteLine("</Document></kml>");
             sw.Close();
             fs.Close();
-        }        
+        }
+
+        private string TrimDesc(string text)
+        {
+            while (text.IndexOf("\r\n\r\n") >= 0) text = text.Replace("\r\n\r\n", "");
+            text = text.Trim(new char[] { '\r','\n' });
+            return text;
+        }
 
         private void LoopRecords(List<Record> records)
         {
@@ -1408,17 +1456,18 @@ namespace KMZRebuilder
             rec.Format = rec.MainData[2];
             try
             {
-                int offset = 3;
+                int offset = 0;
                 int readed = 0;
-                uint len = BitConverter.ToUInt32(rec.MainData, offset); offset += 4;
+                uint len = BitConverter.ToUInt32(rec.ExtraData, offset); offset += 4;
                 while (readed < len)
                 {
-                    string lang = Encoding.ASCII.GetString(rec.MainData, offset, 2); offset += 2; readed += 2;
-                    uint mlen = BitConverter.ToUInt32(rec.MainData, offset); offset += 4; readed += 4;
+                    string lang = Encoding.ASCII.GetString(rec.ExtraData, offset, 2); offset += 2; readed += 2;
+                    uint mlen = BitConverter.ToUInt32(rec.ExtraData, offset); offset += 4; readed += 4;
                     byte[] media = new byte[mlen];
-                    Array.Copy(rec.MainData, offset, media, 0, mlen);
+                    Array.Copy(rec.ExtraData, offset, media, 0, mlen); offset += (int)mlen; readed += (int)mlen;
                     rec.Content.Add(new KeyValuePair<string, byte[]>(lang, media));
                 };
+                Medias.Add(rec.MediaID, rec);
             }
             catch (Exception ex)
             {
@@ -1469,9 +1518,17 @@ namespace KMZRebuilder
     public class GPIWriter
     {
         private Translitter ml = new Translitter();
-
+        private static string rxskip = @"(?:alert_[\w]+=.+)|(?:name\:\w\w=.+)";
+        private static string rxdesc = @"(?<desc>desc\:(?<lang>\w\w)=(?<value>[\w\W]+?)\r\n\r\n)";
+        
         public string Name = "Exported Data";
         public string DataSource = "KMZRebuilder";
+        public bool StoreDescriptions = true;
+        public bool StoreAlerts = false;
+        public bool DefaultAlertIsOn = true;
+        public string DefaultAlertType = "proximity";
+        public string DefaultAlertSound = "4";
+        public string SourceKMLfile = null;
 
         private double MinLat = -90;
         private double MaxLat = 90;
@@ -1481,15 +1538,47 @@ namespace KMZRebuilder
 
         private List<string> Categories = new List<string>();
         private List<string> Styles = new List<string>();
+        private List<string> MP3s = new List<string>();
         private Dictionary<uint, List<POI>> POIs = new Dictionary<uint, List<POI>>();
         private Dictionary<string, Image> Images = new Dictionary<string, Image>();
 
+        public GPIWriter() { }
+        public GPIWriter(string source_kml_file) { SourceKMLfile = source_kml_file; }
+
         public void AddPOI(string category, string name, string description, string style, double lat, double lon)
-        {
+        {            
             // Rebound
             if (Categories.Count == 0) { MinLat = 90; MaxLat = -90; MinLon = 180; MaxLon = -180; };
 
-            POI poi = new POI(name, description, lat, lon);
+            POI poi = new POI(name, lat, lon);
+            if (StoreDescriptions && (!String.IsNullOrEmpty(description)))
+            {
+                poi.description = (new Regex(rxskip, RegexOptions.None)).Replace(description, "").TrimStart(new char[] { '\r', '\n' });
+                if (!String.IsNullOrEmpty(poi.description))
+                {
+                    MatchCollection mc = (new Regex(rxdesc)).Matches(poi.description);
+                    foreach (Match mx in mc)
+                        if (mx.Groups["lang"].Value != GPIReader.LOCALE_LANGUAGE.ToLower())
+                            poi.description = poi.description.Replace(mx.Value, "");
+                        else
+                            poi.description = poi.description.Replace(mx.Value, mx.Groups["value"].Value);
+                };
+                poi.description = TrimDesc(poi.description);
+            };
+            if (StoreAlerts)
+            {
+                poi.alert = description;
+                if (!String.IsNullOrEmpty(poi.alert))
+                {
+                    Regex rx = new Regex(@"alert_sound=(?<sound>.+)", RegexOptions.None);
+                    Match mx = rx.Match(poi.alert);
+                    if (mx.Success)
+                    {
+                        string fName = mx.Groups["sound"].Value;
+                        if (!MP3s.Contains(fName)) MP3s.Add(fName);
+                    };
+                };
+            };
 
             // Get Category Index
             poi.cat = Categories.IndexOf(category);
@@ -1522,6 +1611,13 @@ namespace KMZRebuilder
                 Images[style] = nim;
             else
                 Images.Add(style, nim);
+        }
+
+        private string TrimDesc(string text)
+        {
+            while (text.IndexOf("\r\n\r\n") >= 0) text = text.Replace("\r\n\r\n", "");
+            text = text.Trim(new char[] { '\r', '\n' });
+            return text;
         }
 
         private uint LatLonToZone(double lat, double lon)
@@ -1576,6 +1672,7 @@ namespace KMZRebuilder
             public double lon;
             public int cat;
             public int sty;
+            public string alert;
 
             public POI() { }
             public POI(string name, double lat, double lon) { this.name = name; this.description = null; this.lat = lat; this.lon = lon; }
@@ -1623,9 +1720,10 @@ namespace KMZRebuilder
             };
             // EXTRA
             {
-                FileBlock b15 = new FileBlock();
+                FileBlock b15 = new FileBlock(); // PRODUCT VERSION DATA
                 b15.bType = 15;
-                b15.MainData.AddRange(new byte[] { 1, 7, 9, 0, 0 }); // Must Have
+                //b15.MainData.AddRange(new byte[] { 1, 7, 9, 0, 0 }); // Must Have; 1, 7 - FID (0x0701), 9 - PID, 0 - RgnID, 0 - VendorID
+                b15.MainData.AddRange(new byte[] { 0xFF, 0xFF, 0xFF, 0, 0 }); // Must Have; UNLOCKED
                 fb.ExtraData.AddRange(b15.Data);
             };
             return fb;
@@ -1671,6 +1769,9 @@ namespace KMZRebuilder
                 for (int i = 0; i < Categories.Count; i++) fb.ExtraData.AddRange(GetCatBlock(i).Data);
                 // List Bitmaps
                 for (int i = 0; i < Styles.Count; i++) fb.ExtraData.AddRange(GetBmpBlock(i).Data);
+                // List Media
+                /* NO MEDIA */
+                for (int i = 0; i < MP3s.Count; i++) fb.ExtraData.AddRange(GetMediaBlock(i).Data);
             };
             return fb;
         }
@@ -1737,7 +1838,7 @@ namespace KMZRebuilder
                 // STYLE
                 f02.ExtraData.AddRange(GetBmpIDBlock(poi.sty).Data);
                 // Alert
-                /* NO Alert */
+                if (StoreAlerts && (!String.IsNullOrEmpty(poi.alert)) && (Regex.IsMatch(poi.alert, @"alert_[\w]+=.+", RegexOptions.None))) f02.ExtraData.AddRange(GetAlertBlock(poi).Data);
                 // Comment
                 /* NO Comment */
                 // Address
@@ -1751,6 +1852,66 @@ namespace KMZRebuilder
                     f02.ExtraData.AddRange(GetDescBlock(poi.description).Data);
             };
             return f02;
+        }
+
+        private FileBlock GetAlertBlock(POI poi)
+        {
+            FileBlock f03 = new FileBlock();
+            f03.bType = 3;
+            // Main
+            {
+                // LENGHT is 12 bytes
+                Regex rx; Match mx;
+                ushort proximity = 300;
+                rx = new Regex(@"alert_proximity=(?<proximity>\d+)", RegexOptions.None); mx = rx.Match(poi.alert);
+                if (mx.Success) ushort.TryParse(mx.Groups["proximity"].Value, out proximity);
+                ushort speed = 40;
+                rx = new Regex(@"alert_speed=(?<speed>\d+)", RegexOptions.None); mx = rx.Match(poi.alert);
+                if (mx.Success) ushort.TryParse(mx.Groups["speed"].Value, out speed);
+                byte ison = DefaultAlertIsOn ? (byte)1 : (byte)0;
+                rx = new Regex(@"alert_ison=(?<ison>\d+)", RegexOptions.None); mx = rx.Match(poi.alert);
+                if (mx.Success) byte.TryParse(mx.Groups["ison"].Value, out ison);
+                byte atype = 0;
+                if (!String.IsNullOrEmpty(DefaultAlertType))
+                {
+                    if (DefaultAlertType == "proximity") atype = 0;
+                    if (DefaultAlertType == "along_road") atype = 1;
+                    if (DefaultAlertType == "toure_guide") atype = 2;
+                };
+                rx = new Regex(@"alert_type=(?<type>\d+)", RegexOptions.None); mx = rx.Match(poi.alert);
+                if (mx.Success)
+                {
+                    if (mx.Groups["type"].Value == "proximity") atype = 0;
+                    if (mx.Groups["type"].Value == "along_road") atype = 1;
+                    if (mx.Groups["type"].Value == "toure_guide") atype = 2;
+                };
+                byte sound_number = 4;
+                if (!String.IsNullOrEmpty(DefaultAlertSound)) byte.TryParse(DefaultAlertSound, out sound_number);
+                f03.MainData.AddRange(BitConverter.GetBytes((ushort)(proximity))); //Proximity in meters
+                f03.MainData.AddRange(BitConverter.GetBytes((ushort)(((double)speed) / 3.6 * 100.0))); //Speed in 100*mps
+                f03.MainData.AddRange(BitConverter.GetBytes((ushort)(0))); //Reserved
+                f03.MainData.AddRange(BitConverter.GetBytes((ushort)(0))); //Reserved
+                f03.MainData.Add(ison);          // is on
+                f03.MainData.Add(atype);         // Type of alert
+                bool defaudio = true;
+                rx = new Regex(@"alert_sound=(?<sound>.+)", RegexOptions.None); mx = rx.Match(poi.alert);
+                if (mx.Success)
+                {
+                    string fName = mx.Groups["sound"].Value;
+                    int medid = MP3s.IndexOf(fName);
+                    if (medid >= 0)
+                    {
+                        f03.MainData.AddRange(BitConverter.GetBytes((ushort)(medid + 1)));
+                        defaudio = false;
+                    };
+                }
+                if (defaudio)
+                {
+                    f03.MainData.Add(sound_number);  // Sound number // if predefined: 0 - beep, 1 - tone, 2 - three beeps, 3 - silence, 4-plung, 5-plungplung
+                    f03.MainData.Add(0x10);          // Audio Alert // 0x10 - predefined, 0x00 in media record                
+                };
+            };
+            return f03;
         }
 
         private FileBlock GetCatBlock(int cat)
@@ -1829,6 +1990,44 @@ namespace KMZRebuilder
             f14.MainData.Add(1); // Reserved
             f14.MainData.AddRange(ToLString(desc)); // Text
             return f14;
+        }
+
+        private FileBlock GetMediaBlock(int medid)
+        {
+            FileBlock f18 = new FileBlock();
+            f18.bType = 18;
+
+            try
+            {
+                string fName = MP3s[medid].Trim(new char[] { '\r', '\n' });
+                FileInfo fi;
+                if (Path.IsPathRooted(fName))
+                    fi = new FileInfo(fName);
+                else if (!String.IsNullOrEmpty(SourceKMLfile))
+                    fi = new FileInfo(Path.Combine(Path.GetDirectoryName(SourceKMLfile), fName));
+                else
+                    fi = new FileInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, fName));
+                if (fi.Exists)
+                {
+                    { // MAIN DATA: 3 bytes
+                        f18.MainData.AddRange(BitConverter.GetBytes((ushort)(medid + 1)));
+                        f18.MainData.Add(fi.Extension.ToLower() == ".wav" ? (byte)0 : (byte)1); // 0 - WAV, 1 - MP3
+                    };
+                    { // EXTRA DATA
+                        long ttl_len = fi.Length + 4 + 2;
+                        f18.ExtraData.AddRange(BitConverter.GetBytes((uint)ttl_len)); // TOTAL LENGTH
+                        f18.ExtraData.AddRange(Encoding.ASCII.GetBytes(GPIReader.LOCALE_LANGUAGE.Substring(0, 2)));
+                        f18.ExtraData.AddRange(BitConverter.GetBytes((uint)fi.Length));
+                        byte[] fileData = new byte[fi.Length];
+                        FileStream fs = new FileStream(fi.FullName, FileMode.Open, FileAccess.Read);
+                        fs.Read(fileData, 0, fileData.Length);
+                        fs.Close();
+                        f18.ExtraData.AddRange(fileData);
+                    };
+                };
+            }
+            catch (Exception ex) { };
+            return f18;
         }
 
         private FileBlock GetFooter()

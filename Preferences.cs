@@ -17,6 +17,9 @@ namespace KMZRebuilder
         public List<Property> Properties;
 
         [XmlIgnore]
+        private bool DefaultsIsLoaded = false;
+
+        [XmlIgnore]
         public string this[string name]
         {
             get
@@ -41,13 +44,44 @@ namespace KMZRebuilder
             }
         }
 
+        public bool GetBoolValue(string name)
+        {
+            LoadDefaults();
+            if (Properties.Count == 0) return false;
+            foreach (Property prop in Properties)
+                if (prop.name == name)
+                {
+                    string pv = prop.value;
+                    if (String.IsNullOrEmpty(pv)) return false;
+                    pv = pv.ToLower();
+                    return (pv == "1") || (pv == "yes") || (pv == "true");
+                };
+            return false;
+        }
+
         private void LoadDefaults()
         {
+            if (DefaultsIsLoaded) return;
             if (Properties == null)
             {
                 Properties = new List<Property>();
                 this["gpi_localization"] = "EN";
             };
+            if (!this.Contains("gpireader_save_media")) Properties.Add(new Property("gpireader_save_media", "no"));
+            if (!this.Contains("gpiwriter_set_descriptions")) Properties.Add(new Property("gpiwriter_set_descriptions", "yes"));
+            if (!this.Contains("gpiwriter_set_alerts")) Properties.Add(new Property("gpiwriter_set_alerts", "no"));
+            if (!this.Contains("gpiwriter_default_alert_ison")) Properties.Add(new Property("gpiwriter_default_alert_ison", "yes"));
+            if (!this.Contains("gpiwriter_default_alert_type")) Properties.Add(new Property("gpiwriter_default_alert_type", "proximity"));
+            if (!this.Contains("gpiwriter_default_alert_sound")) Properties.Add(new Property("gpiwriter_default_alert_sound", "4"));
+            if (!this.Contains("gpiwriter_alert_help_file")) Properties.Add(new Property("gpiwriter_alert_help_file", "gpiwriter_alert_help.txt"));
+            DefaultsIsLoaded = true;
+        }
+
+        private bool Contains(string name)
+        {
+            foreach (Property prop in Properties)
+                if (prop.name == name) return true;
+            return false;
         }
 
         public static Preferences Load()

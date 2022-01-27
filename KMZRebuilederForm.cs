@@ -103,6 +103,7 @@ namespace KMZRebuilder
         private void LoadPreferences()
         {
             GPIReader.LOCALE_LANGUAGE = Properties["gpi_localization"].ToUpper();
+            GPIReader.SAVE_MEDIA = Properties.GetBoolValue("gpireader_save_media");
         }
 
         private void RegisterFileAsses()
@@ -877,6 +878,7 @@ namespace KMZRebuilder
             for (int i = 0; i < kmzLayers.CheckedItems.Count; i++)
             {
                 KMLayer kml = (KMLayer)kmzLayers.CheckedItems[i];
+                CopySounds(kml.file, zdir);
                 XmlNode xn = kml.file.kmlDoc.SelectNodes("kml/Document/Folder")[kml.id];
 
                 ttlpm += kml.placemarks;
@@ -1051,6 +1053,50 @@ namespace KMZRebuilder
             waitBox.Hide();
 
             return zdir;
+        }
+
+        private void CopySounds(KMFile kmf, string zdir)
+        {
+            // SOUNDS
+            {
+                string pth = Path.Combine(kmf.tmp_file_dir, "sounds");
+                if (Directory.Exists(pth))
+                {
+                    System.IO.Directory.CreateDirectory(zdir + @"\sounds\");
+                    string[] files = Directory.GetFiles(pth, "*.*", SearchOption.AllDirectories);
+                    foreach (string ff in files)
+                    {
+                        string pto = Path.Combine(zdir + @"\sounds\", GetRelativePath(ff, pth));
+                        Directory.CreateDirectory(Path.GetDirectoryName(pto));
+                        File.Copy(ff, pto, true);
+                    };
+                };
+            };
+            // MEDIA
+            {
+                string pth = Path.Combine(kmf.tmp_file_dir, "media");
+                if (Directory.Exists(pth))
+                {
+                    System.IO.Directory.CreateDirectory(zdir + @"\media\");
+                    string[] files = Directory.GetFiles(pth, "*.*", SearchOption.AllDirectories);
+                    foreach (string ff in files)
+                    {
+                        string pto = Path.Combine(zdir + @"\media\", GetRelativePath(ff, pth));
+                        Directory.CreateDirectory(Path.GetDirectoryName(pto));
+                        File.Copy(ff, pto, true);
+                    };
+                };
+            };
+        }       
+
+        private string GetRelativePath(string filespec, string folder)
+        {
+            Uri pathUri = new Uri(filespec);
+            // Folders must end in a slash
+            if (!folder.EndsWith(Path.DirectorySeparatorChar.ToString()))
+                folder += Path.DirectorySeparatorChar;
+            Uri folderUri = new Uri(folder);
+            return folderUri.MakeRelativeUri(pathUri).ToString().Replace('/', Path.DirectorySeparatorChar);
         }
 
         private void Save2SplittedIcons(string filename, KMLayer layer)
@@ -1747,10 +1793,15 @@ namespace KMZRebuilder
             if (proj_name == "") proj_name = "KMZRebuilder Data";
 
             AddToLog("Creating Garmin POI file...");
-            GPIWriter gw = new GPIWriter();
+            GPIWriter gw = new GPIWriter(kmfile.src_file_pth);
             gw.Name = proj_name;
             gw.DataSource = proj_name;
-
+            gw.StoreDescriptions = Properties.GetBoolValue("gpiwriter_set_descriptions");
+            gw.StoreAlerts = Properties.GetBoolValue("gpiwriter_set_alerts");
+            gw.DefaultAlertIsOn = Properties.GetBoolValue("gpiwriter_default_alert_ison");
+            gw.DefaultAlertType = Properties["gpiwriter_default_alert_type"];
+            gw.DefaultAlertSound = Properties["gpiwriter_default_alert_sound"];
+            
             //POI
             AddToLog("Saving POI...");
             waitBox.Show("Export to GPI", "Wait, saving POIs...");
@@ -1832,7 +1883,7 @@ namespace KMZRebuilder
                             if (get.ToString() == ki.ToString())
                             {
                                 skip = true;
-                                get.styles.Add(style); sty_added++;                                
+                                get.styles.Add(style); sty_added++;
                                 break;
                             };
 
@@ -1840,8 +1891,8 @@ namespace KMZRebuilder
                                 if (CompareMemCmp((Bitmap)ki.image, (Bitmap)get.image))
                                 {
                                     skip = true;
-                                    get.styles.Add(style); sty_added++;                                    
-                                    break;                                    
+                                    get.styles.Add(style); sty_added++;
+                                    break;
                                 };
                         };
                         if (!skip) { icons.Add(ki); sty_added++; };
@@ -3007,7 +3058,7 @@ namespace KMZRebuilder
             if(!ok)
                 try
                 {
-                    System.Diagnostics.Process.Start(CurrentDirectory() + @"AkelPad.exe");
+                    System.Diagnostics.Process.Start(CurrentDirectory() + @"AkelPad.exe", path);
                     ok = true;
                 }
                 catch{};
@@ -8260,6 +8311,53 @@ namespace KMZRebuilder
             };
             sfd.Dispose();
         }
+
+        private void gPIAlertsHelpToolStripMenuItem_Click(object sender, EventArgs e)
+        {            
+            bool ok = false;
+            string fName = Properties["gpiwriter_alert_help_file"];
+            if (!ok) try { System.Diagnostics.Process.Start("notepad++", fName); ok = true; } catch { };
+            if (!ok) try { System.Diagnostics.Process.Start(CurrentDirectory() + @"AkelPad.exe", fName); ok = true; } catch { };
+            if (!ok) try { System.Diagnostics.Process.Start("notepad", fName); } catch { };
+        }
+
+        private void sourcePathToolStripMenuItem_DropDownOpening(object sender, EventArgs e)
+        {
+            if (kmzFiles.SelectedIndex < 0) 
+            {
+                vimd.Enabled = vsod.Enabled = vmed.Enabled = false;
+                return;
+            };
+            KMFile f = (KMFile)kmzFiles.SelectedItem;
+            f.GetSubISMDirs();
+            vimd.Enabled = f.HasImagesDir;
+            vsod.Enabled = f.HasSoundsDir;
+            vmed.Enabled = f.HasMediaDir;
+        }
+
+        private void vimd_Click(object sender, EventArgs e)
+        {
+            if (kmzFiles.SelectedIndex < 0) return;
+            KMFile f = (KMFile)kmzFiles.SelectedItem;
+            string path = Path.Combine(f.tmp_file_dir, @"images\");
+            try { System.Diagnostics.Process.Start("explorer.exe", path); } catch { };
+        }
+
+        private void vsod_Click(object sender, EventArgs e)
+        {
+            if (kmzFiles.SelectedIndex < 0) return;
+            KMFile f = (KMFile)kmzFiles.SelectedItem;
+            string path = Path.Combine(f.tmp_file_dir, @"sounds\");
+            try { System.Diagnostics.Process.Start("explorer.exe", path); }catch { };
+        }
+
+        private void vmed_Click(object sender, EventArgs e)
+        {
+            if (kmzFiles.SelectedIndex < 0) return;
+            KMFile f = (KMFile)kmzFiles.SelectedItem;
+            string path = Path.Combine(f.tmp_file_dir, @"media\");
+            try { System.Diagnostics.Process.Start("explorer.exe", path); }catch { };
+        }
     }
 
     public class FilesListBox : CheckedListBox
@@ -8344,9 +8442,29 @@ namespace KMZRebuilder
                     e.Graphics.DrawLine(myp, new Point(offset + txtwi, e.Bounds.Top), new Point(offset + txtwi, e.Bounds.Bottom - 1));
                     offset += 4;
 
+                    if (kmf.HasImagesDir)
+                    {
+                        string optS = "I";
+                        e.Graphics.DrawString(optS, e.Font, isSelected ? SystemBrushes.HighlightText : Brushes.DeepSkyBlue, new Rectangle(offset + txtwi, e.Bounds.Top, e.Bounds.Width - offset - txtwi, e.Bounds.Height), StringFormat.GenericTypographic);
+                        txtwi += (int)e.Graphics.MeasureString(optS, e.Font, 0, StringFormat.GenericTypographic).Width;
+                    };
+                    if (kmf.HasSoundsDir)
+                    {
+                        string optS = "S";
+                        e.Graphics.DrawString(optS, e.Font, isSelected ? SystemBrushes.HighlightText : Brushes.Violet, new Rectangle(offset + txtwi, e.Bounds.Top, e.Bounds.Width - offset - txtwi, e.Bounds.Height), StringFormat.GenericTypographic);
+                        txtwi += (int)e.Graphics.MeasureString(optS, e.Font, 0, StringFormat.GenericTypographic).Width;
+                    };
+                    if (kmf.HasMediaDir)
+                    {
+                        string optS = "M";
+                        e.Graphics.DrawString(optS, e.Font, isSelected ? SystemBrushes.HighlightText : Brushes.DarkOrange, new Rectangle(offset + txtwi, e.Bounds.Top, e.Bounds.Width - offset - txtwi, e.Bounds.Height), StringFormat.GenericTypographic);
+                        txtwi += (int)e.Graphics.MeasureString(optS, e.Font, 0, StringFormat.GenericTypographic).Width;
+                    };
+                    
+
                     string errText = (kmf.parseError ? " - BAD!" : "");
                     e.Graphics.DrawString(errText, e.Font, isSelected ? SystemBrushes.HighlightText : Brushes.Red, new Rectangle(offset + txtwi, e.Bounds.Top, e.Bounds.Width - offset - txtwi, e.Bounds.Height), StringFormat.GenericTypographic);
-                    txtwi += (int)e.Graphics.MeasureString(errText,e.Font,0,StringFormat.GenericTypographic).Width;
+                    txtwi += (int)e.Graphics.MeasureString(errText,e.Font,0,StringFormat.GenericTypographic).Width;                    
 
                     if (SelectedByLayer == e.Index)
                     {
@@ -8672,6 +8790,32 @@ namespace KMZRebuilder
                     (src_file_ext == ".gpx") || (src_file_ext == ".dat") || (src_file_ext == ".wpt") || (src_file_ext == ".osm")
                     || (src_file_ext == ".db3") || (src_file_ext == ".poi") || (src_file_ext == ".map") || (src_file_ext == ".gdb")
                         || (src_file_ext == ".fit") || (src_file_ext == ".shp") || (src_file_ext == ".dbf") || (src_file_ext == ".gpi");
+            }
+        }
+
+
+        private bool[] HasISMDirs = new bool[] { false, false, false };
+        public bool HasImagesDir
+        {
+            get
+            {
+                return HasISMDirs[0];
+            }
+        }
+
+        public bool HasSoundsDir
+        {
+            get
+            {
+                return HasISMDirs[1];
+            }
+        }
+
+        public bool HasMediaDir
+        {
+            get
+            {
+                return HasISMDirs[2];
             }
         }
 
@@ -10323,6 +10467,7 @@ namespace KMZRebuilder
                 return;
             };
 
+            this.GetSubISMDirs();
             if (updateLayers) this.ParseLoadedKML();
         }
 
@@ -10330,6 +10475,17 @@ namespace KMZRebuilder
         {
             if (!this.Valid) return;
             this.kmlDoc.Save(this.tmp_file_dir + "doc.kml");
+        }
+
+        public void GetSubISMDirs()
+        {
+            string path;
+            path = Path.Combine(this.tmp_file_dir, "images");
+            HasISMDirs[0] = Directory.Exists(path);
+            path = Path.Combine(this.tmp_file_dir, "sounds");
+            HasISMDirs[1] = Directory.Exists(path);
+            path = Path.Combine(this.tmp_file_dir, "media");
+            HasISMDirs[2] = Directory.Exists(path);
         }
 
         private void ParseLoadedKML()

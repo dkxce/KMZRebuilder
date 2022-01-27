@@ -1,0 +1,44 @@
+                  GPI ALERT HELP
+         GPI ALERT VALUES IN DESCRIPTION
+This values must be set in point (POI) description
+
+
+#
+# Alert proximity in meters
+#
+alert_proximity=300
+alert_proximity=800
+alert_proximity=1500
+
+#
+# Alert speed in km/h
+#
+alert_speed=20
+alert_speed=40
+alert_speed=60
+alert_speed=90
+
+#
+# Alert On/Off
+#
+alert_ison=no
+alert_ison=yes
+
+#
+# Alert Type
+#
+alert_type=proximity
+alert_type=along_road
+alert_type=toure_guide
+
+#
+# Alert Sound File in MP3
+# absolute or relative path (in kmz or of kml)
+# relative path in kmz primary is `sounds` or `media`
+#
+alert_sound=sounds/file.mp3
+alert_sound=media/file.mp3
+
+
+-- sounds --
+https://sounds-mp3.com/

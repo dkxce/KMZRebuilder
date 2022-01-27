@@ -1557,7 +1557,7 @@ namespace KMZRebuilder
             string styleN = style;
 
             int xcx = images.Images.Count;
-            if (InputXY(objects.SelectedItems[0].SubItems[1].Text == "Point", ref nam, ref y, ref x, ref desc, ref styleN) == DialogResult.OK)
+            if (InputXY(objects.SelectedItems[0].SubItems[1].Text == "Point", l.file.tmp_file_dir, ref nam, ref y, ref x, ref desc, ref styleN) == DialogResult.OK)
             {
                 bool ch = false;
                 bool chxy = false;
@@ -1664,7 +1664,7 @@ namespace KMZRebuilder
             }
         }
 
-        public DialogResult InputXY(bool changeXY, ref string value, ref string lat, ref string lon, ref string desc, ref string style)
+        public DialogResult InputXY(bool changeXY, string file, ref string value, ref string lat, ref string lon, ref string desc, ref string style)
         {
             Form form = new Form();
             form.ShowInTaskbar = false;
@@ -1683,6 +1683,7 @@ namespace KMZRebuilder
             dBox.Multiline = true;
             Button buttonOk = new Button();
             Button buttonCancel = new Button();
+            Button buttonPlay = new Button();
 
             if (changeXY)
             {
@@ -1705,6 +1706,7 @@ namespace KMZRebuilder
             yBox.Text = lat.Replace("\r\n","").Trim();
             dText.Text = "Description:";
             dBox.Text = desc;
+            dBox.ScrollBars = ScrollBars.Vertical;
 
             if (!changeXY) xBox.Enabled = yBox.Enabled = false;
 
@@ -1716,19 +1718,48 @@ namespace KMZRebuilder
             buttonOk.DialogResult = DialogResult.OK;
             buttonCancel.DialogResult = DialogResult.Cancel;
 
-            nameText.SetBounds(9, 20, 372, 13);
-            nameBox.SetBounds(12, 36, 372, 20);
-            yText.SetBounds(9, 60, 372, 13);
-            yBox.SetBounds(12, 76, 372, 20);
-            xText.SetBounds(9, 100, 372, 13);
-            xBox.SetBounds(12, 116, 372, 20);
-            dText.SetBounds(9, 140, 372, 13);
-            dBox.SetBounds(12, 156, 372, 80);
+            buttonPlay.Text = "Play Sound";
+            buttonPlay.FlatStyle = FlatStyle.Flat;
+            buttonPlay.Click += (delegate(object sender, EventArgs e)
+            {
+                Regex rx = new Regex(@"alert_sound=(?<sound>.+)", RegexOptions.None);
+                Match mx = rx.Match(dBox.Text);
+                if (mx.Success)
+                {
 
-            buttonOk.SetBounds(228, 247, 75, 23);
-            buttonCancel.SetBounds(309, 247, 75, 23);
-            cBox.SetBounds(198, 6, 90, 23);
-            pBox.SetBounds(174, 7, 22, 22);            
+                    try
+                    {
+                        string fName = mx.Groups["sound"].Value.Trim(new char[] { '\r', '\n' });
+                        FileInfo fi;
+                        if (Path.IsPathRooted(fName))
+                            fi = new FileInfo(fName);
+                        else if (!String.IsNullOrEmpty(file))
+                            fi = new FileInfo(Path.Combine(Path.GetDirectoryName(file), fName));
+                        else
+                            fi = new FileInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, fName));
+                        if (fi.Exists)
+                            System.Diagnostics.Process.Start(fi.FullName);
+                    }
+                    catch (Exception ex) { };
+                };
+            });
+
+            dBox.TextChanged += (delegate(object sender, EventArgs e) { buttonPlay.Visible = dBox.Text.Contains("alert_sound="); });
+            
+            nameText.SetBounds(9, 20, 472, 13);
+            nameBox.SetBounds(12, 36, 472, 20);
+            yText.SetBounds(9, 60, 472, 13);
+            yBox.SetBounds(12, 76, 472, 20);
+            xText.SetBounds(9, 100, 472, 13);
+            xBox.SetBounds(12, 116, 472, 20);
+            dText.SetBounds(9, 140, 472, 13);
+            dBox.SetBounds(12, 156, 472, 180);
+
+            buttonOk.SetBounds(328, 347, 75, 23);
+            buttonCancel.SetBounds(409, 347, 75, 23);
+            buttonPlay.SetBounds(12, 347, 90, 23);
+            cBox.SetBounds(298, 6, 90, 23);
+            pBox.SetBounds(274, 7, 22, 22);            
             
             nameText.AutoSize = true;
             nameBox.Anchor = nameBox.Anchor | AnchorStyles.Right;
@@ -1737,10 +1768,11 @@ namespace KMZRebuilder
             dBox.Anchor = dBox.Anchor | AnchorStyles.Right;
             buttonOk.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             buttonCancel.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            buttonPlay.Visible = dBox.Text.Contains("alert_sound=");
 
-            form.ClientSize = new Size(396, 280);
-            form.Controls.AddRange(new Control[] { nameText, nameBox, yText, yBox, xText, xBox, dText, dBox, cBox, buttonOk, buttonCancel, pBox });
-            form.ClientSize = new Size(Math.Max(300, nameText.Right + 10), form.ClientSize.Height);
+            form.ClientSize = new Size(496, 380);
+            form.Controls.AddRange(new Control[] { nameText, nameBox, yText, yBox, xText, xBox, dText, dBox, cBox, buttonPlay, buttonOk, buttonCancel, pBox });
+            form.ClientSize = new Size(Math.Max(400, nameText.Right + 10), form.ClientSize.Height);
             form.FormBorderStyle = FormBorderStyle.FixedDialog;
             form.StartPosition = FormStartPosition.CenterParent;
             form.MinimizeBox = false;
@@ -1767,7 +1799,7 @@ namespace KMZRebuilder
             };
             return dialogResult;
         }
-       
+
         private void cBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             ComboBox cBox = sender as ComboBox;
@@ -2224,7 +2256,7 @@ namespace KMZRebuilder
             string dw = desc;
             st = st.SelectSingleNode("styleUrl");
 
-            if (InputXY(objects.SelectedItems[0].SubItems[1].Text == "Point", ref nam, ref y, ref x, ref desc, ref style) == DialogResult.OK)
+            if (InputXY(objects.SelectedItems[0].SubItems[1].Text == "Point", l.file.tmp_file_dir, ref nam, ref y, ref x, ref desc, ref style) == DialogResult.OK)
             {
                 bool ch = false;
                 if (!String.IsNullOrEmpty(nam)) ch = true;
@@ -2318,7 +2350,7 @@ namespace KMZRebuilder
             if ((xd != null) && (xd.ChildNodes.Count > 0)) desc = xd.ChildNodes[0].Value;
             string dw = desc;
 
-            if (InputXY(true, ref nam, ref y, ref x, ref desc, ref style) == DialogResult.OK)
+            if (InputXY(true, l.file.tmp_file_dir, ref nam, ref y, ref x, ref desc, ref style) == DialogResult.OK)
             {
                 bool ch = false;
                 if (!String.IsNullOrEmpty(nam)) ch = true;
@@ -2380,7 +2412,7 @@ namespace KMZRebuilder
             if ((xd != null) && (xd.ChildNodes.Count > 0)) desc = xd.ChildNodes[0].Value;
             string dw = desc;
 
-            if (InputXY(true, ref nam, ref y, ref x, ref desc, ref style) == DialogResult.OK)
+            if (InputXY(true, l.file.tmp_file_dir, ref nam, ref y, ref x, ref desc, ref style) == DialogResult.OK)
             {
                 bool ch = false;
                 if (!String.IsNullOrEmpty(nam)) ch = true;
@@ -2449,7 +2481,7 @@ namespace KMZRebuilder
             if ((xd != null) && (xd.ChildNodes.Count > 0)) desc = xd.ChildNodes[0].Value;
             string dw = desc;
 
-            if (InputXY(true, ref nam, ref y, ref x, ref desc, ref style) == DialogResult.OK)
+            if (InputXY(true, l.file.tmp_file_dir, ref nam, ref y, ref x, ref desc, ref style) == DialogResult.OK)
             {
                 bool ch = false;
                 if (!String.IsNullOrEmpty(nam)) ch = true;
@@ -2542,7 +2574,7 @@ namespace KMZRebuilder
             if ((xd != null) && (xd.ChildNodes.Count > 0)) desc = xd.ChildNodes[0].Value;
             string dw = desc;
 
-            if (InputXY(true, ref nam, ref y, ref x, ref desc, ref style) == DialogResult.OK)
+            if (InputXY(true, l.file.tmp_file_dir, ref nam, ref y, ref x, ref desc, ref style) == DialogResult.OK)
             {
                 bool ch = false;
                 if (!String.IsNullOrEmpty(nam)) ch = true;
@@ -2763,7 +2795,7 @@ namespace KMZRebuilder
             if ((xd != null) && (xd.ChildNodes.Count > 0)) desc = xd.ChildNodes[0].Value;
             string dw = desc;
 
-            if (InputXY(true, ref nam, ref y, ref x, ref desc, ref style) == DialogResult.OK)
+            if (InputXY(true, l.file.tmp_file_dir, ref nam, ref y, ref x, ref desc, ref style) == DialogResult.OK)
             {
                 bool ch = false;
                 if (!String.IsNullOrEmpty(nam)) ch = true;
@@ -3981,7 +4013,7 @@ namespace KMZRebuilder
             if ((xd != null) && (xd.ChildNodes.Count > 0)) desc = xd.ChildNodes[0].Value;
             string dw = desc;
 
-            if (InputXY(true, ref nam, ref y, ref x, ref desc, ref style) == DialogResult.OK)
+            if (InputXY(true, l.file.tmp_file_dir, ref nam, ref y, ref x, ref desc, ref style) == DialogResult.OK)
             {
                 bool ch = false;
                 if (!String.IsNullOrEmpty(nam)) ch = true;
