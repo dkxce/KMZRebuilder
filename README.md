@@ -8,7 +8,7 @@ Supported formats: KMZ, KML, GPI, Progorod, WPT, GDB, FIR, TXT, CSV, DB3 (SAS.Pl
 
 You can export result kmz file to HTML Map and upload it to your site.    
 
-This is a special tool to edit kmz files:    
+**This is a special tool to edit kmz files**:    
 - Add, remove, rename placemarks & points.
 - Change icons.
 - Move points.
@@ -16,6 +16,17 @@ This is a special tool to edit kmz files:
 - Direct Import & Export GPI files (GPI Converter).    
 - Get Routes (dkxce & [OSRM](http://project-osrm.org/docs/v5.15.2/api/)).    
 - Import data from plugins.
+
+**GPI Import/Export**:
+- Multilanguage (EN or any latin, RU or anty ciryllic)
+- Layers (Categories) & POIs 
+- POI Description
+- POI Comment (load/save from/to desc)
+- POI Address (load/save from/to desc)
+- POI Contact (load/save from/to desc)
+- POI Alert (load/save from/to desc) with sound
+- POI Bitmap (get/set from/to kml style)
+- POI Image (get/set from/to kml style)
 
 You can use result files in [KMZViewer](https://github.com/dkxce/KMZViewer), [OruxMaps](http://oruxmaps.com), [Google Maps](https://www.google.com/maps/d/), [SASPlanet](http://www.sasgis.org/sasplaneta/) and more others...
 
