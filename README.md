@@ -65,3 +65,5 @@ Layers Menu (меню слоев карты)
 <img src="windowB.png"/>     
 Route Sample (вывод маршрутов)     
 <img src="windowC.png"/>     
+GPI Preferences     
+<img src="window_pref.png"/>     
