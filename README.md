@@ -20,11 +20,11 @@ You can export result kmz file to HTML Map and upload it to your site.
 **GPI Import/Export**:
 - Multilanguage (EN or any latin, RU or anty ciryllic)
 - Layers (Categories) & POIs 
-- POI Description
-- POI Comment (load/save from/to desc)
-- POI Address (load/save from/to desc)
-- POI Contact (load/save from/to desc)
-- POI Alert (load/save from/to desc) with sound
+- [POI Description](https://github.com/dkxce/KMZRebuilder/blob/master/bin/Debug/gpiwriter_comaddcon_help.txt)
+- [POI Comment](https://github.com/dkxce/KMZRebuilder/blob/master/bin/Debug/gpiwriter_comaddcon_help.txt) (load/save from/to desc)
+- [POI Address](https://github.com/dkxce/KMZRebuilder/blob/master/bin/Debug/gpiwriter_comaddcon_help.txt) (load/save from/to desc)
+- [POI Contact](https://github.com/dkxce/KMZRebuilder/blob/master/bin/Debug/gpiwriter_comaddcon_help.txt) (load/save from/to desc)
+- [POI Alert](https://github.com/dkxce/KMZRebuilder/blob/master/bin/Debug/gpiwriter_alert_help.txt) (load/save from/to desc) with sound
 - POI Bitmap (get/set from/to kml style)
 - POI Image (get/set from/to kml style)
 
