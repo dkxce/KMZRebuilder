@@ -104,6 +104,7 @@ namespace KMZRebuilder
         {
             GPIReader.LOCALE_LANGUAGE = Properties["gpi_localization"].ToUpper();
             GPIReader.SAVE_MEDIA = Properties.GetBoolValue("gpireader_save_media");
+            GPIReader.POI_IMAGE_FROM_JPEG = Properties.GetBoolValue("gpireader_poi_image_from_jpeg");
         }
 
         private void RegisterFileAsses()
@@ -1798,9 +1799,12 @@ namespace KMZRebuilder
             gw.DataSource = proj_name;
             gw.StoreDescriptions = Properties.GetBoolValue("gpiwriter_set_descriptions");
             gw.StoreAlerts = Properties.GetBoolValue("gpiwriter_set_alerts");
+            gw.StoreImagesAsIs = Properties.GetBoolValue("gpiwriter_save_images_jpeg");            
             gw.DefaultAlertIsOn = Properties.GetBoolValue("gpiwriter_default_alert_ison");
             gw.DefaultAlertType = Properties["gpiwriter_default_alert_type"];
             gw.DefaultAlertSound = Properties["gpiwriter_default_alert_sound"];
+            gw.TransColor = System.Drawing.ColorTranslator.FromHtml(Properties["gpiwriter_image_transp_color"]);
+            byte.TryParse(Properties["gpiwriter_image_max_side"], out gw.MaxImageSide);            
             
             //POI
             AddToLog("Saving POI...");
@@ -8275,6 +8279,7 @@ namespace KMZRebuilder
         {
             Properties.ShowChangeDialog();
             LoadPreferences();
+            Properties.Save();
         }
 
         private void c2DGPIToolStripMenuItem_Click(object sender, EventArgs e)
@@ -8315,7 +8320,7 @@ namespace KMZRebuilder
         private void gPIAlertsHelpToolStripMenuItem_Click(object sender, EventArgs e)
         {            
             bool ok = false;
-            string fName = Properties["gpiwriter_alert_help_file"];
+            string fName = Path.Combine(CurrentDirectory(), Properties["gpiwriter_alert_help_file"]);
             if (!ok) try { System.Diagnostics.Process.Start("notepad++", fName); ok = true; } catch { };
             if (!ok) try { System.Diagnostics.Process.Start(CurrentDirectory() + @"AkelPad.exe", fName); ok = true; } catch { };
             if (!ok) try { System.Diagnostics.Process.Start("notepad", fName); } catch { };
@@ -8357,6 +8362,18 @@ namespace KMZRebuilder
             KMFile f = (KMFile)kmzFiles.SelectedItem;
             string path = Path.Combine(f.tmp_file_dir, @"media\");
             try { System.Diagnostics.Process.Start("explorer.exe", path); }catch { };
+        }
+
+        private void gPICommentAddressContactHelpToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            bool ok = false;
+            string fName = Path.Combine(CurrentDirectory(), Properties["gpiwriter_comaddcon_help_file"]);
+            if (!ok) try { System.Diagnostics.Process.Start("notepad++", fName); ok = true; }
+                catch { };
+            if (!ok) try { System.Diagnostics.Process.Start(CurrentDirectory() + @"AkelPad.exe", fName); ok = true; }
+                catch { };
+            if (!ok) try { System.Diagnostics.Process.Start("notepad", fName); }
+                catch { };
         }
     }
 

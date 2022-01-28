@@ -1,0 +1,45 @@
+                  GPI WRITER HELP
+      COMMENT, ADDRESS, CONTACT, DESCRIPTION
+This values must be set in point (POI) description
+
+#
+# Description can be all text or specified local lang 
+#   with double CRLF at the end
+# [Optional]
+#
+desc:ru=multiline
+
+#
+# Comment, single line
+#
+comment=start point
+comment=food shop
+comment=industrial
+comment:ru=start point
+comm:ru=food shop
+comm:ru=industrial
+
+#
+# Address, single line
+#
+addr_city=CITY
+addr_city:ru=CITY
+addr_country=COUNTRY
+addr_country:ru=COUNTRY
+addr_state=REGION
+addr_state:ru=REGION
+addr_postal=POSTAL_CODE
+addr_postal:ru=POSTAL_CODE
+addr_street=STREET
+addr_street:ru=STREET
+addr_house=HOUSE
+addr_house:ru=HOUSE
+
+#
+# Contacts, single line
+#
+contact_phone=+7 000 000 0000
+contact_phone2=+7 000 000 0000
+contact_fax=+7 000 000 0000
+contact_email=milokz@gmail.com
+contact_web=https://github.com/dkxce/KMZRebuilder

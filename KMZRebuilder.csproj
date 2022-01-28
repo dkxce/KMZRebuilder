@@ -109,7 +109,7 @@
       <DependentUpon>GPXTachograph.cs</DependentUpon>
     </Compile>
     <Compile Include="InputBox.cs">
-      <SubType>Form</SubType>
+      <SubType>Component</SubType>
     </Compile>
     <Compile Include="InterpolateLess.cs">
       <SubType>Form</SubType>
@@ -144,7 +144,7 @@
       <DependentUpon>MapViewerForm.cs</DependentUpon>
     </Compile>
     <Compile Include="KMZRebuilederForm.cs">
-      <SubType>Form</SubType>
+      <SubType>Component</SubType>
     </Compile>
     <Compile Include="KMZRebuilederForm.Designer.cs">
       <DependentUpon>KMZRebuilederForm.cs</DependentUpon>

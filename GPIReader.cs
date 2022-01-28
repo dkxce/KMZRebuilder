@@ -38,8 +38,8 @@ namespace KMZRebuilder
         Contact = 12,
         Image = 13,
         Description = 14,
-        Unknown15 = 15,
-        Unknown16 = 16,
+        ProductInfo = 15,
+        AlertCircle = 16,
         Copyright = 17,
         Media = 18,
         SpeedCamera = 19,
@@ -108,6 +108,8 @@ namespace KMZRebuilder
             if (RecordType == 12) res = new RecContact(parent);
             if (RecordType == 13) res = new RecImage(parent);
             if (RecordType == 14) res = new RecDescription(parent);
+            if (RecordType == 15) res = new RecProductInfo(parent);
+            if (RecordType == 16) res = new RecAlertCircle(parent);
             if (RecordType == 17) res = new RecCopyright(parent);
             if (RecordType == 18) res = new RecMedia(parent);
             if (RecordType == 19) res = new RecSpeedCamera(parent);
@@ -203,6 +205,7 @@ namespace KMZRebuilder
             if (AlertType == 2) return "toure_guide";
             return AlertType.ToString();
         } }
+        public RecAlertCircle AlertCircles;
     }
 
     // 4
@@ -411,91 +414,11 @@ namespace KMZRebuilder
     {
         public RecContact(Record parent) : base(parent) { }
         public ushort Flags;
-        public List<KeyValuePair<string, string>> cPhone = new List<KeyValuePair<string, string>>();
-        public List<KeyValuePair<string, string>> cPhone2 = new List<KeyValuePair<string, string>>();
-        public List<KeyValuePair<string, string>> cFax = new List<KeyValuePair<string, string>>();
-        public List<KeyValuePair<string, string>> cEmail = new List<KeyValuePair<string, string>>();
-        public List<KeyValuePair<string, string>> cWeb = new List<KeyValuePair<string, string>>();
-
-        public string Phone
-        {
-            get
-            {
-                foreach (KeyValuePair<string, string> kvp in cPhone)
-                    if (kvp.Key == GPIReader.LOCALE_LANGUAGE)
-                        return kvp.Value;
-                foreach (KeyValuePair<string, string> kvp in cPhone)
-                    if (kvp.Key == GPIReader.DEFAULT_LANGUAGE)
-                        return kvp.Value;
-                foreach (KeyValuePair<string, string> kvp in cPhone)
-                    return kvp.Value;
-                return null;
-            }
-        }
-
-        public string Phone2
-        {
-            get
-            {
-                foreach (KeyValuePair<string, string> kvp in cPhone2)
-                    if (kvp.Key == GPIReader.LOCALE_LANGUAGE)
-                        return kvp.Value;
-                foreach (KeyValuePair<string, string> kvp in cPhone2)
-                    if (kvp.Key == GPIReader.DEFAULT_LANGUAGE)
-                        return kvp.Value;
-                foreach (KeyValuePair<string, string> kvp in cPhone2)
-                    return kvp.Value;
-                return null;
-            }
-        }
-
-        public string Fax
-        {
-            get
-            {
-                foreach (KeyValuePair<string, string> kvp in cFax)
-                    if (kvp.Key == GPIReader.LOCALE_LANGUAGE)
-                        return kvp.Value;
-                foreach (KeyValuePair<string, string> kvp in cFax)
-                    if (kvp.Key == GPIReader.DEFAULT_LANGUAGE)
-                        return kvp.Value;
-                foreach (KeyValuePair<string, string> kvp in cFax)
-                    return kvp.Value;
-                return null;
-            }
-        }
-
-        public string Email
-        {
-            get
-            {
-                foreach (KeyValuePair<string, string> kvp in cEmail)
-                    if (kvp.Key == GPIReader.LOCALE_LANGUAGE)
-                        return kvp.Value;
-                foreach (KeyValuePair<string, string> kvp in cEmail)
-                    if (kvp.Key == GPIReader.DEFAULT_LANGUAGE)
-                        return kvp.Value;
-                foreach (KeyValuePair<string, string> kvp in cEmail)
-                    return kvp.Value;
-                return null;
-            }
-        }
-
-        public string Web
-        {
-            get
-            {
-                foreach (KeyValuePair<string, string> kvp in cWeb)
-                    if (kvp.Key == GPIReader.LOCALE_LANGUAGE)
-                        return kvp.Value;
-                foreach (KeyValuePair<string, string> kvp in cWeb)
-                    if (kvp.Key == GPIReader.DEFAULT_LANGUAGE)
-                        return kvp.Value;
-                foreach (KeyValuePair<string, string> kvp in cWeb)
-                    return kvp.Value;
-                return null;
-            }
-        }
+        public string Phone;
+        public string Phone2;
+        public string Fax;
+        public string Email;
+        public string Web;       
     }
 
     // 13
@@ -527,7 +450,27 @@ namespace KMZRebuilder
                 return null;
             }
         }
-    }   
+    }
+
+    // 15
+    public class RecProductInfo : Record
+    {
+        public RecProductInfo(Record parent) : base(parent) { }
+        public ushort FactoryID;
+        public byte ProductID;
+        public byte RegionID;
+        public byte VendorID;
+    }
+
+    // 16
+    public class RecAlertCircle : Record
+    {
+        public RecAlertCircle(Record parent) : base(parent) { }
+        public ushort Count;
+        public double[] lat;
+        public double[] lon;
+        public uint[] radius;
+    }
 
     // 17
     public class RecCopyright : Record
@@ -628,29 +571,89 @@ namespace KMZRebuilder
     /// </summary>
     public class GPIReader
     {
+        /// <summary>
+        ///     Current Locale Language ISO-639
+        /// </summary>
         public static string LOCALE_LANGUAGE  = "EN"; // 2-SYMBOLS
+        /// <summary>
+        ///     Default Language ISO-639
+        /// </summary>
         public static string DEFAULT_LANGUAGE = "EN"; // 2-SYMBOLS
+        /// <summary>
+        ///     Save Media Content to disk
+        /// </summary>
         public static bool SAVE_MEDIA = false;
+        /// <summary>
+        ///     Set kmz poi image from jpeg (not bitmap); false - from bitmap; true - from image (if specified)
+        /// </summary>
+        public static bool POI_IMAGE_FROM_JPEG = false; // bitmap o
 
-        private string fileName;
+        /// <summary>
+        ///     Source File Name
+        /// </summary>
         public string FileName { get { return fileName; } }
+        private string fileName;        
 
+        /// <summary>
+        ///     Public GPI Root Element
+        /// </summary>
         public Record RootElement = new Record(null);
 
+        /// <summary>
+        ///     GPI File Document Name
+        /// </summary>
         public string Content = null;
+        /// <summary>
+        ///     GPI Text CodePage
+        /// </summary>
         public ushort CodePage = 0xFDE9;
+        /// <summary>
+        ///     GPI Text Encoding
+        /// </summary>
         public Encoding Encoding = Encoding.Unicode;
+        /// <summary>
+        ///     GPI File Header Text
+        /// </summary>
         public string Header = null;
+        /// <summary>
+        ///     GPI File Version
+        /// </summary>
         public string Version = null;
+        /// <summary>
+        ///     GPI File DateTime Created
+        /// </summary>
         public DateTime Created = DateTime.MinValue;
+        /// <summary>
+        ///     GPI File Name
+        /// </summary>
         public string Name = null;
+        /// <summary>
+        ///     Multilang Content Data Sources
+        /// </summary>
         public List<KeyValuePair<string, string>> cDataSource = new List<KeyValuePair<string, string>>();
+        /// <summary>
+        ///     Multilang Content Copyrights
+        /// </summary>
         public List<KeyValuePair<string, string>> cCopyrights = new List<KeyValuePair<string, string>>();
 
+        /// <summary>
+        ///     List Of POI Categories in file
+        /// </summary>
         public Dictionary<ushort, RecCategory> Categories = new Dictionary<ushort, RecCategory>();
+
+        /// <summary>
+        ///     List of Bitmaps in file
+        /// </summary>
         public Dictionary<ushort, RecBitmap> Bitmaps = new Dictionary<ushort, RecBitmap>();
+
+        /// <summary>
+        ///     List of Media in file
+        /// </summary>
         public Dictionary<ushort, RecMedia> Medias = new Dictionary<ushort, RecMedia>();        
 
+        /// <summary>
+        ///     File Content Data Source (local language)
+        /// </summary>
         public string DataSource
         {
             get
@@ -667,6 +670,9 @@ namespace KMZRebuilder
             }
         }
 
+        /// <summary>
+        ///     File Content Copyrights (local language)
+        /// </summary>
         public string Copyrights
         {
             get
@@ -683,6 +689,10 @@ namespace KMZRebuilder
             }
         }
 
+        /// <summary>
+        ///     Constructor (GPI File Reader)
+        /// </summary>
+        /// <param name="fileName"></param>
         public GPIReader(string fileName)
         {
             this.fileName = fileName;
@@ -690,6 +700,10 @@ namespace KMZRebuilder
             this.LoopRecords(this.RootElement.Childs);
         }
 
+        /// <summary>
+        ///     Save File Content to KML file
+        /// </summary>
+        /// <param name="fileName"></param>
         public void SaveToKML(string fileName)
         {
             string images_file_dir = Path.GetDirectoryName(fileName) + @"\images\";
@@ -732,12 +746,12 @@ namespace KMZRebuilder
                         desc += String.Format("comm:{0}={1}\r\n", langval.Key.ToLower(), langval.Value);
                 if (kCat.Value.Contact != null)
                 {
-                    foreach (KeyValuePair<string, string> langval in kCat.Value.Contact.cPhone)
-                        desc += String.Format("contact_phone:{0}={1}\r\n", langval.Key.ToLower(), langval.Value);
-                    foreach (KeyValuePair<string, string> langval in kCat.Value.Contact.cPhone2)
-                        desc += String.Format("contact_phone2:{0}={1}\r\n", langval.Key.ToLower(), langval.Value);
-                    foreach (KeyValuePair<string, string> langval in kCat.Value.Contact.cFax)
-                        desc += String.Format("contact_fax:{0}={1}\r\n", langval.Key.ToLower(), langval.Value);
+                    if(!String.IsNullOrEmpty(kCat.Value.Contact.Phone))
+                        desc += String.Format("contact_phone={0}\r\n", kCat.Value.Contact.Phone);
+                    if (!String.IsNullOrEmpty(kCat.Value.Contact.Phone2))
+                        desc += String.Format("contact_phone2={0}\r\n", kCat.Value.Contact.Phone2);
+                    if (!String.IsNullOrEmpty(kCat.Value.Contact.Fax))
+                        desc += String.Format("contact_fax={0}\r\n", kCat.Value.Contact.Fax);
                     if (!String.IsNullOrEmpty(kCat.Value.Contact.Email))
                         desc += String.Format("contact_email={0}\r\n", kCat.Value.Contact.Email);
                     if (!String.IsNullOrEmpty(kCat.Value.Contact.Web))
@@ -762,12 +776,12 @@ namespace KMZRebuilder
                             text += String.Format("comm:{0}={1}\r\n", langval.Key.ToLower(), langval.Value);
                     if (wp.Contact != null)
                     {
-                        foreach (KeyValuePair<string, string> langval in wp.Contact.cPhone)
-                            text += String.Format("contact_phone:{0}={1}\r\n", langval.Key.ToLower(), langval.Value);
-                        foreach (KeyValuePair<string, string> langval in wp.Contact.cPhone2)
-                            text += String.Format("contact_phone2:{0}={1}\r\n", langval.Key.ToLower(), langval.Value);
-                        foreach (KeyValuePair<string, string> langval in wp.Contact.cFax)
-                            text += String.Format("contact_fax:{0}={1}\r\n", langval.Key.ToLower(), langval.Value);
+                        if (!String.IsNullOrEmpty(wp.Contact.Phone))
+                            text += String.Format("contact_phone={0}\r\n", wp.Contact.Phone);
+                        if (!String.IsNullOrEmpty(wp.Contact.Phone2))
+                            text += String.Format("contact_phone2={0}\r\n", wp.Contact.Phone2);
+                        if (!String.IsNullOrEmpty(wp.Contact.Fax))
+                            text += String.Format("contact_fax={0}\r\n", wp.Contact.Fax);
                         if (!String.IsNullOrEmpty(wp.Contact.Email))
                             text += String.Format("contact_email={0}\r\n", wp.Contact.Email);
                         if (!String.IsNullOrEmpty(wp.Contact.Web))
@@ -786,7 +800,7 @@ namespace KMZRebuilder
                         foreach (KeyValuePair<string, string> langval in wp.Address.aStreet)
                             text += String.Format("addr_street:{0}={1}\r\n", langval.Key.ToLower(), langval.Value);
                         if (!String.IsNullOrEmpty(wp.Address.House))
-                            text += String.Format("addr_house={0}\r\n", wp.Address.Postal);
+                            text += String.Format("addr_house={0}\r\n", wp.Address.House);
                     };
                     if (wp.Alert != null)
                     {                        
@@ -818,7 +832,7 @@ namespace KMZRebuilder
                             fsimid.Write(wp.Image.ImageData, 0, wp.Image.ImageData.Length);
                             fsimid.Close();
                             simstyles.Add(simid);
-                            style = simid;
+                            if(POI_IMAGE_FROM_JPEG) style = simid;
                         }
                         catch (Exception ex) { };
                     };
@@ -938,6 +952,11 @@ namespace KMZRebuilder
             fs.Close();
         }
 
+        /// <summary>
+        ///     Trim Text
+        /// </summary>
+        /// <param name="text"></param>
+        /// <returns></returns>
         private string TrimDesc(string text)
         {
             while (text.IndexOf("\r\n\r\n") >= 0) text = text.Replace("\r\n\r\n", "");
@@ -945,6 +964,10 @@ namespace KMZRebuilder
             return text;
         }
 
+        /// <summary>
+        ///     Loop Records References
+        /// </summary>
+        /// <param name="records"></param>
         private void LoopRecords(List<Record> records)
         {
             if ((records == null) || (records.Count == 0)) return;
@@ -955,6 +978,10 @@ namespace KMZRebuilder
             };
         }
 
+        /// <summary>
+        ///     Get Record References
+        /// </summary>
+        /// <param name="r"></param>
         private void GetReferences(Record r)
         {
             if (r is RecBitmapReference)
@@ -976,6 +1003,9 @@ namespace KMZRebuilder
             };            
         }
 
+        /// <summary>
+        ///     Read Source File Data
+        /// </summary>
         private void Read()
         {
             FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.Read);
@@ -987,6 +1017,11 @@ namespace KMZRebuilder
                 ReadData(ref fileData, RootElement);
         }
 
+        /// <summary>
+        ///     Read Block Data
+        /// </summary>
+        /// <param name="fileData"></param>
+        /// <param name="parent"></param>
         private void ReadData(ref byte[] fileData, Record parent)
         {
             int offset = 0;
@@ -997,6 +1032,13 @@ namespace KMZRebuilder
             };
         }
 
+        /// <summary>
+        ///     Read Block Record Data
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="parent"></param>
+        /// <param name="offset"></param>
+        /// <returns></returns>
         private int ReadRecordBlock(ref byte[] data, Record parent, int offset)
         {
             int start_offset = offset;            
@@ -1032,6 +1074,10 @@ namespace KMZRebuilder
             return ttlbl;
         }
 
+        /// <summary>
+        ///     Read Block Record Main Data
+        /// </summary>
+        /// <param name="rec"></param>
         private void ReadMainBlock(Record rec)
         {
             if ((rec.RType == 0) && (rec is RecHeader0)) ReadHeader1((RecHeader0)rec);
@@ -1049,6 +1095,8 @@ namespace KMZRebuilder
             if ((rec.RType == 12) && (rec is RecContact)) ReadContact((RecContact)rec);
             if ((rec.RType == 13) && (rec is RecImage)) ReadImage((RecImage)rec);
             if ((rec.RType == 14) && (rec is RecDescription)) ReadDecription((RecDescription)rec);
+            if ((rec.RType == 15) && (rec is RecProductInfo)) ReadProductInfo((RecProductInfo)rec);
+            if ((rec.RType == 16) && (rec is RecAlertCircle)) ReadAlertCircle((RecAlertCircle)rec);
             if ((rec.RType == 17) && (rec is RecCopyright)) ReadCopyright((RecCopyright)rec);
             if ((rec.RType == 18) && (rec is RecMedia)) ReadMedia((RecMedia)rec);
             if ((rec.RType == 19) && (rec is RecSpeedCamera)) ReadSpeedCamera((RecSpeedCamera)rec);
@@ -1285,6 +1333,70 @@ namespace KMZRebuilder
                         rec.House = text;
                     };
                 };
+                if (this.Version == "00")
+                {
+                    offset = 0;
+                    if ((rec.Flags & 0x0001) == 0x0001)
+                    {
+                        uint len = BitConverter.ToUInt32(rec.ExtraData, offset); offset += 4;
+                        int readed = 0;
+                        while (readed < len)
+                        {
+                            string lang = Encoding.ASCII.GetString(rec.ExtraData, offset, 2); offset += 2; readed += 2;
+                            ushort tlen = BitConverter.ToUInt16(rec.ExtraData, offset); offset += 2; readed += 2;
+                            string text = this.Encoding.GetString(rec.ExtraData, offset, tlen); offset += tlen; readed += tlen;
+                            rec.aCity.Add(new KeyValuePair<string, string>(lang, text));
+                        };
+                    };
+                    if ((rec.Flags & 0x0002) == 0x0002)
+                    {
+                        uint len = BitConverter.ToUInt32(rec.ExtraData, offset); offset += 4;
+                        int readed = 0;
+                        while (readed < len)
+                        {
+                            string lang = Encoding.ASCII.GetString(rec.ExtraData, offset, 2); offset += 2; readed += 2;
+                            ushort tlen = BitConverter.ToUInt16(rec.ExtraData, offset); offset += 2; readed += 2;
+                            string text = this.Encoding.GetString(rec.ExtraData, offset, tlen); offset += tlen; readed += tlen;
+                            rec.aCountry.Add(new KeyValuePair<string, string>(lang, text));
+                        };
+                    };
+                    if ((rec.Flags & 0x0004) == 0x0004)
+                    {
+                        uint len = BitConverter.ToUInt32(rec.ExtraData, offset); offset += 4;
+                        int readed = 0;
+                        while (readed < len)
+                        {
+                            string lang = Encoding.ASCII.GetString(rec.ExtraData, offset, 2); offset += 2; readed += 2;
+                            ushort tlen = BitConverter.ToUInt16(rec.ExtraData, offset); offset += 2; readed += 2;
+                            string text = this.Encoding.GetString(rec.ExtraData, offset, tlen); offset += tlen; readed += tlen;
+                            rec.aState.Add(new KeyValuePair<string, string>(lang, text));
+                        };
+                    };
+                    if ((rec.Flags & 0x0008) == 0x0008)
+                    {
+                        ushort tlen = BitConverter.ToUInt16(rec.ExtraData, offset); offset += 2;
+                        string text = this.Encoding.GetString(rec.ExtraData, offset, tlen); offset += tlen;
+                        rec.Postal = text;
+                    };
+                    if ((rec.Flags & 0x0010) == 0x0010)
+                    {
+                        uint len = BitConverter.ToUInt32(rec.ExtraData, offset); offset += 4;
+                        int readed = 0;
+                        while (readed < len)
+                        {
+                            string lang = Encoding.ASCII.GetString(rec.ExtraData, offset, 2); offset += 2; readed += 2;
+                            ushort tlen = BitConverter.ToUInt16(rec.ExtraData, offset); offset += 2; readed += 2;
+                            string text = this.Encoding.GetString(rec.ExtraData, offset, tlen); offset += tlen; readed += tlen;
+                            rec.aStreet.Add(new KeyValuePair<string, string>(lang, text));
+                        };
+                    };
+                    if ((rec.Flags & 0x0020) == 0x0020)
+                    {
+                        ushort tlen = BitConverter.ToUInt16(rec.ExtraData, offset); offset += 2;
+                        string text = this.Encoding.GetString(rec.ExtraData, offset, tlen); offset += tlen;
+                        rec.House = text;
+                    };
+                };
                 if ((rec.Parent != null) && (rec.Parent is RecWaypoint)) ((RecWaypoint)rec.Parent).Address = rec;
                 
             }
@@ -1304,64 +1416,68 @@ namespace KMZRebuilder
                 {
                     if ((rec.Flags & 0x0001) == 0x0001)
                     {
-                        uint len = BitConverter.ToUInt32(rec.MainData, offset); offset += 4;
-                        int readed = 0;
-                        while (readed < len)
-                        {
-                            string lang = Encoding.ASCII.GetString(rec.MainData, offset, 2); offset += 2; readed += 2;
-                            ushort tlen = BitConverter.ToUInt16(rec.MainData, offset); offset += 2; readed += 2;
-                            string text = this.Encoding.GetString(rec.MainData, offset, tlen); offset += tlen; readed += tlen;
-                            rec.cPhone.Add(new KeyValuePair<string, string>(lang, text));
-                        };
+                        ushort tlen = BitConverter.ToUInt16(rec.MainData, offset); offset += 2; 
+                        string text = this.Encoding.GetString(rec.MainData, offset, tlen); offset += tlen; 
+                        rec.Phone = text;
                     };
                     if ((rec.Flags & 0x0002) == 0x0002)
                     {
-                        uint len = BitConverter.ToUInt32(rec.MainData, offset); offset += 4;
-                        int readed = 0;
-                        while (readed < len)
-                        {
-                            string lang = Encoding.ASCII.GetString(rec.MainData, offset, 2); offset += 2; readed += 2;
-                            ushort tlen = BitConverter.ToUInt16(rec.MainData, offset); offset += 2; readed += 2;
-                            string text = this.Encoding.GetString(rec.MainData, offset, tlen); offset += tlen; readed += tlen;
-                            rec.cPhone2.Add(new KeyValuePair<string, string>(lang, text));
-                        };
+                        ushort tlen = BitConverter.ToUInt16(rec.MainData, offset); offset += 2; 
+                        string text = this.Encoding.GetString(rec.MainData, offset, tlen); offset += tlen; 
+                        rec.Phone2 = text;
                     };
                     if ((rec.Flags & 0x0004) == 0x0004)
                     {
-                        uint len = BitConverter.ToUInt32(rec.MainData, offset); offset += 4;
-                        int readed = 0;
-                        while (readed < len)
-                        {
-                            string lang = Encoding.ASCII.GetString(rec.MainData, offset, 2); offset += 2; readed += 2;
-                            ushort tlen = BitConverter.ToUInt16(rec.MainData, offset); offset += 2; readed += 2;
-                            string text = this.Encoding.GetString(rec.MainData, offset, tlen); offset += tlen; readed += tlen;
-                            rec.cFax.Add(new KeyValuePair<string, string>(lang, text));
-                        };
+                        ushort tlen = BitConverter.ToUInt16(rec.MainData, offset); offset += 2; 
+                        string text = this.Encoding.GetString(rec.MainData, offset, tlen); offset += tlen; 
+                        rec.Fax = text;
                     };
                     if ((rec.Flags & 0x0008) == 0x0008)
                     {
-                        uint len = BitConverter.ToUInt32(rec.MainData, offset); offset += 4;
-                        int readed = 0;
-                        while (readed < len)
-                        {
-                            string lang = Encoding.ASCII.GetString(rec.MainData, offset, 2); offset += 2; readed += 2;
-                            ushort tlen = BitConverter.ToUInt16(rec.MainData, offset); offset += 2; readed += 2;
-                            string text = this.Encoding.GetString(rec.MainData, offset, tlen); offset += tlen; readed += tlen;
-                            rec.cEmail.Add(new KeyValuePair<string, string>(lang, text));
-                        };
+                        ushort tlen = BitConverter.ToUInt16(rec.MainData, offset); offset += 2; 
+                        string text = this.Encoding.GetString(rec.MainData, offset, tlen); offset += tlen; 
+                        rec.Email = text;
                     };
                     if ((rec.Flags & 0x0010) == 0x0010)
                     {
-                        uint len = BitConverter.ToUInt32(rec.MainData, offset); offset += 4;
-                        int readed = 0;
-                        while (readed < len)
-                        {
-                            string lang = Encoding.ASCII.GetString(rec.MainData, offset, 2); offset += 2; readed += 2;
-                            ushort tlen = BitConverter.ToUInt16(rec.MainData, offset); offset += 2; readed += 2;
-                            string text = this.Encoding.GetString(rec.MainData, offset, tlen); offset += tlen; readed += tlen;
-                            rec.cWeb.Add(new KeyValuePair<string, string>(lang, text));
-                        };
+                        ushort tlen = BitConverter.ToUInt16(rec.MainData, offset); offset += 2; 
+                        string text = this.Encoding.GetString(rec.MainData, offset, tlen); offset += tlen; 
+                        rec.Web = text;
                     };     
+                };
+                if (this.Version == "00")
+                {
+                    offset = 0;
+                    if ((rec.Flags & 0x0001) == 0x0001)
+                    {
+                        ushort tlen = BitConverter.ToUInt16(rec.ExtraData, offset); offset += 2; 
+                        string text = this.Encoding.GetString(rec.ExtraData, offset, tlen); offset += tlen; 
+                        rec.Phone = text;
+                    };
+                    if ((rec.Flags & 0x0002) == 0x0002)
+                    {
+                        ushort tlen = BitConverter.ToUInt16(rec.ExtraData, offset); offset += 2; 
+                        string text = this.Encoding.GetString(rec.ExtraData, offset, tlen); offset += tlen; 
+                        rec.Phone2 = text;
+                    };
+                    if ((rec.Flags & 0x0004) == 0x0004)
+                    {
+                        ushort tlen = BitConverter.ToUInt16(rec.ExtraData, offset); offset += 2; 
+                        string text = this.Encoding.GetString(rec.ExtraData, offset, tlen); offset += tlen; 
+                        rec.Fax = text;
+                    };
+                    if ((rec.Flags & 0x0008) == 0x0008)
+                    {
+                        ushort tlen = BitConverter.ToUInt16(rec.ExtraData, offset); offset += 2; 
+                        string text = this.Encoding.GetString(rec.ExtraData, offset, tlen); offset += tlen; 
+                        rec.Email = text;
+                    };
+                    if ((rec.Flags & 0x0010) == 0x0010)
+                    {
+                        ushort tlen = BitConverter.ToUInt16(rec.ExtraData, offset); offset += 2; 
+                        string text = this.Encoding.GetString(rec.ExtraData, offset, tlen); offset += tlen; 
+                        rec.Web = text;
+                    };
                 };
                 if ((rec.Parent != null) && (rec.Parent is RecWaypoint)) ((RecWaypoint)rec.Parent).Contact = rec;
                 if ((rec.Parent != null) && (rec.Parent is RecCategory)) ((RecCategory)rec.Parent).Contact = rec;
@@ -1379,7 +1495,11 @@ namespace KMZRebuilder
                 rec.Length = BitConverter.ToUInt32(rec.MainData, 1);
                 rec.ImageData = new byte[rec.Length];
                 if (rec.Length > 0)
+                {
                     Array.Copy(rec.MainData, 5, rec.ImageData, 0, rec.Length);
+                    if ((rec.Parent != null) && (rec.Parent is RecWaypoint))
+                        ((RecWaypoint)rec.Parent).Image = rec;
+                };
             }
             catch (Exception ex)
             {
@@ -1403,6 +1523,36 @@ namespace KMZRebuilder
                 };
                 if ((rec.Parent != null) && (rec.Parent is RecWaypoint)) ((RecWaypoint)rec.Parent).Description = rec;
                 if ((rec.Parent != null) && (rec.Parent is RecCategory)) ((RecCategory)rec.Parent).Description = rec;
+            }
+            catch (Exception ex)
+            {
+                rec.ReadError = ex;
+            };
+        }
+
+        private void ReadProductInfo(RecProductInfo rec) // 15
+        {
+            rec.FactoryID = BitConverter.ToUInt16(rec.MainData, 0);
+            rec.ProductID = rec.MainData[2];
+            rec.RegionID = rec.MainData[3];
+            rec.VendorID = rec.MainData[4];
+        }
+
+        private void ReadAlertCircle(RecAlertCircle rec) // 16
+        {
+            try
+            {
+                rec.Count = BitConverter.ToUInt16(rec.MainData, 0);
+                rec.lat = new double[rec.Count];
+                rec.lon = new double[rec.Count];
+                rec.radius = new uint[rec.Count];
+                for (int i = 0; i < rec.Count; i++)
+                {
+                    rec.lat[i] = (double)BitConverter.ToUInt32(rec.MainData, 2 + i * 12) * 360.0 / Math.Pow(2, 32);
+                    rec.lon[i] = (double)BitConverter.ToUInt32(rec.MainData, 2 + i * 12 + 4) * 360.0 / Math.Pow(2, 32);
+                    rec.radius[i] = BitConverter.ToUInt32(rec.MainData, 2 + i * 12 + 8);
+                };
+                if ((rec.Parent != null) && (rec.Parent is RecAlert)) ((RecAlert)rec.Parent).AlertCircles = rec;
             }
             catch (Exception ex)
             {
@@ -1520,37 +1670,218 @@ namespace KMZRebuilder
         private Translitter ml = new Translitter();
         private static string rxskip = @"(?:alert_[\w]+=.+)|(?:name\:\w\w=.+)";
         private static string rxdesc = @"(?<desc>desc\:(?<lang>\w\w)=(?<value>[\w\W]+?)\r\n\r\n)";
-        
+        private static string rxcomm = @"(?:comment=(?<comment>.+))";
+        private static string rxcmln = @"(?:comm\:(?<lang>\w\w)=(?<comment>.+))";
+
+        private static string[] rxaddr = new string[] {
+                @"(?:addr_city=(?<value>.+))",
+                @"(?:addr_country=(?<value>.+))",
+                @"(?:addr_state=(?<value>.+))",
+                @"(?:addr_postal=(?<value>.+))",
+                @"(?:addr_street=(?<value>.+))",
+                @"(?:addr_house=(?<value>.+))"};
+        private static string[] rxadln = new string[] {
+                @"(?:addr_city\:(?<lang>\w\w)=(?<value>.+))",
+                @"(?:addr_country\:(?<lang>\w\w)=(?<value>.+))",
+                @"(?:addr_state\:(?<lang>\w\w)=(?<value>.+))",
+                @"(?:addr_postal\:(?<lang>\w\w)=(?<value>.+))",
+                @"(?:addr_street\:(?<lang>\w\w)=(?<value>.+))",
+                @"(?:addr_house\:(?<lang>\w\w)=(?<value>.+))"};
+        private static string[] rxcont = new string[] {
+                @"(?:contact_phone=(?<value>.+))",
+                @"(?:contact_phone2=(?<value>.+))",
+                @"(?:contact_fax=(?<value>.+))",
+                @"(?:contact_email=(?<value>.+))",
+                @"(?:contact_web=(?<value>.+))"};
+
+        /// <summary>
+        ///     GPI File Name
+        /// </summary>
         public string Name = "Exported Data";
-        public string DataSource = "KMZRebuilder";
-        public bool StoreDescriptions = true;
-        public bool StoreAlerts = false;
-        public bool DefaultAlertIsOn = true;
-        public string DefaultAlertType = "proximity";
-        public string DefaultAlertSound = "4";
+        /// <summary>
+        ///     GPI Content Data Source
+        /// </summary>
+        public string DataSource = "KMZRebuilder"; 
+        /// <summary>
+        ///     Store POI Description Text
+        /// </summary>
+        public bool StoreDescriptions = true; // true is default
+        /// <summary>
+        ///     Store POI Alert (gets from description)
+        /// </summary>
+        public bool StoreAlerts = false; // false is default
+        /// <summary>
+        ///     Store POI Images as is (in JPEG format, no resize)
+        /// </summary>
+        public bool StoreImagesAsIs = false; // false is default
+        /// <summary>
+        ///     By Default Alert in POI is on (if not specified)
+        /// </summary>
+        public bool DefaultAlertIsOn = true; // try is default
+        /// <summary>
+        ///     By Default Alert in POI is proxinity (if not specified)
+        /// </summary>
+        public string DefaultAlertType = "proximity"; // proximity is default
+        /// <summary>
+        ///     By Default Alert in POI is plugn sound (if not specified)
+        /// </summary>
+        public string DefaultAlertSound = "4"; // 4 is default
+        /// <summary>
+        ///     Source KML file (for relative image & sounds paths)
+        /// </summary>
         public string SourceKMLfile = null;
+        /// <summary>
+        ///     Max Image Width/Height (22 is def, 16..48)
+        /// </summary>
+        public byte MaxImageSide = 22; // 22 is default, 16 min, 48 max
+        /// <summary>
+        ///     Bitmap Transparent Color (#FEFEFE or #FF00FF)
+        /// </summary>
+        public Color TransColor = Color.FromArgb(0xFE, 0xFE, 0xFE); // Color.FromArgb(0xFE,0xFE,0xFE); // Almost white
 
+        /// <summary>
+        ///     POI Bounds: Min Lat
+        /// </summary>
         private double MinLat = -90;
+        /// <summary>
+        ///     POI Bounds: Max Lat
+        /// </summary>
         private double MaxLat = 90;
+        /// <summary>
+        ///     POI Bounds: Min Lon
+        /// </summary>
         private double MinLon = -180;
-        private double MaxLon = 180;
-        private Color TransColor = Color.FromArgb(0xFE,0xFE,0xFE); // Almost white
+        /// <summary>
+        ///     POI Bounds: Max Lon
+        /// </summary>
+        private double MaxLon = 180;        
 
+        /// <summary>
+        ///     List of POI Categories (to store)
+        /// </summary>
         private List<string> Categories = new List<string>();
+        /// <summary>
+        ///     List of POI Styles (to store bitmaps)
+        /// </summary>
         private List<string> Styles = new List<string>();
+        /// <summary>
+        ///     List of POI Sounds (to store media)
+        /// </summary>
         private List<string> MP3s = new List<string>();
+        /// <summary>
+        ///     POI List splitted by areas (each degree is an area)
+        /// </summary>
         private Dictionary<uint, List<POI>> POIs = new Dictionary<uint, List<POI>>();
+        /// <summary>
+        ///     POI Bitmap/Image from POI style (by kml style ref)
+        /// </summary>
         private Dictionary<string, Image> Images = new Dictionary<string, Image>();
 
         public GPIWriter() { }
         public GPIWriter(string source_kml_file) { SourceKMLfile = source_kml_file; }
 
+        /// <summary>
+        ///     Add POI
+        /// </summary>
+        /// <param name="category">Category/Layer</param>
+        /// <param name="name">POI Name</param>
+        /// <param name="description">POI Description (could contains alert, comment, address, contact)</param>
+        /// <param name="style">POI style for (specified for image)</param>
+        /// <param name="lat">Latitude</param>
+        /// <param name="lon">Longitude</param>
         public void AddPOI(string category, string name, string description, string style, double lat, double lon)
         {            
             // Rebound
             if (Categories.Count == 0) { MinLat = 90; MaxLat = -90; MinLon = 180; MaxLon = -180; };
 
             POI poi = new POI(name, lat, lon);
+            if (!String.IsNullOrEmpty(description))
+            {
+                { // GET COMMENT
+                    { // full comment
+                        Match mx = ((new Regex(rxcomm)).Match(description));
+                        if (mx.Success)
+                        {
+                            description = description.Replace(mx.Value, "");
+                            poi.comment = TrimDesc(mx.Groups["comment"].Value);
+                        };
+                    };
+                    { // by lang comment
+                        MatchCollection mc = (new Regex(rxcmln)).Matches(description);
+                        foreach (Match mx in mc)
+                        {
+                            description = description.Replace(mx.Value, "");
+                            if (mx.Groups["lang"].Value == GPIReader.LOCALE_LANGUAGE.ToLower())
+                                poi.comment = TrimDesc(mx.Groups["comment"].Value);
+                        };
+                    };
+                };
+                { // GET ADDRESS
+                    bool hasad = false; string[] addr = new string[6];
+                    { // full address
+                        Match mx;
+                        for (int i = 0; i < 6; i++)
+                        {
+                            mx = (new Regex(rxaddr[i])).Match(description);
+                            if (mx.Success)
+                            {
+                                description = description.Replace(mx.Value, "");
+                                addr[i] = TrimDesc(mx.Groups["value"].Value);
+                                hasad = true;
+                            };
+                        };
+                    };
+                    { // by lang address
+                        MatchCollection mc;
+                        for (int i = 0; i < 6; i++)
+                        {
+                            mc = (new Regex(rxadln[i])).Matches(description);
+                            foreach (Match mx in mc)
+                            {
+                                description = description.Replace(mx.Value, "");
+                                if (mx.Groups["lang"].Value == GPIReader.LOCALE_LANGUAGE.ToLower())
+                                {
+                                    addr[i] = TrimDesc(mx.Groups["value"].Value);
+                                    hasad = true;
+                                };
+                            };
+                        };
+                    };
+                    if (hasad) poi.addr = addr;
+                };
+                { // GET CONTACTS
+                    bool hascon = false; string[] conts = new string[5];
+                    Match mx;
+                    for (int i = 0; i < 5; i++)
+                    {
+                        mx = (new Regex(rxcont[i])).Match(description);
+                        if (mx.Success)
+                        {
+                            description = description.Replace(mx.Value, "");
+                            conts[i] = TrimDesc(mx.Groups["value"].Value);
+                            hascon = true;
+                        };
+                    };
+                    if (hascon)
+                        poi.contacts = conts;
+
+                };
+                description = description.TrimStart(new char[] { '\r', '\n' });
+            };
+            if (StoreAlerts && (Regex.IsMatch(description, @"alert_[\w]+=.+", RegexOptions.None)))
+            {
+                poi.alert = description;
+                if (!String.IsNullOrEmpty(poi.alert))
+                {
+                    Regex rx = new Regex(@"alert_sound=(?<sound>.+)", RegexOptions.None);
+                    Match mx = rx.Match(poi.alert);
+                    if (mx.Success)
+                    {
+                        string fName = mx.Groups["sound"].Value;
+                        if (!MP3s.Contains(fName)) MP3s.Add(fName);
+                    };
+                };
+            };  
             if (StoreDescriptions && (!String.IsNullOrEmpty(description)))
             {
                 poi.description = (new Regex(rxskip, RegexOptions.None)).Replace(description, "").TrimStart(new char[] { '\r', '\n' });
@@ -1564,21 +1895,7 @@ namespace KMZRebuilder
                             poi.description = poi.description.Replace(mx.Value, mx.Groups["value"].Value);
                 };
                 poi.description = TrimDesc(poi.description);
-            };
-            if (StoreAlerts)
-            {
-                poi.alert = description;
-                if (!String.IsNullOrEmpty(poi.alert))
-                {
-                    Regex rx = new Regex(@"alert_sound=(?<sound>.+)", RegexOptions.None);
-                    Match mx = rx.Match(poi.alert);
-                    if (mx.Success)
-                    {
-                        string fName = mx.Groups["sound"].Value;
-                        if (!MP3s.Contains(fName)) MP3s.Add(fName);
-                    };
-                };
-            };
+            };                 
 
             // Get Category Index
             poi.cat = Categories.IndexOf(category);
@@ -1600,19 +1917,24 @@ namespace KMZRebuilder
             POIs[zone].Add(poi);
         }
 
+        /// <summary>
+        ///     Add Image
+        /// </summary>
+        /// <param name="style">POI style (specified for image)</param>
+        /// <param name="im">Preloaded Image</param>
         public void AddImage(string style, Image im)
-        {
-            Bitmap nim = new Bitmap(im.Width, im.Height);
-            Graphics g = Graphics.FromImage(nim);
-            g.Clear(TransColor);
-            g.DrawImage(im, new Point(0, 0));
-            g.Dispose();
+        {            
             if (Images.ContainsKey(style))
-                Images[style] = nim;
+                Images[style] = im;
             else
-                Images.Add(style, nim);
+                Images.Add(style, im);
         }
 
+        /// <summary>
+        ///     Trim Text
+        /// </summary>
+        /// <param name="text"></param>
+        /// <returns></returns>
         private string TrimDesc(string text)
         {
             while (text.IndexOf("\r\n\r\n") >= 0) text = text.Replace("\r\n\r\n", "");
@@ -1620,6 +1942,12 @@ namespace KMZRebuilder
             return text;
         }
 
+        /// <summary>
+        ///     Convert Lat & Lon to Area
+        /// </summary>
+        /// <param name="lat"></param>
+        /// <param name="lon"></param>
+        /// <returns></returns>
         private uint LatLonToZone(double lat, double lon)
         {
             short la = (short)lat;
@@ -1630,6 +1958,12 @@ namespace KMZRebuilder
             return BitConverter.ToUInt32(lalo.ToArray(), 0);
         }
 
+        /// <summary>
+        ///     Convert Area to Lat & Lon
+        /// </summary>
+        /// <param name="zone"></param>
+        /// <param name="lat"></param>
+        /// <param name="lon"></param>
         private void ZoneToLatLon(uint zone, out double lat, out double lon)
         {
             byte[] lalo = BitConverter.GetBytes(zone);
@@ -1637,6 +1971,10 @@ namespace KMZRebuilder
             lon = BitConverter.ToInt16(lalo, 2);
         }
 
+        /// <summary>
+        ///     Save to GPI file
+        /// </summary>
+        /// <param name="fileName"></param>
         public void Save(string fileName)
         {
             FileStream fs = new FileStream(fileName, FileMode.Create, FileAccess.Write);
@@ -1668,11 +2006,14 @@ namespace KMZRebuilder
         {
             public string name;
             public string description;
+            public string comment; // predefined from desc
             public double lat;
             public double lon;
             public int cat;
             public int sty;
-            public string alert;
+            public string alert; // predefined from desc
+            public string[] addr; // predefined from desc;
+            public string[] contacts; // predefined from desc
 
             public POI() { }
             public POI(string name, double lat, double lon) { this.name = name; this.description = null; this.lat = lat; this.lon = lon; }
@@ -1705,7 +2046,7 @@ namespace KMZRebuilder
             }            
         }
 
-        private FileBlock GetHeader0Block()
+        private FileBlock GetHeader0Block() // 0
         {
             FileBlock fb = new FileBlock();
             fb.bType = 0x00;
@@ -1729,7 +2070,7 @@ namespace KMZRebuilder
             return fb;
         }
 
-        private FileBlock GetHeader1Block()
+        private FileBlock GetHeader1Block() // 1
         {
             FileBlock fb = new FileBlock();
             fb.bType = 0x01;
@@ -1754,7 +2095,7 @@ namespace KMZRebuilder
             return fb;
         }
 
-        private FileBlock GetPOIGroupBlock()
+        private FileBlock GetPOIGroupBlock() // 9
         {
             FileBlock fb = new FileBlock();
             fb.bType = 9;
@@ -1776,7 +2117,7 @@ namespace KMZRebuilder
             return fb;
         }
 
-        private FileBlock GetMainAreaBlock()
+        private FileBlock GetMainAreaBlock() // 8
         {
             FileBlock fb = new FileBlock();
             fb.bType = 8;
@@ -1797,7 +2138,7 @@ namespace KMZRebuilder
             return fb;
         }
 
-        private FileBlock GetSubAreaBlock(uint zone)
+        private FileBlock GetSubAreaBlock(uint zone) // 8
         {
             double lat, lon;
             ZoneToLatLon(zone, out lat, out lon);
@@ -1820,7 +2161,7 @@ namespace KMZRebuilder
             return f08;
         }
 
-        private FileBlock GetPOIBlock(POI poi)
+        private FileBlock GetPOIBlock(POI poi) // 2
         {
             FileBlock f02 = new FileBlock();
             f02.bType = 2;
@@ -1838,23 +2179,22 @@ namespace KMZRebuilder
                 // STYLE
                 f02.ExtraData.AddRange(GetBmpIDBlock(poi.sty).Data);
                 // Alert
-                if (StoreAlerts && (!String.IsNullOrEmpty(poi.alert)) && (Regex.IsMatch(poi.alert, @"alert_[\w]+=.+", RegexOptions.None))) f02.ExtraData.AddRange(GetAlertBlock(poi).Data);
+                if (StoreAlerts && (!String.IsNullOrEmpty(poi.alert))) f02.ExtraData.AddRange(GetAlertBlock(poi).Data);
                 // Comment
-                /* NO Comment */
+                if (!String.IsNullOrEmpty(poi.comment)) f02.ExtraData.AddRange(GetCommentBlock(poi.comment).Data);
                 // Address
-                /* NO Address */
+                if ((poi.addr != null) && (poi.addr.Length == 6)) f02.ExtraData.AddRange(GetAddressBlock(poi.addr).Data);
                 // Contact
-                /* NO Contact */
+                if ((poi.contacts != null) && (poi.contacts.Length == 5)) f02.ExtraData.AddRange(GetContactsBlock(poi.contacts).Data);
                 // Image
-                /* NO Image */
+                if(StoreImagesAsIs) f02.ExtraData.AddRange(GetImageBlock(GetImageFromStyle(poi.sty)).Data);
                 // DESC
-                if (!String.IsNullOrEmpty(poi.description)) 
-                    f02.ExtraData.AddRange(GetDescBlock(poi.description).Data);
+                if (!String.IsNullOrEmpty(poi.description))  f02.ExtraData.AddRange(GetDescBlock(poi.description).Data);
             };
             return f02;
         }
 
-        private FileBlock GetAlertBlock(POI poi)
+        private FileBlock GetAlertBlock(POI poi) // 3
         {
             FileBlock f03 = new FileBlock();
             f03.bType = 3;
@@ -1911,10 +2251,27 @@ namespace KMZRebuilder
                     f03.MainData.Add(0x10);          // Audio Alert // 0x10 - predefined, 0x00 in media record                
                 };
             };
+            { // EXTRA 
+                // ALERT CIRCLES
+                // f03.ExtraData.AddRange(GetCirclesBlock(poi).Data);
+            };
             return f03;
         }
 
-        private FileBlock GetCatBlock(int cat)
+        private FileBlock GetCirclesBlock(POI poi) // 16
+        {
+            FileBlock fb16 = new FileBlock();
+            fb16.bType = 16;
+            fb16.MainData.AddRange(BitConverter.GetBytes((ushort)1)); // count of circles
+            { // each circle
+                fb16.MainData.AddRange(BitConverter.GetBytes(((uint)(poi.lat * Math.Pow(2, 32) / 360.0))));
+                fb16.MainData.AddRange(BitConverter.GetBytes(((uint)(poi.lon * Math.Pow(2, 32) / 360.0))));
+                fb16.MainData.AddRange(BitConverter.GetBytes((uint)300)); // radius in meters
+            };
+            return fb16;
+        }
+
+        private FileBlock GetCatBlock(int cat) // 7
         {
             FileBlock f07 = new FileBlock();
             f07.bType = 7;
@@ -1923,7 +2280,7 @@ namespace KMZRebuilder
             return f07;
         }
 
-        private FileBlock GetCatIDBlock(int cat)
+        private FileBlock GetCatIDBlock(int cat) // 6
         {
             FileBlock f06 = new FileBlock();
             f06.bType = 6;
@@ -1931,7 +2288,7 @@ namespace KMZRebuilder
             return f06;
         }
 
-        private FileBlock GetBmpBlock(int sty)
+        private FileBlock GetBmpBlock(int sty) // 5
         {
             FileBlock f05 = new FileBlock();
             f05.bType = 5;
@@ -1975,7 +2332,21 @@ namespace KMZRebuilder
             return f05;
         }
 
-        private FileBlock GetBmpIDBlock(int sty)
+        private FileBlock GetImageBlock(Image im) // 13
+        {
+            FileBlock f13 = new FileBlock();
+            f13.bType = 13;
+            f13.MainData.Add(0); // Reserved
+            MemoryStream ms = new MemoryStream();
+            im.Save(ms, ImageFormat.Jpeg);
+            byte[] arr = ms.ToArray();
+            ms.Close();
+            f13.MainData.AddRange(BitConverter.GetBytes((uint)arr.Length));
+            f13.MainData.AddRange(arr); // ID
+            return f13;
+        }
+
+        private FileBlock GetBmpIDBlock(int sty) // 4
         {
             FileBlock f04 = new FileBlock();
             f04.bType = 4;
@@ -1983,7 +2354,46 @@ namespace KMZRebuilder
             return f04;
         }
 
-        private FileBlock GetDescBlock(string desc)
+        private FileBlock GetCommentBlock(string comment) // 10
+        {
+            FileBlock f10 = new FileBlock();
+            f10.bType = 10;
+            f10.MainData.AddRange(ToLString(comment)); // Text
+            return f10;
+        }
+
+        private FileBlock GetAddressBlock(string[] addr) // 11
+        {
+            FileBlock f11 = new FileBlock();
+            f11.bType = 11;
+            int flags = 0;
+            for (int i = 0; i < 6; i++) if (!String.IsNullOrEmpty(addr[i])) flags += (int)Math.Pow(2, i);
+            f11.MainData.AddRange(BitConverter.GetBytes((ushort)flags));
+            for (int i = 0; i < 6; i++)
+                if (!String.IsNullOrEmpty(addr[i]))
+                {
+                    if ((i == 3) || (i == 5))
+                        f11.MainData.AddRange(ToPString(addr[i], true));
+                    else
+                        f11.MainData.AddRange(ToLString(addr[i]));
+                };
+            return f11;
+        }
+
+        private FileBlock GetContactsBlock(string[] conts) // 12
+        {
+            FileBlock f12 = new FileBlock();
+            f12.bType = 12;
+            int flags = 0;
+            for (int i = 0; i < 5; i++) if (!String.IsNullOrEmpty(conts[i])) flags += (int)Math.Pow(2, i);
+            f12.MainData.AddRange(BitConverter.GetBytes((ushort)flags));
+            for (int i = 0; i < 5; i++)
+                if (!String.IsNullOrEmpty(conts[i]))
+                    f12.MainData.AddRange(ToPString(conts[i], true));
+            return f12;
+        }
+
+        private FileBlock GetDescBlock(string desc) // 14
         {
             FileBlock f14 = new FileBlock();
             f14.bType = 14;
@@ -1992,7 +2402,7 @@ namespace KMZRebuilder
             return f14;
         }
 
-        private FileBlock GetMediaBlock(int medid)
+        private FileBlock GetMediaBlock(int medid) // 18
         {
             FileBlock f18 = new FileBlock();
             f18.bType = 18;
@@ -2030,16 +2440,16 @@ namespace KMZRebuilder
             return f18;
         }
 
-        private FileBlock GetFooter()
+        private FileBlock GetFooter() // end
         {
             FileBlock fb = new FileBlock();
             fb.bType = 0xFFFF;
             return fb;
         }
 
-        private Bitmap GetBitmapFromStyle(int sty, out List<Color> palette)
+        private Image GetImageFromStyle(int sty)
         {
-            Bitmap im;
+            Image im;
             if (Images.ContainsKey(Styles[sty]))
                 im = (Bitmap)Images[Styles[sty]];
             else
@@ -2052,10 +2462,39 @@ namespace KMZRebuilder
                 while (ttd.Length < 2) ttd = "0" + ttd;
                 g.DrawString(ttd, new Font("MS Sans Serif", 8), Brushes.Black, 0, 1);
                 g.Dispose();
-            };                        
+            };
+            return im;
+        }
+
+        private Bitmap GetBitmapFromStyle(int sty, out List<Color> palette)
+        {
+            Bitmap im;
+            if (Images.ContainsKey(Styles[sty]))
+            {
+                Bitmap bim = (Bitmap)Images[Styles[sty]];
+                im = new Bitmap(bim.Width, bim.Height);
+                Graphics g = Graphics.FromImage(im);
+                g.Clear(TransColor);
+                g.DrawImage(bim, new Point(0, 0));
+                g.Dispose();
+            }
+            else
+            {
+                im = new Bitmap(16, 16);
+                Graphics g = Graphics.FromImage(im);
+                g.FillRectangle(new SolidBrush(Color.Black), new Rectangle(0, 0, 16, 16));
+                g.FillRectangle(new SolidBrush(Color.White), new Rectangle(1, 1, 14, 14));
+                string ttd = sty.ToString();
+                while (ttd.Length < 2) ttd = "0" + ttd;
+                g.DrawString(ttd, new Font("MS Sans Serif", 8), Brushes.Black, 0, 1);
+                g.Dispose();
+            };
+            int maximside = MaxImageSide;
+            if (maximside < 16) maximside = 16;
+            if (maximside > 48) maximside = 48;
             ImageMagick.MagickImage mi = new ImageMagick.MagickImage(im);
-            if ((im.Width > 32) || (im.Height > 32)) // im = ResizeImage(im, 32, 32);
-                mi.Resize(32, 32);
+            if ((im.Width > maximside) || (im.Height > maximside)) // im = ResizeImage(im, 32, 32);
+                mi.Resize(maximside, maximside);            
             ImageMagick.QuantizeSettings qs = new ImageMagick.QuantizeSettings();
             qs.Colors = 256;
             mi.Quantize(qs);
@@ -2067,7 +2506,7 @@ namespace KMZRebuilder
                 col = mi.GetColormap(index++);
                 if (col == null) break;
                 else palette.Add(col.ToColor());
-            };
+            };            
             return mi.ToBitmap();
         }        
 
