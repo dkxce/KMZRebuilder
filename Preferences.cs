@@ -165,6 +165,7 @@ namespace KMZRebuilder
             lb.Top = 25;
             lb.Height = form.Height - 110;
             lb.BorderStyle = BorderStyle.FixedSingle;
+            if (Properties == null) LoadDefaults();
             foreach (Property prop in Properties) lb.Items.Add(prop);
             lb.DoubleClick += (delegate(object sender, EventArgs e) { OnChangeItem(lb); });
             lb.KeyPress += (delegate(object sender, KeyPressEventArgs e) { if ((e.KeyChar == (char)32) || (e.KeyChar == (char)13)) OnChangeItem(lb); });
