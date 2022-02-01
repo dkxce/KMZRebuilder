@@ -3139,7 +3139,7 @@ namespace KMZRebuilder
                 if (!String.IsNullOrEmpty(addr[i]))
                 {
                     if ((i == 3) || (i == 5))
-                        f11.MainData.AddRange(ToPString(addr[i], true));
+                        f11.MainData.AddRange(ToPString(addr[i], false));
                     else
                         f11.MainData.AddRange(ToLString(addr[i]));
                 };
@@ -3155,7 +3155,7 @@ namespace KMZRebuilder
             f12.MainData.AddRange(BitConverter.GetBytes((ushort)flags));
             for (int i = 0; i < 5; i++)
                 if (!String.IsNullOrEmpty(conts[i]))
-                    f12.MainData.AddRange(ToPString(conts[i], true));
+                    f12.MainData.AddRange(ToPString(conts[i], false));
             return f12;
         }
 
