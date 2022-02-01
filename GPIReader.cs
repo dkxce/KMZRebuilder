@@ -2,9 +2,16 @@
 /*                                                 */
 /*            C# Garmin POI File Reader            */
 /*              (by milokz@gmail.com)              */
+/*                        &                        */
+/*            C# Garmin POI File Writer            */
+/*              (by milokz@gmail.com)              */
 /*                                                 */
 /*         GPIReader by milokz@gmail.com           */
+/*     Part of KMZRebuilder & KMZViewer Project    */
+/*         GPIWrited by milokz@gmail.com           */
 /*          Part of KMZRebuilder Project           */
+/*                                                 */
+/*             by reverse engineering              */
 /*                                                 */
 /***************************************************/
 
@@ -21,12 +28,15 @@ using System.Text.RegularExpressions;
 namespace KMZRebuilder
 {
     #region RECTYPES
+    /// <summary>
+    ///     GPI File Record Types
+    /// </summary>
     public enum RecType: ushort
     {
-        Header0 = 0,
-        Header1 = 1,
+        Header0  = 0,
+        Header1  = 1,
         Waypoint = 2,
-        Alert = 3,
+        Alert    = 3,
         BitmapReference = 4,
         Bitmap = 5,
         CategoryReference = 6,
@@ -43,14 +53,14 @@ namespace KMZRebuilder
         Copyright = 17,
         Media = 18,
         SpeedCamera = 19,
-        Index = 20,
-        Unknown23 = 23,
-        Unknown24 = 24,
-        Unknown25 = 25,
-        Unknown27 = 27,
+        AlertTriggerOptions = 27,
         End = 0xFFFF
     }
 
+    /// <summary>
+    ///     Type Utils
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public static class RecEnum<T>
     {
         public static bool IsDefined(string name)
@@ -64,35 +74,153 @@ namespace KMZRebuilder
         }       
     }
 
+    /// <summary>
+    ///     GPI File Record Block
+    /// </summary>
     public class Record
     {
+        /// <summary>
+        ///     Parent Record
+        /// </summary>
         public Record Parent = null;
+        /// <summary>
+        ///     Child Records
+        /// </summary>
         public List<Record> Childs = new List<Record>();
-        public bool IsRoot { get { return Parent == null; } }
-        public int RootLevel { get { return Parent == null ? 0 : Parent.RootLevel + 1; } }
-        public string Ierarchy { get { return Parent == null ? @"\Root" : Parent.Ierarchy + @"\" + RecordType.ToString(); } }
-        public Exception ReadError = null;
+        
+        /// <summary>
+        ///     Record is on top
+        /// </summary>
+        public bool RootIsTop { get { return Parent == null; } }
+        /// <summary>
+        ///     Record Nesting Index
+        /// </summary>
+        public int RootLevel { get { return Parent == null ? 0 : Parent.RootLevel + 1; } }        
+        /// <summary>
+        ///     Record Nesting Ierarchy
+        /// </summary>
+        internal string RootIerarchy { get { return Parent == null ? @"\Root" : Parent.RootIerarchy + @"\" + RecordType.ToString(); } }
 
-        public ushort RType = 0;
-        public RecType RecordType { get { return (RecType)RType; } }
-        public ushort RFlags = 0;
-        public bool HasExtra { get { return (RFlags & 0x08) == 0x08; } }
+        /// <summary>
+        ///     Has Extra Block Data
+        /// </summary>
+        public bool RecHasExtra { get { return (RecFlags & 0x08) == 0x08; } }
+        /// <summary>
+        ///     GPI Record Type
+        /// </summary>
+        public RecType RecordType { get { return (RecType)RecType; } }
+        /// <summary>
+        ///     GPI Record Type
+        /// </summary>
+        internal ushort RecType = 0;
+        /// <summary>
+        ///     GPI Record Flags
+        /// </summary>
+        internal ushort RecFlags = 0;        
 
-        public uint MainLength = 0;
-        public uint ExtraLength = 0;
-        public uint TotalLength = 0;
-        public byte[] MainData = new byte[0];
-        public byte[] ExtraData = new byte[0];
+        /// <summary>
+        ///     Offset of Record Block
+        /// </summary>
+        internal uint OffsetBlock = 0;
+        /// <summary>
+        ///     Offset of Record Main Data Block
+        /// </summary>
+        internal uint OffsetMain = 0;
+        /// <summary>
+        ///     Offset of Record Extra Data Block
+        /// </summary>
+        internal uint OffsetExtra = 0;
 
-        public Record(Record parent)
+        /// <summary>
+        ///     Record Block Length
+        /// </summary>
+        internal uint LengthBlock = 0;
+        /// <summary>
+        ///     Record Block Main Data Length
+        /// </summary>
+        internal uint LengthMain = 0;
+        /// <summary>
+        ///     Record Block Extra Data Length
+        /// </summary>
+        internal uint LengthExtra = 0;
+        /// <summary>
+        ///     Record Block Main & Extra Data Length
+        /// </summary>
+        internal uint LengthTotal = 0;        
+
+        /// <summary>
+        ///     Source Block Without Any Offsets
+        /// </summary>
+        internal byte[] DataBlock;
+        /// <summary>
+        ///     Record Main Data
+        /// </summary>
+        public byte[] DataMain
+        {
+            get
+            {
+                if (DataBlock == null) return null;
+                byte[] res = new byte[LengthMain];
+                Array.Copy(DataBlock, OffsetMain, res, 0, LengthMain);
+                return res;
+            }
+        }
+        /// <summary>
+        ///     Record Extra Data
+        /// </summary>
+        public byte[] DataExtra
+        {
+            get
+            {
+                if (DataBlock == null) return null;
+                byte[] res = new byte[LengthExtra];
+                Array.Copy(DataBlock, OffsetExtra, res, 0, LengthExtra);
+                return res;
+            }
+        }
+        /// <summary>
+        ///     Record Main & Extra Data
+        /// </summary>
+        public byte[] DataTotal
+        {
+            get
+            {
+                if (DataBlock == null) return null;
+                byte[] res = new byte[LengthTotal];
+                Array.Copy(DataBlock, OffsetMain, res, 0, LengthTotal);
+                return res;
+            }
+        }
+        
+        /// <summary>
+        ///     Last Read Record Block Error
+        /// </summary>
+        internal Exception ReadError = null;
+
+        /// <summary>
+        ///     Create with Parent
+        /// </summary>
+        /// <param name="parent"></param>
+        protected Record(Record parent)
         {
             this.Parent = parent;
             if (parent != null) parent.Childs.Add(this);
         }
 
-        public static Record Create(Record parent, ushort RecordType)
+        /// <summary>
+        ///     Create No Parent (File Root)
+        /// </summary>
+        public static Record ROOT
         {
-            Record res = null;
+            get
+            {
+                return new Record(null);
+            }             
+        }
+
+        public static Record Create(Record parent, uint offset, ref byte[] sourceData, ushort RecordType)
+        {
+            Record res = null;            
             if (RecordType == 0) res = new RecHeader0(parent);
             if (RecordType == 1) res = new RecHeader1(parent);            
             if (RecordType == 2) res = new RecWaypoint(parent);
@@ -113,22 +241,25 @@ namespace KMZRebuilder
             if (RecordType == 17) res = new RecCopyright(parent);
             if (RecordType == 18) res = new RecMedia(parent);
             if (RecordType == 19) res = new RecSpeedCamera(parent);
+            if (RecordType == 27) res = new RecAlertTriggerOptions(parent);
             if (RecordType == 0xFFFF) res = new RecEnd(parent);
             if (res == null) res = new Record(parent);
-            res.RType = RecordType;
+            res.RecType = RecordType;
+            res.OffsetBlock = offset;
+            res.DataBlock = sourceData;
             return res;            
         }
 
         public override string ToString()
         {
-            return String.Format("{1}[{2}]{3}", RecordType, RType, RootLevel, Ierarchy);
+            return String.Format("{1}[{2}]{3}", RecordType, RecType, RootLevel, RootIerarchy);
         }
     }
 
     // 0
-    public class RecHeader0 : Record
+    public sealed class RecHeader0 : Record
     {
-        public RecHeader0(Record parent) : base(parent) { }
+        internal RecHeader0(Record parent) : base(parent) { }
         public string Header = null;
         public string Version = null;
         public DateTime Created = DateTime.MinValue;
@@ -136,9 +267,9 @@ namespace KMZRebuilder
     }
 
     // 1
-    public class RecHeader1 : Record
+    public sealed class RecHeader1 : Record
     {
-        public RecHeader1(Record parent) : base(parent) { }
+        internal RecHeader1(Record parent) : base(parent) { }
         public string Content = null;
         public ushort CodePage = 0xFDE9;
         public Encoding Encoding
@@ -152,11 +283,11 @@ namespace KMZRebuilder
     }
 
     // 2
-    public class RecWaypoint : Record
+    public sealed class RecWaypoint : Record
     {
-        public RecWaypoint(Record parent) : base(parent) { }
-        public int cLat;
-        public int cLon;
+        internal RecWaypoint(Record parent) : base(parent) { }
+        internal int cLat;
+        internal int cLon;
         public double Lat { get { return (double)cLat * 360.0 / Math.Pow(2, 32); } }
         public double Lon { get { return (double)cLon * 360.0 / Math.Pow(2, 32); } }
         public List<KeyValuePair<string, string>> ShortName = new List<KeyValuePair<string, string>>();
@@ -188,11 +319,11 @@ namespace KMZRebuilder
     }
 
     // 3
-    public class RecAlert : Record
+    public sealed class RecAlert : Record
     {
-        public RecAlert(Record parent) : base(parent) { }
+        internal RecAlert(Record parent) : base(parent) { }
         public ushort Proximity;
-        public ushort cSpeed;
+        internal ushort cSpeed;
         public int Speed { get { return (int)Math.Round((double)cSpeed / 100.0 * 3.6); } }
         public byte Alert;
         public byte AlertType;
@@ -206,19 +337,20 @@ namespace KMZRebuilder
             return AlertType.ToString();
         } }
         public RecAlertCircle AlertCircles;
+        public RecAlertTriggerOptions AlertTriggerOptions;
     }
 
     // 4
-    public class RecBitmapReference : Record
+    public sealed class RecBitmapReference : Record
     {
-        public RecBitmapReference(Record parent) : base(parent) { }
+        internal RecBitmapReference(Record parent) : base(parent) { }
         public ushort BitmapID;
     }
 
     // 5
-    public class RecBitmap : Record
+    public sealed class RecBitmap : Record
     {
-        public RecBitmap(Record parent) : base(parent) { }
+        internal RecBitmap(Record parent) : base(parent) { }
         public ushort BitmapID;
         public ushort Height;
         public ushort Width;
@@ -236,16 +368,16 @@ namespace KMZRebuilder
     }
 
     // 6
-    public class RecCategoryReference : Record
+    public sealed class RecCategoryReference : Record
     {
-        public RecCategoryReference(Record parent) : base(parent) { }
+        internal RecCategoryReference(Record parent) : base(parent) { }
         public ushort CategoryID;
     }
 
     // 7
-    public class RecCategory : Record
+    public sealed class RecCategory : Record
     {
-        public RecCategory(Record parent) : base(parent) { }
+        internal RecCategory(Record parent) : base(parent) { }
         public ushort CategoryID;
         public List<KeyValuePair<string, string>> Category = new List<KeyValuePair<string, string>>();        
         public string Name
@@ -273,13 +405,13 @@ namespace KMZRebuilder
     }
 
     // 8
-    public class RecArea : Record
+    public sealed class RecArea : Record
     {
-        public RecArea(Record parent) : base(parent) { }
-        public int cMaxLat;
-        public int cMaxLon;
-        public int cMinLat;
-        public int cMinLon;
+        internal RecArea(Record parent) : base(parent) { }
+        internal int cMaxLat;
+        internal int cMaxLon;
+        internal int cMinLat;
+        internal int cMinLon;
         public double MaxLat { get { return (double)cMaxLat * 360.0 / Math.Pow(2, 32); } }
         public double MaxLon { get { return (double)cMaxLon * 360.0 / Math.Pow(2, 32); } }
         public double MinLat { get { return (double)cMinLat * 360.0 / Math.Pow(2, 32); } }
@@ -287,9 +419,9 @@ namespace KMZRebuilder
     }
 
     // 9
-    public class RecPOIGroup : Record
+    public sealed class RecPOIGroup : Record
     {
-        public RecPOIGroup(Record parent) : base(parent) { }
+        internal RecPOIGroup(Record parent) : base(parent) { }
         public List<KeyValuePair<string, string>> DataSource = new List<KeyValuePair<string, string>>();
 
         public string Name
@@ -310,9 +442,9 @@ namespace KMZRebuilder
     }
 
     // 10
-    public class RecComment : Record
+    public sealed class RecComment : Record
     {
-        public RecComment(Record parent) : base(parent) { }
+        internal RecComment(Record parent) : base(parent) { }
         public List<KeyValuePair<string, string>> Comment = new List<KeyValuePair<string, string>>();
 
         public string Text
@@ -333,9 +465,9 @@ namespace KMZRebuilder
     }
 
     // 11
-    public class RecAddress : Record
+    public sealed class RecAddress : Record
     {
-        public RecAddress(Record parent) : base(parent) { }
+        internal RecAddress(Record parent) : base(parent) { }
         public ushort Flags;
         public List<KeyValuePair<string, string>> aCity = new List<KeyValuePair<string, string>>();
         public List<KeyValuePair<string, string>> aCountry = new List<KeyValuePair<string, string>>();
@@ -410,9 +542,9 @@ namespace KMZRebuilder
     }
 
     // 12
-    public class RecContact : Record
+    public sealed class RecContact : Record
     {
-        public RecContact(Record parent) : base(parent) { }
+        internal RecContact(Record parent) : base(parent) { }
         public ushort Flags;
         public string Phone;
         public string Phone2;
@@ -422,17 +554,17 @@ namespace KMZRebuilder
     }
 
     // 13
-    public class RecImage : Record
+    public sealed class RecImage : Record
     {
-        public RecImage(Record parent) : base(parent) { }
+        internal RecImage(Record parent) : base(parent) { }
         public uint Length;
         public byte[] ImageData;
     }
 
     // 14
-    public class RecDescription : Record
+    public sealed class RecDescription : Record
     {
-        public RecDescription(Record parent) : base(parent) { }
+        internal RecDescription(Record parent) : base(parent) { }
         public List<KeyValuePair<string, string>> Description = new List<KeyValuePair<string, string>>();
 
         public string Text
@@ -453,9 +585,9 @@ namespace KMZRebuilder
     }
 
     // 15
-    public class RecProductInfo : Record
+    public sealed class RecProductInfo : Record
     {
-        public RecProductInfo(Record parent) : base(parent) { }
+        internal RecProductInfo(Record parent) : base(parent) { }
         public ushort FactoryID;
         public byte ProductID;
         public byte RegionID;
@@ -463,9 +595,9 @@ namespace KMZRebuilder
     }
 
     // 16
-    public class RecAlertCircle : Record
+    public sealed class RecAlertCircle : Record
     {
-        public RecAlertCircle(Record parent) : base(parent) { }
+        internal RecAlertCircle(Record parent) : base(parent) { }
         public ushort Count;
         public double[] lat;
         public double[] lon;
@@ -473,9 +605,9 @@ namespace KMZRebuilder
     }
 
     // 17
-    public class RecCopyright : Record
+    public sealed class RecCopyright : Record
     {
-        public RecCopyright(Record parent) : base(parent) { }
+        internal RecCopyright(Record parent) : base(parent) { }
         public ushort Flags1 = 0;
         public ushort Flags2 = 0;
         public List<KeyValuePair<string, string>> cDataSource = new List<KeyValuePair<string, string>>();
@@ -516,9 +648,9 @@ namespace KMZRebuilder
     }
 
     // 18
-    public class RecMedia : Record
+    public sealed class RecMedia : Record
     {
-        public RecMedia(Record parent) : base(parent) { }
+        internal RecMedia(Record parent) : base(parent) { }
         public ushort MediaID;
         public byte Format;
         public bool IsWav { get { return Format == 0; } }
@@ -541,28 +673,40 @@ namespace KMZRebuilder
     }
 
     // 19
-    public class RecSpeedCamera : Record
+    public sealed class RecSpeedCamera : Record
     {
-        public RecSpeedCamera(Record parent) : base(parent) { }
-        public int cMaxLat;
-        public int cMaxLon;
-        public int cMinLat;
-        public int cMinLon;
+        internal RecSpeedCamera(Record parent) : base(parent) { }
+        internal int cMaxLat;
+        internal int cMaxLon;
+        internal int cMinLat;
+        internal int cMinLon;
         public double MaxLat { get { return (double)cMaxLat * 360.0 / Math.Pow(2, 24); } }
         public double MaxLon { get { return (double)cMaxLon * 360.0 / Math.Pow(2, 24); } }
         public double MinLat { get { return (double)cMinLat * 360.0 / Math.Pow(2, 24); } }
         public double MinLon { get { return (double)cMinLon * 360.0 / Math.Pow(2, 24); } }
         public byte Flags;
-        public int cLat;
-        public int cLon;
+        internal int cLat;
+        internal int cLon;
         public double Lat { get { return (double)cLat * 360.0 / Math.Pow(2, 24); } }
         public double Lon { get { return (double)cLon * 360.0 / Math.Pow(2, 24); } }
     }
 
-    // 0xFFFF
-    public class RecEnd : Record
+    // 27 
+    public sealed class RecAlertTriggerOptions : Record
     {
-        public RecEnd(Record parent) : base(parent) { }
+        internal RecAlertTriggerOptions(Record parent) : base(parent) { }
+        public byte BearingCount = 0;
+        public ushort[] BearingAngle;
+        public ushort[] BearingWide;
+        public bool[] BearingBiDir;
+        public byte[] DateTimeBlock;
+        public List<string> DateTimeList = new List<string>();
+    }
+
+    // 0xFFFF
+    public sealed class RecEnd : Record
+    {
+        internal RecEnd(Record parent) : base(parent) { }
     }
     #endregion RECTYPES
 
@@ -597,7 +741,7 @@ namespace KMZRebuilder
         /// <summary>
         ///     Public GPI Root Element
         /// </summary>
-        public Record RootElement = new Record(null);
+        public Record RootElement = Record.ROOT;
 
         /// <summary>
         ///     GPI File Document Name
@@ -764,13 +908,7 @@ namespace KMZRebuilder
                     sw.WriteLine("<name><![CDATA[" + wp.Name + "]]></name>");
                     string text = "";
                     foreach (KeyValuePair<string, string> langval in wp.ShortName)
-                        text += String.Format("name:{0}={1}\r\n", langval.Key.ToLower(), langval.Value);
-                    if ((wp.Description != null) && (wp.Description.Description.Count > 0))
-                    {
-                        text += "\r\n";
-                        foreach (KeyValuePair<string, string> langval in wp.Description.Description)
-                            text += String.Format("desc:{0}={1}\r\n\r\n", langval.Key.ToLower(), TrimDesc(langval.Value));
-                    };
+                        text += String.Format("name:{0}={1}\r\n", langval.Key.ToLower(), langval.Value);                    
                     if (wp.Comment != null)
                         foreach (KeyValuePair<string, string> langval in wp.Comment.Comment)
                             text += String.Format("comm:{0}={1}\r\n", langval.Key.ToLower(), langval.Value);
@@ -820,7 +958,34 @@ namespace KMZRebuilder
                                 text += String.Format("alert_sound=media/{0}\r\n", fName);
                             };
                         };
-
+                        if (wp.Alert.AlertCircles != null)
+                        {
+                            for (int z = 0; z < wp.Alert.AlertCircles.Count; z++)
+                            {
+                                double clat = wp.Alert.AlertCircles.lat[z];
+                                double clon = wp.Alert.AlertCircles.lon[z];
+                                uint crad = wp.Alert.AlertCircles.radius[z];
+                                if ((clat == wp.Lat) && (clon == wp.Lon))
+                                    text += String.Format("alert_circle={0}\r\n", crad);
+                                else
+                                    text += String.Format(System.Globalization.CultureInfo.InvariantCulture, "alert_circle={0},{1:0.000000},{2:0.000000}\r\n", crad, clat, clon);
+                            };
+                        };
+                        if (wp.Alert.AlertTriggerOptions != null)
+                        {
+                            if(wp.Alert.AlertTriggerOptions.BearingCount > 0)
+                                for (int z = 0; z < wp.Alert.AlertTriggerOptions.BearingCount; z++)
+                                    text += String.Format(System.Globalization.CultureInfo.InvariantCulture, "alert_bearing={0},{1},{2}\r\n", wp.Alert.AlertTriggerOptions.BearingAngle[z], wp.Alert.AlertTriggerOptions.BearingWide[z], wp.Alert.AlertTriggerOptions.BearingBiDir[z] ? "bidir" : "onedir");
+                            if ((wp.Alert.AlertTriggerOptions.DateTimeList != null) && (wp.Alert.AlertTriggerOptions.DateTimeList.Count > 0))
+                                for (int z = 0; z < wp.Alert.AlertTriggerOptions.DateTimeList.Count; z++)
+                                    text += String.Format("alert_datetime={0}\r\n", wp.Alert.AlertTriggerOptions.DateTimeList[z]);
+                        };
+                    };
+                    if ((wp.Description != null) && (wp.Description.Description.Count > 0))
+                    {
+                        text += "\r\n";
+                        foreach (KeyValuePair<string, string> langval in wp.Description.Description)
+                            text += String.Format("desc:{0}={1}\r\n\r\n", langval.Key.ToLower(), TrimDesc(langval.Value));
                     };
                     if (wp.Bitmap != null) style = "imgid" + wp.Bitmap.BitmapID.ToString();
                     if ((wp.Image != null) && (wp.Image.Length > 0))
@@ -1014,7 +1179,7 @@ namespace KMZRebuilder
             fs.Close();
 
             if (fileData.Length != 0) 
-                ReadData(ref fileData, RootElement);
+                ReadData(ref fileData, 0, (uint)fileData.Length, RootElement);
         }
 
         /// <summary>
@@ -1022,13 +1187,13 @@ namespace KMZRebuilder
         /// </summary>
         /// <param name="fileData"></param>
         /// <param name="parent"></param>
-        private void ReadData(ref byte[] fileData, Record parent)
+        private void ReadData(ref byte[] blockData, uint blockOffset, uint blockLength, Record parent)
         {
-            int offset = 0;
-            while (offset < fileData.Length)
+            uint currOffset = blockOffset;
+            while (currOffset < (blockOffset + blockLength))
             {
-                int blockLength = ReadRecordBlock(ref fileData, parent, offset);
-                offset += blockLength;
+                uint readedLength = ReadRecordBlock(ref blockData, parent, currOffset);
+                currOffset += readedLength;
             };
         }
 
@@ -1039,220 +1204,229 @@ namespace KMZRebuilder
         /// <param name="parent"></param>
         /// <param name="offset"></param>
         /// <returns></returns>
-        private int ReadRecordBlock(ref byte[] data, Record parent, int offset)
+        private uint ReadRecordBlock(ref byte[] data, Record parent, uint offset)
         {
-            int start_offset = offset;            
-            Record rec = Record.Create(parent, BitConverter.ToUInt16(data, offset)); offset += 2;
-            rec.RFlags = BitConverter.ToUInt16(data, offset); offset += 2;
-            rec.TotalLength = BitConverter.ToUInt32(data, offset); offset += 4;
-            rec.MainLength = rec.TotalLength;
+            Record rec = Record.Create(parent, offset, ref data, BitConverter.ToUInt16(data, (int)offset)); offset += 2;
+            rec.RecFlags = BitConverter.ToUInt16(data, (int)offset); offset += 2;
+            rec.LengthTotal = BitConverter.ToUInt32(data, (int)offset); offset += 4;
+            rec.LengthMain = rec.LengthTotal;
+            rec.LengthBlock = rec.LengthTotal + (uint)(rec.RecHasExtra ? 12 : 8);
             try
             {
-                if (rec.HasExtra)
+                if (rec.RecHasExtra)
                 {
-                    rec.MainLength = BitConverter.ToUInt32(data, offset); offset += 4;
-                    rec.ExtraLength = rec.TotalLength - rec.MainLength;
+                    rec.LengthMain = BitConverter.ToUInt32(data, (int)offset); offset += 4;
+                    rec.LengthExtra = rec.LengthTotal - rec.LengthMain;
                 };
-                if (RecEnum<RecType>.IsDefined((RecType)rec.RType)) // only specified
+                rec.OffsetMain = offset; 
+                rec.OffsetExtra = rec.OffsetMain + rec.LengthMain; //
+                if (RecEnum<RecType>.IsDefined((RecType)rec.RecType)) // only if specified
                 {
-                    rec.MainData = new byte[rec.MainLength];
-                    Array.Copy(data, offset, rec.MainData, 0, rec.MainData.Length);
-                    if (rec.HasExtra)
-                    {
-                        rec.ExtraData = new byte[rec.ExtraLength];
-                        Array.Copy(data, offset + rec.MainLength, rec.ExtraData, 0, rec.ExtraData.Length);
-                    };
-                    ReadMainBlock(rec);
-                    if (rec.HasExtra) ReadData(ref rec.ExtraData, rec);
+                    bool processExtras = ReadMainBlock(ref data, rec);
+                    if (processExtras && rec.RecHasExtra) ReadData(ref data, rec.OffsetExtra, rec.LengthExtra, rec);
                 };
             }
             catch (Exception ex)
             {
                 rec.ReadError = ex;
             };
-            int ttlbl = (int)(offset - start_offset + rec.TotalLength);
-            return ttlbl;
+            return rec.LengthBlock;
         }
 
         /// <summary>
         ///     Read Block Record Main Data
         /// </summary>
         /// <param name="rec"></param>
-        private void ReadMainBlock(Record rec)
+        private bool ReadMainBlock(ref byte[] data, Record rec)
         {
-            if ((rec.RType == 0) && (rec is RecHeader0)) ReadHeader1((RecHeader0)rec);
-            if ((rec.RType == 1) && (rec is RecHeader1)) ReadHeader2((RecHeader1)rec);
-            if ((rec.RType == 2) && (rec is RecWaypoint)) ReadWaypoint((RecWaypoint)rec);
-            if ((rec.RType == 3) && (rec is RecAlert)) ReadAlert((RecAlert)rec);
-            if ((rec.RType == 4) && (rec is RecBitmapReference)) ReadBitmapReference((RecBitmapReference)rec);
-            if ((rec.RType == 5) && (rec is RecBitmap)) ReadBitmap((RecBitmap)rec);
-            if ((rec.RType == 6) && (rec is RecCategoryReference)) ReadCategoryReference((RecCategoryReference)rec);
-            if ((rec.RType == 7) && (rec is RecCategory)) ReadCategory((RecCategory)rec);
-            if ((rec.RType == 8) && (rec is RecArea)) ReadArea((RecArea)rec);
-            if ((rec.RType == 9) && (rec is RecPOIGroup)) ReadPOIGroup((RecPOIGroup)rec);
-            if ((rec.RType == 10) && (rec is RecComment)) ReadComment((RecComment)rec);
-            if ((rec.RType == 11) && (rec is RecAddress)) ReadAddress((RecAddress)rec);
-            if ((rec.RType == 12) && (rec is RecContact)) ReadContact((RecContact)rec);
-            if ((rec.RType == 13) && (rec is RecImage)) ReadImage((RecImage)rec);
-            if ((rec.RType == 14) && (rec is RecDescription)) ReadDecription((RecDescription)rec);
-            if ((rec.RType == 15) && (rec is RecProductInfo)) ReadProductInfo((RecProductInfo)rec);
-            if ((rec.RType == 16) && (rec is RecAlertCircle)) ReadAlertCircle((RecAlertCircle)rec);
-            if ((rec.RType == 17) && (rec is RecCopyright)) ReadCopyright((RecCopyright)rec);
-            if ((rec.RType == 18) && (rec is RecMedia)) ReadMedia((RecMedia)rec);
-            if ((rec.RType == 19) && (rec is RecSpeedCamera)) ReadSpeedCamera((RecSpeedCamera)rec);
+            if ((rec.RecType == 0) && (rec is RecHeader0)) return Read00Header1(ref data, (RecHeader0)rec);
+            if ((rec.RecType == 1) && (rec is RecHeader1)) return Read01Header2(ref data, (RecHeader1)rec);
+            if ((rec.RecType == 2) && (rec is RecWaypoint)) return Read02Waypoint(ref data, (RecWaypoint)rec);
+            if ((rec.RecType == 3) && (rec is RecAlert)) return Read03Alert(ref data, (RecAlert)rec);                        
+            if ((rec.RecType == 4) && (rec is RecBitmapReference)) return Read04BitmapReference(ref data, (RecBitmapReference)rec);
+            if ((rec.RecType == 5) && (rec is RecBitmap)) return Read05Bitmap(ref data, (RecBitmap)rec);                        
+            if ((rec.RecType == 6) && (rec is RecCategoryReference)) return Read06CategoryReference(ref data, (RecCategoryReference)rec);
+            if ((rec.RecType == 7) && (rec is RecCategory)) return Read07Category(ref data, (RecCategory)rec);            
+            if ((rec.RecType == 8) && (rec is RecArea)) return Read08Area(ref data, (RecArea)rec);            
+            if ((rec.RecType == 9) && (rec is RecPOIGroup)) return Read09POIGroup(ref data, (RecPOIGroup)rec);
+            if ((rec.RecType == 10) && (rec is RecComment)) return Read10Comment(ref data, (RecComment)rec);
+            if ((rec.RecType == 11) && (rec is RecAddress)) return Read11Address(ref data, (RecAddress)rec);
+            if ((rec.RecType == 12) && (rec is RecContact)) return Read12Contact(ref data, (RecContact)rec);
+            if ((rec.RecType == 13) && (rec is RecImage)) return Read13Image(ref data, (RecImage)rec);
+            if ((rec.RecType == 14) && (rec is RecDescription)) return Read14Decription(ref data, (RecDescription)rec);   
+            if ((rec.RecType == 15) && (rec is RecProductInfo)) return Read15ProductInfo(ref data, (RecProductInfo)rec);
+            if ((rec.RecType == 16) && (rec is RecAlertCircle)) return Read16AlertCircle(ref data, (RecAlertCircle)rec);            
+            if ((rec.RecType == 17) && (rec is RecCopyright)) return Read17Copyright(ref data, (RecCopyright)rec);
+            if ((rec.RecType == 18) && (rec is RecMedia)) return Read18Media(ref data, (RecMedia)rec);
+            if ((rec.RecType == 19) && (rec is RecSpeedCamera)) return Read19SpeedCamera(ref data, (RecSpeedCamera)rec);
+            if ((rec.RecType == 27) && (rec is RecAlertTriggerOptions)) return Read27AlertTriggerOptions(ref data, (RecAlertTriggerOptions)rec);
+            return true;
         }
 
-        private void ReadHeader1(RecHeader0 rec) // 0
+        private bool Read00Header1(ref byte[] data, RecHeader0 rec) // 0
         {
+            uint offset = rec.OffsetMain;
             byte[] sub = new byte[6];
-            Array.Copy(rec.MainData, 0, sub, 0, 6);
+            Array.Copy(data, offset, sub, 0, 6);
             rec.Header = Header = Encoding.ASCII.GetString(sub);
             sub = new byte[2];
-            Array.Copy(rec.MainData, 6, sub, 0, 2);
+            Array.Copy(data, offset + 6, sub, 0, 2);
             rec.Version = Version = Encoding.ASCII.GetString(sub);
-            uint time = BitConverter.ToUInt32(rec.MainData, 8);
+            uint time = BitConverter.ToUInt32(data, (int)offset + 8);
             if (time != 0xFFFFFFFF)
                 rec.Created = Created = (new DateTime(1990, 1, 1)).AddSeconds(time);
-            ushort slen = BitConverter.ToUInt16(rec.MainData, 14);
-            rec.Name = Name = Encoding.ASCII.GetString(rec.MainData, 16, slen);
+            ushort slen = BitConverter.ToUInt16(data, (int)offset + 14);
+            rec.Name = Name = Encoding.ASCII.GetString(data, (int)offset + 16, slen);
+            return true;
         }
 
-        private void ReadHeader2(RecHeader1 rec) // 1
+        private bool Read01Header2(ref byte[] data, RecHeader1 rec) // 1
         {
+            uint offset = rec.OffsetMain;
             int bLen = 0;
-            while(rec.MainData[bLen] != 0) bLen++;
-            rec.Content = this.Content = Encoding.ASCII.GetString(rec.MainData,0, bLen++);            
-            rec.CodePage = this.CodePage = BitConverter.ToUInt16(rec.MainData, bLen + 4);
+            while (data[offset + bLen] != 0) bLen++;
+            rec.Content = this.Content = Encoding.ASCII.GetString(data, (int)offset, bLen++);
+            rec.CodePage = this.CodePage = BitConverter.ToUInt16(data, (int)offset + bLen + 4);
             this.Encoding = rec.Encoding;
+            return true;
         }
 
-        private void ReadWaypoint(RecWaypoint rec) // 2
+        private bool Read02Waypoint(ref byte[] data, RecWaypoint rec) // 2
         {
-            rec.cLat = BitConverter.ToInt32(rec.MainData, 0);
-            rec.cLon = BitConverter.ToInt32(rec.MainData, 4);
-            int offset = 11;
-            uint len = BitConverter.ToUInt32(rec.MainData, offset); offset += 4;
+            uint offset = rec.OffsetMain;
+            rec.cLat = BitConverter.ToInt32(data, (int)offset); offset += 4;
+            rec.cLon = BitConverter.ToInt32(data, (int)offset); offset += 4;
+            offset += 3;
+            uint len = BitConverter.ToUInt32(data, (int)offset); offset += 4;
             int readed = 0;
             while (readed < len)
             {
-                string lang = Encoding.ASCII.GetString(rec.MainData, offset, 2); offset += 2; readed += 2;
-                ushort tlen = BitConverter.ToUInt16(rec.MainData, offset); offset += 2; readed += 2;
-                string text = this.Encoding.GetString(rec.MainData, offset, tlen); offset += tlen; readed += tlen;
+                string lang = Encoding.ASCII.GetString(data, (int)offset, 2); offset += 2; readed += 2;
+                ushort tlen = BitConverter.ToUInt16(data, (int)offset); offset += 2; readed += 2;
+                string text = this.Encoding.GetString(data, (int)offset, tlen); offset += tlen; readed += tlen;
                 rec.ShortName.Add(new KeyValuePair<string, string>(lang, text));
             };
+            return true;
         }
 
-        private void ReadAlert(RecAlert rec) // 3
+        private bool Read03Alert(ref byte[] data, RecAlert rec) // 3
         {
             try
             {
-                rec.Proximity = BitConverter.ToUInt16(rec.MainData, 0);
-                rec.cSpeed = BitConverter.ToUInt16(rec.MainData, 2);
-                rec.Alert = rec.MainData[8];
-                rec.AlertType = rec.MainData[9];
-                rec.SoundNumber = rec.MainData[10];
-                rec.AudioAlert = rec.MainData[11];
+                uint offset = rec.OffsetMain;
+                rec.Proximity = BitConverter.ToUInt16(data, (int)offset);
+                rec.cSpeed = BitConverter.ToUInt16(data, (int)offset + 2);
+                rec.Alert = data[(int)offset + 8];
+                rec.AlertType = data[(int)offset + 9];
+                rec.SoundNumber = data[(int)offset + 10];
+                rec.AudioAlert = data[(int)offset + 11];
                 if ((rec.Parent != null) && (rec.Parent is RecWaypoint)) ((RecWaypoint)rec.Parent).Alert = rec;
             }
             catch (Exception ex)
             {
                 rec.ReadError = ex;
             };
-        }
+            return true;
+        }      
 
-        public void ReadBitmapReference(RecBitmapReference rec) // 4
+        public bool Read04BitmapReference(ref byte[] data, RecBitmapReference rec) // 4
         {
-            rec.BitmapID = BitConverter.ToUInt16(rec.MainData, 0);
+            rec.BitmapID = BitConverter.ToUInt16(data, (int)rec.OffsetMain);
+            return false;
         }
 
-        public void ReadBitmap(RecBitmap rec) // 5
+        public bool Read05Bitmap(ref byte[] data, RecBitmap rec) // 5
         {
             try
             {
-                int offset = 0;
-                rec.BitmapID = BitConverter.ToUInt16(rec.MainData, offset); offset += 2;
-                rec.Height = BitConverter.ToUInt16(rec.MainData, offset); offset += 2;
-                rec.Width = BitConverter.ToUInt16(rec.MainData, offset); offset += 2;
-                rec.LineSize = BitConverter.ToUInt16(rec.MainData, offset); offset += 2;
-                rec.BitsPerPixel = BitConverter.ToUInt16(rec.MainData, offset); offset += 2;
-                rec.Reserved9 = BitConverter.ToUInt16(rec.MainData, offset); offset += 2;
-                rec.ImageSize = BitConverter.ToUInt32(rec.MainData, offset); offset += 4;
-                rec.Reserved10 = BitConverter.ToUInt32(rec.MainData, offset); offset += 4;
-                rec.Palette = BitConverter.ToUInt32(rec.MainData, offset); offset += 4;
-                rec.TransparentColor = BitConverter.ToUInt32(rec.MainData, offset); offset += 4;
-                rec.Flags = BitConverter.ToUInt32(rec.MainData, offset); offset += 4;
-                rec.Reserved11 = BitConverter.ToUInt32(rec.MainData, offset); offset += 4;
+                uint offset = rec.OffsetMain;
+                rec.BitmapID = BitConverter.ToUInt16(data, (int)offset); offset += 2;
+                rec.Height = BitConverter.ToUInt16(data, (int)offset); offset += 2;
+                rec.Width = BitConverter.ToUInt16(data, (int)offset); offset += 2;
+                rec.LineSize = BitConverter.ToUInt16(data, (int)offset); offset += 2;
+                rec.BitsPerPixel = BitConverter.ToUInt16(data, (int)offset); offset += 2;
+                rec.Reserved9 = BitConverter.ToUInt16(data, (int)offset); offset += 2;
+                rec.ImageSize = BitConverter.ToUInt32(data, (int)offset); offset += 4;
+                rec.Reserved10 = BitConverter.ToUInt32(data, (int)offset); offset += 4;
+                rec.Palette = BitConverter.ToUInt32(data, (int)offset); offset += 4;
+                rec.TransparentColor = BitConverter.ToUInt32(data, (int)offset); offset += 4;
+                rec.Flags = BitConverter.ToUInt32(data, (int)offset); offset += 4;
+                rec.Reserved11 = BitConverter.ToUInt32(data, (int)offset); offset += 4;
                 rec.Pixels = new byte[rec.ImageSize];
-                Array.Copy(rec.MainData, offset, rec.Pixels, 0, rec.ImageSize); offset += (int)rec.ImageSize;
+                Array.Copy(data, offset, rec.Pixels, 0, rec.ImageSize); offset += rec.ImageSize;
                 rec.Colors = new uint[rec.Palette];
-                for (int i = 0; i < rec.Colors.Length; i++) { rec.Colors[i] = BitConverter.ToUInt32(rec.MainData, offset); offset += 4; };
+                for (int i = 0; i < rec.Colors.Length; i++) { rec.Colors[i] = BitConverter.ToUInt32(data, (int)offset); offset += 4; };
                 this.Bitmaps.Add(rec.BitmapID, rec);
             }
             catch (Exception ex)
             {
                 rec.ReadError = ex;
             };
+            return false;
+        }            
+
+        private bool Read06CategoryReference(ref byte[] data, RecCategoryReference rec) // 6
+        {
+            rec.CategoryID = BitConverter.ToUInt16(data, (int)rec.OffsetMain);
+            return false;
         }
 
-        private void ReadCategoryReference(RecCategoryReference rec) // 6
+        private bool Read07Category(ref byte[] data, RecCategory rec) // 7
         {
-            rec.CategoryID = BitConverter.ToUInt16(rec.MainData, 0);                
-        }
-
-        private void ReadCategory(RecCategory rec) // 7
-        {
-            rec.CategoryID = BitConverter.ToUInt16(rec.MainData, 0);
-            int offset = 2;
-            uint len = BitConverter.ToUInt32(rec.MainData, offset); offset += 4;
+            uint offset = rec.OffsetMain;
+            rec.CategoryID = BitConverter.ToUInt16(data, (int)offset); offset += 2;
+            uint len = BitConverter.ToUInt32(data, (int)offset); offset += 4;
             int readed = 0;
             while (readed < len)
             {
-                string lang = Encoding.ASCII.GetString(rec.MainData, offset, 2); offset += 2; readed += 2;
-                ushort tlen = BitConverter.ToUInt16(rec.MainData, offset); offset += 2; readed += 2;
-                string text = this.Encoding.GetString(rec.MainData, offset, tlen); offset += tlen; readed += tlen;
+                string lang = Encoding.ASCII.GetString(data, (int)offset, 2); offset += 2; readed += 2;
+                ushort tlen = BitConverter.ToUInt16(data, (int)offset); offset += 2; readed += 2;
+                string text = this.Encoding.GetString(data, (int)offset, tlen); offset += tlen; readed += tlen;
                 rec.Category.Add(new KeyValuePair<string, string>(lang, text));
             };
             this.Categories.Add(rec.CategoryID, rec);
-        }
+            return true;
+        }          
 
-        private void ReadArea(RecArea rec) // 8
+        private bool Read08Area(ref byte[] data, RecArea rec) // 8
         {
-            rec.cMaxLat = BitConverter.ToInt32(rec.MainData, 0);
-            rec.cMaxLon = BitConverter.ToInt32(rec.MainData, 4);
-            rec.cMinLat = BitConverter.ToInt32(rec.MainData, 8);
-            rec.cMinLon = BitConverter.ToInt32(rec.MainData, 12);
-        }
+            uint offset = rec.OffsetMain;
+            rec.cMaxLat = BitConverter.ToInt32(data, (int)offset);
+            rec.cMaxLon = BitConverter.ToInt32(data, (int)offset + 4);
+            rec.cMinLat = BitConverter.ToInt32(data, (int)offset + 8);
+            rec.cMinLon = BitConverter.ToInt32(data, (int)offset + 12);            
+            return true;
+        }      
 
-        private void ReadPOIGroup(RecPOIGroup rec) // 9
+        private bool Read09POIGroup(ref byte[] data, RecPOIGroup rec) // 9
         {
-            int offset = 0;
-            uint len = BitConverter.ToUInt32(rec.MainData, offset); offset += 4;
+            uint offset = rec.OffsetMain;
+            uint len = BitConverter.ToUInt32(data, (int)offset); offset += 4;
             int readed = 0;
             while (readed < len)
             {
-                string lang = Encoding.ASCII.GetString(rec.MainData, offset, 2); offset += 2; readed += 2;
-                ushort tlen = BitConverter.ToUInt16(rec.MainData, offset); offset += 2; readed += 2;
-                string text = this.Encoding.GetString(rec.MainData, offset, tlen); offset += tlen; readed += tlen;
+                string lang = Encoding.ASCII.GetString(data, (int)offset, 2); offset += 2; readed += 2;
+                ushort tlen = BitConverter.ToUInt16(data, (int)offset); offset += 2; readed += 2;
+                string text = this.Encoding.GetString(data, (int)offset, tlen); offset += tlen; readed += tlen;
                 rec.DataSource.Add(new KeyValuePair<string, string>(lang, text));
             };
 
-            byte[] areas = new byte[rec.MainLength - offset];
-            Array.Copy(rec.MainData, offset, areas, 0, areas.Length);
-            ReadData(ref areas, rec);
+            ReadData(ref data, (uint)offset, rec.LengthMain - (uint)readed, rec);
+            return true;
         }
 
-        private void ReadComment(RecComment rec) // 10
+        private bool Read10Comment(ref byte[] data, RecComment rec) // 10
         {
             try
             {
-                int offset = 0;
-                uint len = BitConverter.ToUInt32(rec.MainData, offset); offset += 4;
+                uint offset = rec.OffsetMain;
+                uint len = BitConverter.ToUInt32(data, (int)offset); offset += 4;
                 int readed = 0;
                 while (readed < len)
                 {
-                    string lang = Encoding.ASCII.GetString(rec.MainData, offset, 2); offset += 2; readed += 2;
-                    ushort tlen = BitConverter.ToUInt16(rec.MainData, offset); offset += 2; readed += 2;
-                    string text = this.Encoding.GetString(rec.MainData, offset, tlen); offset += tlen; readed += tlen;
+                    string lang = Encoding.ASCII.GetString(data, (int)offset, 2); offset += 2; readed += 2;
+                    ushort tlen = BitConverter.ToUInt16(data, (int)offset); offset += 2; readed += 2;
+                    string text = this.Encoding.GetString(data, (int)offset, tlen); offset += tlen; readed += tlen;
                     rec.Comment.Add(new KeyValuePair<string, string>(lang, text));
                 };
                 if ((rec.Parent != null) && (rec.Parent is RecWaypoint)) ((RecWaypoint)rec.Parent).Comment = rec;
@@ -1262,222 +1436,119 @@ namespace KMZRebuilder
             {
                 rec.ReadError = ex;
             };
+            return false;
         }
 
-        private void ReadAddress(RecAddress rec) // 11
+        private bool Read11Address(ref byte[] data, RecAddress rec) // 11
         {
-            int offset = 0;
-            rec.Flags = BitConverter.ToUInt16(rec.MainData, offset); offset += 2;
+            uint offset = rec.OffsetMain;
+            rec.Flags = BitConverter.ToUInt16(data, (int)offset); offset += 2;
             try
-            {                
-                if (this.Version == "01")
+            {
+                if ((rec.Flags & 0x0001) == 0x0001)
                 {
-                    if ((rec.Flags & 0x0001) == 0x0001)
+                    uint len = BitConverter.ToUInt32(data, (int)offset); offset += 4;
+                    int readed = 0;
+                    while (readed < len)
                     {
-                        uint len = BitConverter.ToUInt32(rec.MainData, offset); offset += 4;
-                        int readed = 0;
-                        while (readed < len)
-                        {
-                            string lang = Encoding.ASCII.GetString(rec.MainData, offset, 2); offset += 2; readed += 2;
-                            ushort tlen = BitConverter.ToUInt16(rec.MainData, offset); offset += 2; readed += 2;
-                            string text = this.Encoding.GetString(rec.MainData, offset, tlen); offset += tlen; readed += tlen;
-                            rec.aCity.Add(new KeyValuePair<string, string>(lang, text));
-                        };
-                    };
-                    if ((rec.Flags & 0x0002) == 0x0002)
-                    {
-                        uint len = BitConverter.ToUInt32(rec.MainData, offset); offset += 4;
-                        int readed = 0;
-                        while (readed < len)
-                        {
-                            string lang = Encoding.ASCII.GetString(rec.MainData, offset, 2); offset += 2; readed += 2;
-                            ushort tlen = BitConverter.ToUInt16(rec.MainData, offset); offset += 2; readed += 2;
-                            string text = this.Encoding.GetString(rec.MainData, offset, tlen); offset += tlen; readed += tlen;
-                            rec.aCountry.Add(new KeyValuePair<string, string>(lang, text));
-                        };
-                    };
-                    if ((rec.Flags & 0x0004) == 0x0004)
-                    {
-                        uint len = BitConverter.ToUInt32(rec.MainData, offset); offset += 4;
-                        int readed = 0;
-                        while (readed < len)
-                        {
-                            string lang = Encoding.ASCII.GetString(rec.MainData, offset, 2); offset += 2; readed += 2;
-                            ushort tlen = BitConverter.ToUInt16(rec.MainData, offset); offset += 2; readed += 2;
-                            string text = this.Encoding.GetString(rec.MainData, offset, tlen); offset += tlen; readed += tlen;
-                            rec.aState.Add(new KeyValuePair<string, string>(lang, text));
-                        };
-                    };
-                    if ((rec.Flags & 0x0008) == 0x0008)
-                    {
-                        ushort tlen = BitConverter.ToUInt16(rec.MainData, offset); offset += 2;
-                        string text = this.Encoding.GetString(rec.MainData, offset, tlen); offset += tlen;
-                        rec.Postal = text;
-                    };
-                    if ((rec.Flags & 0x0010) == 0x0010)
-                    {
-                        uint len = BitConverter.ToUInt32(rec.MainData, offset); offset += 4;
-                        int readed = 0;
-                        while (readed < len)
-                        {
-                            string lang = Encoding.ASCII.GetString(rec.MainData, offset, 2); offset += 2; readed += 2;
-                            ushort tlen = BitConverter.ToUInt16(rec.MainData, offset); offset += 2; readed += 2;
-                            string text = this.Encoding.GetString(rec.MainData, offset, tlen); offset += tlen; readed += tlen;
-                            rec.aStreet.Add(new KeyValuePair<string, string>(lang, text));
-                        };
-                    };
-                    if ((rec.Flags & 0x0020) == 0x0020)
-                    {
-                        ushort tlen = BitConverter.ToUInt16(rec.MainData, offset); offset += 2;
-                        string text = this.Encoding.GetString(rec.MainData, offset, tlen); offset += tlen;
-                        rec.House = text;
+                        string lang = Encoding.ASCII.GetString(data, (int)offset, 2); offset += 2; readed += 2;
+                        ushort tlen = BitConverter.ToUInt16(data, (int)offset); offset += 2; readed += 2;
+                        string text = this.Encoding.GetString(data, (int)offset, tlen); offset += tlen; readed += tlen;
+                        rec.aCity.Add(new KeyValuePair<string, string>(lang, text));
                     };
                 };
-                if (this.Version == "00")
+                if ((rec.Flags & 0x0002) == 0x0002)
                 {
-                    offset = 0;
-                    if ((rec.Flags & 0x0001) == 0x0001)
+                    uint len = BitConverter.ToUInt32(data, (int)offset); offset += 4;
+                    int readed = 0;
+                    while (readed < len)
                     {
-                        uint len = BitConverter.ToUInt32(rec.ExtraData, offset); offset += 4;
-                        int readed = 0;
-                        while (readed < len)
-                        {
-                            string lang = Encoding.ASCII.GetString(rec.ExtraData, offset, 2); offset += 2; readed += 2;
-                            ushort tlen = BitConverter.ToUInt16(rec.ExtraData, offset); offset += 2; readed += 2;
-                            string text = this.Encoding.GetString(rec.ExtraData, offset, tlen); offset += tlen; readed += tlen;
-                            rec.aCity.Add(new KeyValuePair<string, string>(lang, text));
-                        };
+                        string lang = Encoding.ASCII.GetString(data, (int)offset, 2); offset += 2; readed += 2;
+                        ushort tlen = BitConverter.ToUInt16(data, (int)offset); offset += 2; readed += 2;
+                        string text = this.Encoding.GetString(data, (int)offset, tlen); offset += tlen; readed += tlen;
+                        rec.aCountry.Add(new KeyValuePair<string, string>(lang, text));
                     };
-                    if ((rec.Flags & 0x0002) == 0x0002)
+                };
+                if ((rec.Flags & 0x0004) == 0x0004)
+                {
+                    uint len = BitConverter.ToUInt32(data, (int)offset); offset += 4;
+                    int readed = 0;
+                    while (readed < len)
                     {
-                        uint len = BitConverter.ToUInt32(rec.ExtraData, offset); offset += 4;
-                        int readed = 0;
-                        while (readed < len)
-                        {
-                            string lang = Encoding.ASCII.GetString(rec.ExtraData, offset, 2); offset += 2; readed += 2;
-                            ushort tlen = BitConverter.ToUInt16(rec.ExtraData, offset); offset += 2; readed += 2;
-                            string text = this.Encoding.GetString(rec.ExtraData, offset, tlen); offset += tlen; readed += tlen;
-                            rec.aCountry.Add(new KeyValuePair<string, string>(lang, text));
-                        };
+                        string lang = Encoding.ASCII.GetString(data, (int)offset, 2); offset += 2; readed += 2;
+                        ushort tlen = BitConverter.ToUInt16(data, (int)offset); offset += 2; readed += 2;
+                        string text = this.Encoding.GetString(data, (int)offset, tlen); offset += tlen; readed += tlen;
+                        rec.aState.Add(new KeyValuePair<string, string>(lang, text));
                     };
-                    if ((rec.Flags & 0x0004) == 0x0004)
+                };
+                if ((rec.Flags & 0x0008) == 0x0008)
+                {
+                    ushort tlen = BitConverter.ToUInt16(data, (int)offset); offset += 2;
+                    string text = this.Encoding.GetString(data, (int)offset, tlen); offset += tlen;
+                    rec.Postal = text;
+                };
+                if ((rec.Flags & 0x0010) == 0x0010)
+                {
+                    uint len = BitConverter.ToUInt32(data, (int)offset); offset += 4;
+                    int readed = 0;
+                    while (readed < len)
                     {
-                        uint len = BitConverter.ToUInt32(rec.ExtraData, offset); offset += 4;
-                        int readed = 0;
-                        while (readed < len)
-                        {
-                            string lang = Encoding.ASCII.GetString(rec.ExtraData, offset, 2); offset += 2; readed += 2;
-                            ushort tlen = BitConverter.ToUInt16(rec.ExtraData, offset); offset += 2; readed += 2;
-                            string text = this.Encoding.GetString(rec.ExtraData, offset, tlen); offset += tlen; readed += tlen;
-                            rec.aState.Add(new KeyValuePair<string, string>(lang, text));
-                        };
+                        string lang = Encoding.ASCII.GetString(data, (int)offset, 2); offset += 2; readed += 2;
+                        ushort tlen = BitConverter.ToUInt16(data, (int)offset); offset += 2; readed += 2;
+                        string text = this.Encoding.GetString(data, (int)offset, tlen); offset += tlen; readed += tlen;
+                        rec.aStreet.Add(new KeyValuePair<string, string>(lang, text));
                     };
-                    if ((rec.Flags & 0x0008) == 0x0008)
-                    {
-                        ushort tlen = BitConverter.ToUInt16(rec.ExtraData, offset); offset += 2;
-                        string text = this.Encoding.GetString(rec.ExtraData, offset, tlen); offset += tlen;
-                        rec.Postal = text;
-                    };
-                    if ((rec.Flags & 0x0010) == 0x0010)
-                    {
-                        uint len = BitConverter.ToUInt32(rec.ExtraData, offset); offset += 4;
-                        int readed = 0;
-                        while (readed < len)
-                        {
-                            string lang = Encoding.ASCII.GetString(rec.ExtraData, offset, 2); offset += 2; readed += 2;
-                            ushort tlen = BitConverter.ToUInt16(rec.ExtraData, offset); offset += 2; readed += 2;
-                            string text = this.Encoding.GetString(rec.ExtraData, offset, tlen); offset += tlen; readed += tlen;
-                            rec.aStreet.Add(new KeyValuePair<string, string>(lang, text));
-                        };
-                    };
-                    if ((rec.Flags & 0x0020) == 0x0020)
-                    {
-                        ushort tlen = BitConverter.ToUInt16(rec.ExtraData, offset); offset += 2;
-                        string text = this.Encoding.GetString(rec.ExtraData, offset, tlen); offset += tlen;
-                        rec.House = text;
-                    };
+                };
+                if ((rec.Flags & 0x0020) == 0x0020)
+                {
+                    ushort tlen = BitConverter.ToUInt16(data, (int)offset); offset += 2;
+                    string text = this.Encoding.GetString(data, (int)offset, tlen); offset += tlen;
+                    rec.House = text;
                 };
                 if ((rec.Parent != null) && (rec.Parent is RecWaypoint)) ((RecWaypoint)rec.Parent).Address = rec;
-                
             }
             catch (Exception ex)
             {
                 rec.ReadError = ex;
             };
+            return false;
         }
 
-        private void ReadContact(RecContact rec) // 12
+        private bool Read12Contact(ref byte[] data, RecContact rec) // 12
         {
-            int offset = 0;
-            rec.Flags = BitConverter.ToUInt16(rec.MainData, offset); offset += 2;
+            uint offset = rec.OffsetMain;
+            rec.Flags = BitConverter.ToUInt16(data, (int)offset); offset += 2;
             try
-            {                
-                if (this.Version == "01")
+            {
+                if ((rec.Flags & 0x0001) == 0x0001)
                 {
-                    if ((rec.Flags & 0x0001) == 0x0001)
-                    {
-                        ushort tlen = BitConverter.ToUInt16(rec.MainData, offset); offset += 2; 
-                        string text = this.Encoding.GetString(rec.MainData, offset, tlen); offset += tlen; 
-                        rec.Phone = text;
-                    };
-                    if ((rec.Flags & 0x0002) == 0x0002)
-                    {
-                        ushort tlen = BitConverter.ToUInt16(rec.MainData, offset); offset += 2; 
-                        string text = this.Encoding.GetString(rec.MainData, offset, tlen); offset += tlen; 
-                        rec.Phone2 = text;
-                    };
-                    if ((rec.Flags & 0x0004) == 0x0004)
-                    {
-                        ushort tlen = BitConverter.ToUInt16(rec.MainData, offset); offset += 2; 
-                        string text = this.Encoding.GetString(rec.MainData, offset, tlen); offset += tlen; 
-                        rec.Fax = text;
-                    };
-                    if ((rec.Flags & 0x0008) == 0x0008)
-                    {
-                        ushort tlen = BitConverter.ToUInt16(rec.MainData, offset); offset += 2; 
-                        string text = this.Encoding.GetString(rec.MainData, offset, tlen); offset += tlen; 
-                        rec.Email = text;
-                    };
-                    if ((rec.Flags & 0x0010) == 0x0010)
-                    {
-                        ushort tlen = BitConverter.ToUInt16(rec.MainData, offset); offset += 2; 
-                        string text = this.Encoding.GetString(rec.MainData, offset, tlen); offset += tlen; 
-                        rec.Web = text;
-                    };     
+                    ushort tlen = BitConverter.ToUInt16(data, (int)offset); offset += 2;
+                    string text = this.Encoding.GetString(data, (int)offset, tlen); offset += tlen;
+                    rec.Phone = text;
                 };
-                if (this.Version == "00")
+                if ((rec.Flags & 0x0002) == 0x0002)
                 {
-                    offset = 0;
-                    if ((rec.Flags & 0x0001) == 0x0001)
-                    {
-                        ushort tlen = BitConverter.ToUInt16(rec.ExtraData, offset); offset += 2; 
-                        string text = this.Encoding.GetString(rec.ExtraData, offset, tlen); offset += tlen; 
-                        rec.Phone = text;
-                    };
-                    if ((rec.Flags & 0x0002) == 0x0002)
-                    {
-                        ushort tlen = BitConverter.ToUInt16(rec.ExtraData, offset); offset += 2; 
-                        string text = this.Encoding.GetString(rec.ExtraData, offset, tlen); offset += tlen; 
-                        rec.Phone2 = text;
-                    };
-                    if ((rec.Flags & 0x0004) == 0x0004)
-                    {
-                        ushort tlen = BitConverter.ToUInt16(rec.ExtraData, offset); offset += 2; 
-                        string text = this.Encoding.GetString(rec.ExtraData, offset, tlen); offset += tlen; 
-                        rec.Fax = text;
-                    };
-                    if ((rec.Flags & 0x0008) == 0x0008)
-                    {
-                        ushort tlen = BitConverter.ToUInt16(rec.ExtraData, offset); offset += 2; 
-                        string text = this.Encoding.GetString(rec.ExtraData, offset, tlen); offset += tlen; 
-                        rec.Email = text;
-                    };
-                    if ((rec.Flags & 0x0010) == 0x0010)
-                    {
-                        ushort tlen = BitConverter.ToUInt16(rec.ExtraData, offset); offset += 2; 
-                        string text = this.Encoding.GetString(rec.ExtraData, offset, tlen); offset += tlen; 
-                        rec.Web = text;
-                    };
+                    ushort tlen = BitConverter.ToUInt16(data, (int)offset); offset += 2;
+                    string text = this.Encoding.GetString(data, (int)offset, tlen); offset += tlen;
+                    rec.Phone2 = text;
+                };
+                if ((rec.Flags & 0x0004) == 0x0004)
+                {
+                    ushort tlen = BitConverter.ToUInt16(data, (int)offset); offset += 2;
+                    string text = this.Encoding.GetString(data, (int)offset, tlen); offset += tlen;
+                    rec.Fax = text;
+                };
+                if ((rec.Flags & 0x0008) == 0x0008)
+                {
+                    ushort tlen = BitConverter.ToUInt16(data, (int)offset); offset += 2;
+                    string text = this.Encoding.GetString(data, (int)offset, tlen); offset += tlen;
+                    rec.Email = text;
+                };
+                if ((rec.Flags & 0x0010) == 0x0010)
+                {
+                    ushort tlen = BitConverter.ToUInt16(data, (int)offset); offset += 2;
+                    string text = this.Encoding.GetString(data, (int)offset, tlen); offset += tlen;
+                    rec.Web = text;
                 };
                 if ((rec.Parent != null) && (rec.Parent is RecWaypoint)) ((RecWaypoint)rec.Parent).Contact = rec;
                 if ((rec.Parent != null) && (rec.Parent is RecCategory)) ((RecCategory)rec.Parent).Contact = rec;
@@ -1486,17 +1557,19 @@ namespace KMZRebuilder
             {
                 rec.ReadError = ex;
             };
+            return false;
         }
 
-        private void ReadImage(RecImage rec) // 13
+        private bool Read13Image(ref byte[] data, RecImage rec) // 13
         {
             try
             {
-                rec.Length = BitConverter.ToUInt32(rec.MainData, 1);
+                uint offset = rec.OffsetMain;
+                rec.Length = BitConverter.ToUInt32(data, (int)offset + 1);
                 rec.ImageData = new byte[rec.Length];
                 if (rec.Length > 0)
                 {
-                    Array.Copy(rec.MainData, 5, rec.ImageData, 0, rec.Length);
+                    Array.Copy(data, (int)offset + 5, rec.ImageData, 0, rec.Length);
                     if ((rec.Parent != null) && (rec.Parent is RecWaypoint))
                         ((RecWaypoint)rec.Parent).Image = rec;
                 };
@@ -1505,20 +1578,21 @@ namespace KMZRebuilder
             {
                 rec.ReadError = ex;
             };
+            return false;
         }
 
-        private void ReadDecription(RecDescription rec) // 14
+        private bool Read14Decription(ref byte[] data, RecDescription rec) // 14
         {
             try
             {
-                int offset = 1;
-                uint len = BitConverter.ToUInt32(rec.MainData, offset); offset += 4;
+                uint offset = rec.OffsetMain + 1;
+                uint len = BitConverter.ToUInt32(data, (int)offset); offset += 4;
                 int readed = 0;
                 while (readed < len)
                 {
-                    string lang = Encoding.ASCII.GetString(rec.MainData, offset, 2); offset += 2; readed += 2;
-                    ushort tlen = BitConverter.ToUInt16(rec.MainData, offset); offset += 2; readed += 2;
-                    string text = this.Encoding.GetString(rec.MainData, offset, tlen); offset += tlen; readed += tlen;
+                    string lang = Encoding.ASCII.GetString(data, (int)offset, 2); offset += 2; readed += 2;
+                    ushort tlen = BitConverter.ToUInt16(data, (int)offset); offset += 2; readed += 2;
+                    string text = this.Encoding.GetString(data, (int)offset, tlen); offset += tlen; readed += tlen;
                     rec.Description.Add(new KeyValuePair<string, string>(lang, text));
                 };
                 if ((rec.Parent != null) && (rec.Parent is RecWaypoint)) ((RecWaypoint)rec.Parent).Description = rec;
@@ -1528,29 +1602,33 @@ namespace KMZRebuilder
             {
                 rec.ReadError = ex;
             };
+            return false;
         }
 
-        private void ReadProductInfo(RecProductInfo rec) // 15
+        private bool Read15ProductInfo(ref byte[] data, RecProductInfo rec) // 15
         {
-            rec.FactoryID = BitConverter.ToUInt16(rec.MainData, 0);
-            rec.ProductID = rec.MainData[2];
-            rec.RegionID = rec.MainData[3];
-            rec.VendorID = rec.MainData[4];
+            uint offset = rec.OffsetMain;
+            rec.FactoryID = BitConverter.ToUInt16(data, (int)offset);
+            rec.ProductID = data[(int)offset + 2];
+            rec.RegionID = data[(int)offset + 3];
+            rec.VendorID = data[(int)offset + 4];
+            return false;
         }
 
-        private void ReadAlertCircle(RecAlertCircle rec) // 16
+        private bool Read16AlertCircle(ref byte[] data, RecAlertCircle rec) // 16
         {
             try
             {
-                rec.Count = BitConverter.ToUInt16(rec.MainData, 0);
+                uint offset = rec.OffsetMain;
+                rec.Count = BitConverter.ToUInt16(data, (int)offset); offset += 2;
                 rec.lat = new double[rec.Count];
                 rec.lon = new double[rec.Count];
                 rec.radius = new uint[rec.Count];
                 for (int i = 0; i < rec.Count; i++)
                 {
-                    rec.lat[i] = (double)BitConverter.ToUInt32(rec.MainData, 2 + i * 12) * 360.0 / Math.Pow(2, 32);
-                    rec.lon[i] = (double)BitConverter.ToUInt32(rec.MainData, 2 + i * 12 + 4) * 360.0 / Math.Pow(2, 32);
-                    rec.radius[i] = BitConverter.ToUInt32(rec.MainData, 2 + i * 12 + 8);
+                    rec.lat[i] = (double)BitConverter.ToUInt32(data, (int)offset + i * 12) * 360.0 / Math.Pow(2, 32);
+                    rec.lon[i] = (double)BitConverter.ToUInt32(data, (int)offset + i * 12 + 4) * 360.0 / Math.Pow(2, 32);
+                    rec.radius[i] = BitConverter.ToUInt32(data, (int)offset + i * 12 + 8);
                 };
                 if ((rec.Parent != null) && (rec.Parent is RecAlert)) ((RecAlert)rec.Parent).AlertCircles = rec;
             }
@@ -1558,39 +1636,40 @@ namespace KMZRebuilder
             {
                 rec.ReadError = ex;
             };
+            return false;
         }
 
-        private void ReadCopyright(RecCopyright rec) // 17
+        private bool Read17Copyright(ref byte[] data, RecCopyright rec) // 17
         {
             try
             {
-                int offset = 0;
-                rec.Flags1 = BitConverter.ToUInt16(rec.MainData, offset); offset += 2;
-                rec.Flags2 = BitConverter.ToUInt16(rec.MainData, offset); offset += 2; offset += 4;
-                uint len = BitConverter.ToUInt32(rec.MainData, offset); offset += 4;
+                uint offset = rec.OffsetMain;
+                rec.Flags1 = BitConverter.ToUInt16(data, (int)offset); offset += 2;
+                rec.Flags2 = BitConverter.ToUInt16(data, (int)offset); offset += 2; offset += 4;
+                uint len = BitConverter.ToUInt32(data, (int)offset); offset += 4;
                 int readed = 0;
                 while (readed < len)
                 {
-                    string lang = Encoding.ASCII.GetString(rec.MainData, offset, 2); offset += 2; readed += 2;
-                    ushort tlen = BitConverter.ToUInt16(rec.MainData, offset); offset += 2; readed += 2;
-                    string text = this.Encoding.GetString(rec.MainData, offset, tlen); offset += tlen; readed += tlen;
+                    string lang = Encoding.ASCII.GetString(data, (int)offset, 2); offset += 2; readed += 2;
+                    ushort tlen = BitConverter.ToUInt16(data, (int)offset); offset += 2; readed += 2;
+                    string text = this.Encoding.GetString(data, (int)offset, tlen); offset += tlen; readed += tlen;
                     rec.cDataSource.Add(new KeyValuePair<string, string>(lang, text));
                 };
-                len = BitConverter.ToUInt32(rec.MainData, offset); offset += 4;
+                len = BitConverter.ToUInt32(data, (int)offset); offset += 4;
                 readed = 0;
                 while (readed < len)
                 {
-                    string lang = Encoding.ASCII.GetString(rec.MainData, offset, 2); offset += 2; readed += 2;
-                    ushort tlen = BitConverter.ToUInt16(rec.MainData, offset); offset += 2; readed += 2;
-                    string text = this.Encoding.GetString(rec.MainData, offset, tlen); offset += tlen; readed += tlen;
+                    string lang = Encoding.ASCII.GetString(data, (int)offset, 2); offset += 2; readed += 2;
+                    ushort tlen = BitConverter.ToUInt16(data, (int)offset); offset += 2; readed += 2;
+                    string text = this.Encoding.GetString(data, (int)offset, tlen); offset += tlen; readed += tlen;
                     rec.cCopyrights.Add(new KeyValuePair<string, string>(lang, text));
                 };
                 this.cDataSource = rec.cDataSource;
                 this.cCopyrights = rec.cCopyrights;
                 if ((rec.Flags1 & 0x0400) == 0x0400)
                 {
-                    ushort tlen = BitConverter.ToUInt16(rec.MainData, offset); offset += 2; readed += 2;
-                    string text = Encoding.ASCII.GetString(rec.MainData, offset, tlen); offset += tlen; readed += tlen;
+                    ushort tlen = BitConverter.ToUInt16(data, (int)offset); offset += 2; readed += 2;
+                    string text = Encoding.ASCII.GetString(data, (int)offset, tlen); offset += tlen; readed += tlen;
                     rec.DeviceModel = text;
                 };
             }
@@ -1598,23 +1677,25 @@ namespace KMZRebuilder
             {
                 rec.ReadError = ex;
             };
+            return false;
         }
 
-        private void ReadMedia(RecMedia rec) // 18
+        private bool Read18Media(ref byte[] data, RecMedia rec) // 18
         {
-            rec.MediaID = BitConverter.ToUInt16(rec.MainData, 0);
-            rec.Format = rec.MainData[2];
+            uint offset = rec.OffsetMain;
+            rec.MediaID = BitConverter.ToUInt16(data, (int)offset); offset += 2;
+            rec.Format = data[(int)offset];
             try
             {
-                int offset = 0;
+                offset = rec.OffsetExtra;
                 int readed = 0;
-                uint len = BitConverter.ToUInt32(rec.ExtraData, offset); offset += 4;
+                uint len = BitConverter.ToUInt32(data, (int)offset); offset += 4;
                 while (readed < len)
                 {
-                    string lang = Encoding.ASCII.GetString(rec.ExtraData, offset, 2); offset += 2; readed += 2;
-                    uint mlen = BitConverter.ToUInt32(rec.ExtraData, offset); offset += 4; readed += 4;
+                    string lang = Encoding.ASCII.GetString(data, (int)offset, 2); offset += 2; readed += 2;
+                    uint mlen = BitConverter.ToUInt32(data, (int)offset); offset += 4; readed += 4;
                     byte[] media = new byte[mlen];
-                    Array.Copy(rec.ExtraData, offset, media, 0, mlen); offset += (int)mlen; readed += (int)mlen;
+                    Array.Copy(data, offset, media, 0, mlen); offset += mlen; readed += (int)mlen;
                     rec.Content.Add(new KeyValuePair<string, byte[]>(lang, media));
                 };
                 Medias.Add(rec.MediaID, rec);
@@ -1623,39 +1704,336 @@ namespace KMZRebuilder
             {
                 rec.ReadError = ex;
             };
+            return false;
         }
 
-        private void ReadSpeedCamera(RecSpeedCamera rec) // 19
+        private bool Read19SpeedCamera(ref byte[] data, RecSpeedCamera rec) // 19
         {
             try
             {
-                int offset = 0;
+                uint offset = rec.OffsetMain;
                 byte[] buff = new byte[4];
-                Array.Copy(rec.MainData, offset, buff, 0, 3); offset += 3;
+                Array.Copy(data, (int)offset, buff, 0, 3); offset += 3;
                 rec.cMaxLat = BitConverter.ToInt32(buff, 0);
-                Array.Copy(rec.MainData, offset, buff, 0, 3); offset += 3;
+                Array.Copy(data, (int)offset, buff, 0, 3); offset += 3;
                 rec.cMaxLon = BitConverter.ToInt32(buff, 0);
-                Array.Copy(rec.MainData, offset, buff, 0, 3); offset += 3;
+                Array.Copy(data, (int)offset, buff, 0, 3); offset += 3;
                 rec.cMinLat = BitConverter.ToInt32(buff, 0);
-                Array.Copy(rec.MainData, offset, buff, 0, 3); offset += 3;
+                Array.Copy(data, (int)offset, buff, 0, 3); offset += 3;
                 rec.cMinLon = BitConverter.ToInt32(buff, 0);
-                rec.Flags = rec.MainData[offset]; offset++;
+                rec.Flags = data[(int)offset]; offset++;
                 if (rec.Flags == 0x81) offset += 11;
                 if ((rec.Flags == 0x80) || (rec.Flags > 0x81)) offset++;
-                byte f10v = rec.MainData[offset]; offset++;
+                byte f10v = data[(int)offset]; offset++;
                 if (rec.Flags == 0x81) offset++;
-                offset += 1 + f10v;
-                Array.Copy(rec.MainData, offset, buff, 0, 3); offset += 3;
+                offset += (uint)(1 + f10v);
+                Array.Copy(data, (int)offset, buff, 0, 3); offset += 3;
                 rec.cLat = BitConverter.ToInt32(buff, 0);
-                Array.Copy(rec.MainData, offset, buff, 0, 3); offset += 3;
+                Array.Copy(data, (int)offset, buff, 0, 3); offset += 3;
                 rec.cLon = BitConverter.ToInt32(buff, 0);
             }
             catch (Exception ex)
             {
                 rec.ReadError = ex;
             };
+            return false;
         }
 
+        private bool Read27AlertTriggerOptions(ref byte[] data, RecAlertTriggerOptions rec) // 27
+        {
+            try
+            {
+                uint offset = rec.OffsetMain;
+                ushort keyv = BitConverter.ToUInt16(data, (int)offset); offset += 2;
+                if (keyv < 16)
+                {
+                    rec.BearingCount = (byte)(keyv & 0x07);
+                    bool hasDTL = (keyv & 0x08) == 0x08;
+                    if (rec.BearingCount > 0)
+                    {
+                        rec.BearingAngle = new ushort[rec.BearingCount];
+                        rec.BearingWide = new ushort[rec.BearingCount];
+                        rec.BearingBiDir = new bool[rec.BearingCount];
+                        for (int i = 0; i < rec.BearingCount; i++)
+                        {
+                            ushort br = BitConverter.ToUInt16(data, (int)offset); offset += 2;
+                            rec.BearingAngle[i] = (ushort)(br & 0x01FF);
+                            rec.BearingWide[i] = (ushort)(((br >> 9) & 0x0F) * 5);
+                            rec.BearingBiDir[i] = (br & 0x2000) == 0x2000;
+                        };
+                    };
+                    if (hasDTL) // DateTime List Block
+                    {
+                        ushort len = BitConverter.ToUInt16(data, (int)offset); offset += 2;
+                        if (len > 0)
+                        {
+                            rec.DateTimeBlock = new byte[len];
+                            Array.Copy(data, offset, rec.DateTimeBlock, 0, len); offset += len;
+                            Read27DateTimeListBlock(rec);
+                        };                        
+                    };
+                    if ((rec.Parent != null) && (rec.Parent is RecAlert)) ((RecAlert)rec.Parent).AlertTriggerOptions = rec;
+                };
+            }
+            catch (Exception ex)
+            {
+                rec.ReadError = ex;
+            };
+            return false;
+        }
+
+        private static void Read27DateTime00Block(RecAlertTriggerOptions rec, byte b8Flag, ref int offset) // By Month
+        {
+            bool has_month_from = (b8Flag & 0x01) == 0x01;
+            bool has_month_till = (b8Flag & 0x02) == 0x02;
+            //bool has_time_start = (b8Flag & 0x04) == 0x04;
+            //bool has_time_end   = (b8Flag & 0x08) == 0x08;
+            //bool has_dof_end    = (b8Flag & 0x10) == 0x10;
+
+            byte tfromh = 0; byte tfromm = 0; byte ttillh = 24; byte ttillm = 0; byte bydw = 0x7F;
+            string line = "";
+
+            byte mfrom = 1; byte mtill = 12;   
+            if(has_month_from) mfrom = rec.DateTimeBlock[offset++];
+            if(has_month_till) mtill = rec.DateTimeBlock[offset++];
+            
+            if ((mfrom != 1) || (mtill != 12))
+                line += String.Format("on_month:{0:00}~{1:00},", mfrom, mtill);
+
+            Read27DateTimeBlockTDOFPart(rec, ref offset, b8Flag, ref tfromh, ref tfromm, ref ttillh, ref ttillm, ref bydw);
+            line += DateTimeDOFToLine(tfromh, tfromm, ttillh, ttillm, bydw);
+
+            rec.DateTimeList.Add(line);
+        }
+
+        private static void Read27DateTime20Block(RecAlertTriggerOptions rec, byte b8Flag, ref int offset) // Dates
+        {
+            bool has_no_year    = (b8Flag & 0x01) == 0x01;
+            bool has_day_month  = (b8Flag & 0x02) == 0x02;
+            //bool has_time_start = (b8Flag & 0x04) == 0x04;
+            //bool has_time_end   = (b8Flag & 0x08) == 0x08;
+            //bool has_dof_end    = (b8Flag & 0x10) == 0x10;
+
+            byte tfromh = 0; byte tfromm = 0; byte ttillh = 24; byte ttillm = 0; byte bydw = 0x7F;
+            string line = "on_day:";
+            
+            if (has_no_year)
+            {
+                int mmddf = rec.DateTimeBlock[offset++] + (rec.DateTimeBlock[offset++] << 8);
+                int mmddt = rec.DateTimeBlock[offset++] + (rec.DateTimeBlock[offset++] << 8);
+                line += String.Format("{0:00}.{1:00}-", (mmddf >> 4) & 0x1F, mmddf & 0x0F);
+                line += String.Format("{0:00}.{1:00},", (mmddt >> 4) & 0x1F, mmddt & 0x0F);
+            }
+            else
+            {
+                int ddf = rec.DateTimeBlock[offset++];
+                int mmyyf = rec.DateTimeBlock[offset++] + (rec.DateTimeBlock[offset++] << 8);
+                int ddt = rec.DateTimeBlock[offset++];
+                int mmyyt = rec.DateTimeBlock[offset++] + (rec.DateTimeBlock[offset++] << 8);
+                line += String.Format("{0:00}.{1:00}.{2:0000}-", ddf, mmyyf & 0x0F, (mmyyf >> 4) & 0x0FFF);
+                line += String.Format("{0:00}.{1:00}.{2:0000},", ddt, mmyyt & 0x0F, (mmyyt >> 4) & 0x0FFF);
+            };
+
+            Read27DateTimeBlockTDOFPart(rec, ref offset, b8Flag, ref tfromh, ref tfromm, ref ttillh, ref ttillm, ref bydw);
+            line += DateTimeDOFToLine(tfromh, tfromm, ttillh, ttillm, bydw);
+            
+            rec.DateTimeList.Add(line);
+        }
+
+        private static void Read27DateTime40Block(RecAlertTriggerOptions rec, byte b8Flag, ref int offset) // Day of year by week
+        {
+            bool has_dof_start  = (b8Flag & 0x01) == 0x01;
+            bool has_day_oyear  = (b8Flag & 0x02) == 0x02;
+            //bool has_time_start = (b8Flag & 0x04) == 0x04;
+            //bool has_time_end   = (b8Flag & 0x08) == 0x08;
+            //bool has_dof_end   = (b8Flag & 0x10) == 0x10;
+
+            byte tfromh = 0; byte tfromm = 0; byte ttillh = 24; byte ttillm = 0; byte bydw = 0x7F;
+            string line = "";
+            
+            if (has_day_oyear)
+            {
+                line = "on_day:";
+                ushort ddf = (ushort)(rec.DateTimeBlock[offset++] + (rec.DateTimeBlock[offset++] << 8));
+                ushort ddt = (ushort)(rec.DateTimeBlock[offset++] + (rec.DateTimeBlock[offset++] << 8));
+                line += String.Format("{0:000}~{1:000},", ddf, ddt);
+            };
+
+            if (has_dof_start)  bydw = rec.DateTimeBlock[offset++];
+
+            Read27DateTimeBlockTDOFPart(rec, ref offset, b8Flag, ref tfromh, ref tfromm, ref ttillh, ref ttillm, ref bydw);
+            line += DateTimeDOFToLine(tfromh, tfromm, ttillh, ttillm, bydw);
+            
+            rec.DateTimeList.Add(line);
+        }
+
+        private static void Read27DateTime60Block(RecAlertTriggerOptions rec, byte b8Flag, ref int offset) // day of month
+        {
+            bool unset_flag     = (b8Flag & 0x01) == 0x01;
+            bool has_day_omonth = (b8Flag & 0x02) == 0x02;
+            //bool has_time_start = (b8Flag & 0x04) == 0x04;
+            //bool has_time_end   = (b8Flag & 0x08) == 0x08;
+            //bool has_dof_end    = (b8Flag & 0x10) == 0x10;
+
+            byte tfromh = 0; byte tfromm = 0; byte ttillh = 24; byte ttillm = 0; byte bydw = 0x7F;
+            string line = "on_day:";
+            
+            if (has_day_omonth)
+                line += String.Format("{0:00}-{1:00},", rec.DateTimeBlock[offset++], rec.DateTimeBlock[offset++]);
+            
+            Read27DateTimeBlockTDOFPart(rec, ref offset, b8Flag, ref tfromh, ref tfromm, ref ttillh, ref ttillm, ref bydw);
+            line += DateTimeDOFToLine(tfromh, tfromm, ttillh, ttillm, bydw);
+            
+            rec.DateTimeList.Add(line);
+        }
+
+        private static void Read27DateTimeC0Block(RecAlertTriggerOptions rec, byte b8Flag, ref int offset) // week of month
+        {
+            bool unset_flag      = (b8Flag & 0x01) == 0x01;
+            bool has_week_omonth = (b8Flag & 0x02) == 0x02;
+            //bool has_time_start  = (b8Flag & 0x04) == 0x04;
+            //bool has_time_end    = (b8Flag & 0x08) == 0x08;
+            //bool has_dof_end     = (b8Flag & 0x10) == 0x10;
+
+            byte tfromh = 0; byte tfromm = 0; byte ttillh = 24; byte ttillm = 0; byte bydw = 0x7F;
+            string line = "on_week:";
+                        
+            if (has_week_omonth)
+                line += String.Format("{0:0}-{1:0},", rec.DateTimeBlock[offset++], rec.DateTimeBlock[offset++]);
+            
+            Read27DateTimeBlockTDOFPart(rec, ref offset, b8Flag, ref tfromh, ref tfromm, ref ttillh, ref ttillm, ref bydw);
+            line += DateTimeDOFToLine(tfromh, tfromm, ttillh, ttillm, bydw);
+            
+            rec.DateTimeList.Add(line);
+        }
+
+        private static void Read27DateTimeE0Block(RecAlertTriggerOptions rec, byte b8Flag, ref int offset) // week of year
+        {
+            bool unset_flag     = (b8Flag & 0x01) == 0x01;
+            bool has_week_oyear = (b8Flag & 0x02) == 0x02;
+            //bool has_time_start = (b8Flag & 0x04) == 0x04;
+            //bool has_time_end   = (b8Flag & 0x08) == 0x08;
+            //bool has_dof_end    = (b8Flag & 0x10) == 0x10;
+
+            byte tfromh = 0; byte tfromm = 0; byte ttillh = 24; byte ttillm = 0; byte bydw = 0x7F;
+            string line = "on_week:";            
+            
+            if (has_week_oyear)
+                line += String.Format("{0:00}~{1:00},", rec.DateTimeBlock[offset++], rec.DateTimeBlock[offset++]);
+            
+            Read27DateTimeBlockTDOFPart(rec, ref offset, b8Flag, ref tfromh, ref tfromm, ref ttillh, ref ttillm, ref bydw);
+            line += DateTimeDOFToLine(tfromh, tfromm, ttillh, ttillm, bydw);
+            
+            rec.DateTimeList.Add(line);
+        }
+
+        /// <summary>
+        ///     Read Time & Day of Week Part of DateTime Block
+        /// </summary>
+        /// <param name="rec">Record</param>
+        /// <param name="offset">offset</param>
+        /// <param name="b8Flag">block08 flags</param>
+        /// <param name="tfromh">Hour from</param>
+        /// <param name="tfromm">Minutes from</param>
+        /// <param name="ttillh">Hour till</param>
+        /// <param name="ttillm">Minutes till</param>
+        /// <param name="bydw">Day of week masked</param>
+        private static void Read27DateTimeBlockTDOFPart(RecAlertTriggerOptions rec, ref int offset, byte b8Flag, ref byte tfromh, ref byte tfromm, ref byte ttillh, ref byte ttillm, ref byte bydw)
+        {
+            bool has_time_start = (b8Flag & 0x04) == 0x04;
+            bool has_time_end   = (b8Flag & 0x08) == 0x08;
+            bool has_dof_end    = (b8Flag & 0x10) == 0x10;
+
+            if (has_time_start)
+            {
+                tfromh = rec.DateTimeBlock[offset++];
+                if ((tfromh & 0x80) == 0x80) 
+                { 
+                    tfromh = (byte)(tfromh & 0x7F); 
+                    tfromm = rec.DateTimeBlock[offset++]; 
+                };
+            };
+
+            if (has_time_end)
+            {
+                ttillh = rec.DateTimeBlock[offset++];
+                if ((ttillh & 0x80) == 0x80) 
+                { 
+                    ttillh = (byte)(ttillh & 0x7F);
+                    ttillm = rec.DateTimeBlock[offset++]; 
+                };
+            };
+
+            if (has_dof_end) 
+                bydw = rec.DateTimeBlock[offset++];
+        }
+
+        /// <summary>
+        ///     Time & Day of Week to text
+        /// </summary>
+        /// <param name="tfromh">Hour from</param>
+        /// <param name="tfromm">Minutes from</param>
+        /// <param name="ttillh">Hour till</param>
+        /// <param name="ttillm">Minutes till</param>
+        /// <param name="bydw">Day of week masked</param>
+        /// <returns></returns>
+        private static string DateTimeDOFToLine(byte tfromh, byte tfromm, byte ttillh, byte ttillm, byte bydw)
+        {
+            string line = "";
+
+            line += String.Format("{0:00}:{1:00}..", tfromh, tfromm);
+            line += String.Format("{0:00}:{1:00}", ttillh, ttillm);
+
+            if (bydw != 0x7F)
+                for (int z = 0; z < 7; z++)
+                {
+                    int vz = (int)Math.Pow(2, z);
+                    if ((bydw & vz) == vz)
+                    {
+                        if (LOCALE_LANGUAGE == "RU")
+                            line += String.Format(",{0}", (new string[] { "סב", "ןע", "קע", "סנ", "גע", "ןמ", "גס" })[z]);
+                        else
+                            line += String.Format(",{0}", (new string[] { "sa", "fr", "th", "we", "tu", "mo", "su" })[z]);
+                    };
+                };
+            return line;
+        }
+
+        /// <summary>
+        ///     Part of 27 Record Type (RecAlertTriggerOptions)
+        /// </summary>
+        /// <param name="rec"></param>
+        private static void Read27DateTimeListBlock(RecAlertTriggerOptions rec)
+        {
+            int offset = 0;
+            while (true)
+            {
+                try
+                {
+                    byte b8Type = rec.DateTimeBlock[offset++];
+                    byte b8Flag = rec.DateTimeBlock[offset++];
+                    bool is_last_entry = (b8Flag & 0x80) == 0x80;
+                    if (b8Type == 0x00) Read27DateTime00Block(rec, b8Flag, ref offset); // By Month
+                    if (b8Type == 0x20) Read27DateTime20Block(rec, b8Flag, ref offset); // Dates                    
+                    if (b8Type == 0x40) Read27DateTime40Block(rec, b8Flag, ref offset); // Day of year by week
+                    if (b8Type == 0x60) Read27DateTime60Block(rec, b8Flag, ref offset); // day of month
+                    if (b8Type == 0xC0) Read27DateTimeC0Block(rec, b8Flag, ref offset); // week of month
+                    if (b8Type == 0xE0) Read27DateTimeE0Block(rec, b8Flag, ref offset); // week of year
+                    if (is_last_entry || (offset >= rec.DateTimeBlock.Length)) break;
+                }
+                catch (Exception ex)
+                {
+                    rec.ReadError = ex;
+                    break;
+                };
+            };
+        } // part of 27
+
+        /// <summary>
+        ///     Get Color from number
+        /// </summary>
+        /// <param name="value">number</param>
+        /// <returns></returns>
         private static Color ColorFromUint(uint value)
         {
             return Color.FromArgb((int)((value >> 0) & 0xFF), (int)((value >> 8) & 0xFF), (int)((value >> 16) & 0xFF));
@@ -1667,12 +2045,30 @@ namespace KMZRebuilder
     /// </summary>
     public class GPIWriter
     {
+        /// <summary>
+        ///     Transliteration unit
+        /// </summary>
         private Translitter ml = new Translitter();
+        /// <summary>
+        ///     Skip Alert Block In Description
+        /// </summary>
         private static string rxskip = @"(?:alert_[\w]+=.+)|(?:name\:\w\w=.+)";
+        /// <summary>
+        ///     Description in Description Block
+        /// </summary>
         private static string rxdesc = @"(?<desc>desc\:(?<lang>\w\w)=(?<value>[\w\W]+?)\r\n\r\n)";
+        /// <summary>
+        ///     Comment in Description Block
+        /// </summary>
         private static string rxcomm = @"(?:comment=(?<comment>.+))";
+        /// <summary>
+        ///     Comment by lang in Description Block
+        /// </summary>
         private static string rxcmln = @"(?:comm\:(?<lang>\w\w)=(?<comment>.+))";
 
+        /// <summary>
+        ///     Address in Description Block
+        /// </summary>
         private static string[] rxaddr = new string[] {
                 @"(?:addr_city=(?<value>.+))",
                 @"(?:addr_country=(?<value>.+))",
@@ -1680,6 +2076,9 @@ namespace KMZRebuilder
                 @"(?:addr_postal=(?<value>.+))",
                 @"(?:addr_street=(?<value>.+))",
                 @"(?:addr_house=(?<value>.+))"};
+        /// <summary>
+        ///     Address by lang in Description Block
+        /// </summary>
         private static string[] rxadln = new string[] {
                 @"(?:addr_city\:(?<lang>\w\w)=(?<value>.+))",
                 @"(?:addr_country\:(?<lang>\w\w)=(?<value>.+))",
@@ -1687,6 +2086,9 @@ namespace KMZRebuilder
                 @"(?:addr_postal\:(?<lang>\w\w)=(?<value>.+))",
                 @"(?:addr_street\:(?<lang>\w\w)=(?<value>.+))",
                 @"(?:addr_house\:(?<lang>\w\w)=(?<value>.+))"};
+        /// <summary>
+        ///     Contacts in Description Block
+        /// </summary>
         private static string[] rxcont = new string[] {
                 @"(?:contact_phone=(?<value>.+))",
                 @"(?:contact_phone2=(?<value>.+))",
@@ -1715,6 +2117,10 @@ namespace KMZRebuilder
         /// </summary>
         public bool StoreImagesAsIs = false; // false is default
         /// <summary>
+        ///     Save text only in local language
+        /// </summary>
+        public bool StoreOnlyLocalLang = false;
+        /// <summary>
         ///     By Default Alert in POI is on (if not specified)
         /// </summary>
         public bool DefaultAlertIsOn = true; // try is default
@@ -1726,6 +2132,10 @@ namespace KMZRebuilder
         ///     By Default Alert in POI is plugn sound (if not specified)
         /// </summary>
         public string DefaultAlertSound = "4"; // 4 is default
+        /// <summary>
+        ///     Max Alert DateTime Triggers Count (1..32)
+        /// </summary>
+        public byte MaxAlertDateTimeCount = 16;
         /// <summary>
         ///     Source KML file (for relative image & sounds paths)
         /// </summary>
@@ -1877,7 +2287,7 @@ namespace KMZRebuilder
                     Match mx = rx.Match(poi.alert);
                     if (mx.Success)
                     {
-                        string fName = mx.Groups["sound"].Value;
+                        string fName = mx.Groups["sound"].Value.Trim('\r');
                         if (!MP3s.Contains(fName)) MP3s.Add(fName);
                     };
                 };
@@ -1981,17 +2391,17 @@ namespace KMZRebuilder
             byte[] block;
             // Header0
             { 
-                block = GetHeader0Block().Data;
+                block = Get00Header0Block().Data;
                 fs.Write(block, 0, block.Length);
             };
             // Header1
             { 
-                block = GetHeader1Block().Data;
+                block = Get01Header1Block().Data;
                 fs.Write(block, 0, block.Length);
             };
             // POIs
             { 
-                block = GetPOIGroupBlock().Data;
+                block = Get09POIGroupBlock().Data;
                 fs.Write(block, 0, block.Length);
             };
             // Footer
@@ -2002,6 +2412,9 @@ namespace KMZRebuilder
             fs.Close();
         }
 
+        /// <summary>
+        ///     POI OBJECT
+        /// </summary>
         private class POI
         {
             public string name;
@@ -2020,6 +2433,9 @@ namespace KMZRebuilder
             public POI(string name, string description, double lat, double lon) { this.name = name; this.description = description; this.lat = lat; this.lon = lon; }
         }
 
+        /// <summary>
+        ///     GPI Record Block to Write
+        /// </summary>
         private class FileBlock
         {
             public ushort bType = 0;
@@ -2044,9 +2460,393 @@ namespace KMZRebuilder
                     return res.ToArray();
                 }
             }            
+        }        
+        
+        /// <summary>
+        ///     Fill 27 Block (AlertTriggerOptions) of Bearing List
+        /// </summary>
+        /// <param name="poi"></param>
+        /// <param name="fb27"></param>
+        /// <param name="count"></param>
+        private void FillTriggerBearings(POI poi, FileBlock fb27, ref ushort count)
+        {
+            MatchCollection mc = (new Regex(@"(?:alert_bearing=(?<value>.+))", RegexOptions.None)).Matches(poi.alert);
+            foreach (Match mx in mc)
+            {
+                string bal = mx.Groups["value"].Value.Trim('\r');
+                if (String.IsNullOrEmpty(bal)) continue;
+                string[] baa = bal.Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                if (String.IsNullOrEmpty(baa[0])) continue;
+
+                ushort bearing = 0;
+                if (!ushort.TryParse(baa[0], out bearing)) continue;
+
+                byte wide5 = 5; // wide 0..75 devided by 5 (def: 25 degrees)
+                bool bidir = false; // def: onedir
+                if (baa.Length > 1)
+                {
+                    for (int z = 1; z < Math.Min(3, baa.Length); z++)
+                    {
+                        byte val;
+                        if ((char.IsDigit(baa[z][0])) && (byte.TryParse(baa[z], out val)))
+                        {
+                            if (val > 75) val = 75;
+                            wide5 = (byte)((val / 5) & 0x0F);
+                        };
+                        if (baa[z].ToLower().Substring(0,1) == "b")
+                            bidir = true;
+                    };
+                };
+                bearing += (ushort)(wide5 << 9);
+                if (bidir) bearing += 0x2000;
+                fb27.MainData.AddRange(BitConverter.GetBytes(((ushort)(bearing))));
+                count++;
+
+                if (count == 7) break;
+            };
+        } // Part of trigger block
+
+        /// <summary>
+        ///     Get DateTime OnDay Block - part of 27 Block (AlertTriggerOptions)
+        /// </summary>
+        /// <param name="text"></param>
+        /// <returns></returns>
+        private static byte[] GetDateTimeBlockOnDay(string text) // DateTime List Entry
+        {
+            List<byte> curr = new List<byte>();
+
+            int rFrom, rTill; byte[] tFrom, tTill; byte dof; int[] dFrom, dTill;            
+            bool hr = HasRange(text, 1, 366, out rFrom, out rTill);
+            bool hg = HasDates(text, 1, 31, out dFrom, out dTill);
+            bool ht = HasTime(text, out tFrom, out tTill);
+            bool hd = HasDof(text, out dof);
+            
+            if (hr && hg) return null;
+
+            //// returned as day of year
+            //if ((!hr) && (!hg) && (!hd))
+            //{
+            //    if (!ht) return null;
+            //    curr.Add(0); // By Month
+            //    curr.Add((byte)(/*has_time_start*/(ht ? 0x04 : 0) + /*has_time_end*/0x08 + /*has_dof_end*/(hd ? 0x10 : 0))); // Flags
+            //    curr.AddRange(tFrom);
+            //    curr.AddRange(tTill);
+            //    return curr.ToArray();
+            //};
+
+            if (hr || ((!hr) && (!hg)))
+            {
+                curr.Add(0x40); // day of year
+                if (!hr)
+                {
+                    curr.Add((byte)(/*has_dof_start*/0x01 + /*has_time_start*/(ht ? 0x04 : 0) + /*has_time_end*/0x08)); // Flags
+                    curr.Add(dof);
+                    if (ht) curr.AddRange(tFrom);
+                    curr.AddRange(tTill);
+                }
+                else
+                {
+                    curr.Add((byte)(/*has_day_oyear*/0x02 + /*has_time_start*/(ht ? 0x04 : 0) + /*has_time_end*/0x08 + /*has_dof_end*/(hd ? 0x10 : 0))); // Flags
+                    curr.AddRange(BitConverter.GetBytes((ushort)rFrom));
+                    curr.AddRange(BitConverter.GetBytes((ushort)rTill));
+                    if (ht) curr.AddRange(tFrom);
+                    curr.AddRange(tTill);
+                    if (hd) curr.Add(dof);
+                };
+                return curr.ToArray();
+            };
+            if (hg)
+            {
+                if ((dFrom[1] == 0) || (dTill[1] == 0))
+                {
+                    curr.Add(0x60); // day of month
+                    curr.Add((byte)(/*has_day_omonth*/0x02 + /*has_time_start*/(ht ? 0x04 : 0) + /*has_time_end*/0x08 + /*has_dof_end*/(hd ? 0x10 : 0)));
+                    curr.Add((byte)dFrom[0]);
+                    curr.Add((byte)dTill[0]);
+                    if (ht) curr.AddRange(tFrom);
+                    curr.AddRange(tTill);
+                    if (hd) curr.Add(dof);
+                    return curr.ToArray();
+                }
+                else
+                {
+                    curr.Add(0x20); // Dates
+                    curr.Add((byte)(/*has_no_year*/((dFrom[2] == 0) || (dTill[2] == 0) ? 0x01 : 0) + /*has_day_month*/0x02 + /*has_time_start*/(ht ? 0x04 : 0) + /*has_time_end*/0x08 + /*has_dof_end*/(hd ? 0x10 : 0)));
+                    if ((dFrom[2] == 0) || (dTill[2] == 0))
+                    {
+                        ushort mmddf = (ushort)(dFrom[1] + (dFrom[0] << 4));
+                        ushort mmddt = (ushort)(dTill[1] + (dTill[0] << 4));
+                        curr.AddRange(BitConverter.GetBytes(mmddf));
+                        curr.AddRange(BitConverter.GetBytes(mmddt));
+                    }
+                    else
+                    {
+                        ushort mmyyf = (ushort)(dFrom[1] + (dFrom[2] << 4));
+                        curr.Add((byte)dFrom[0]);
+                        curr.AddRange(BitConverter.GetBytes(mmyyf));
+                        ushort mmyyt = (ushort)(dTill[1] + (dTill[2] << 4));
+                        curr.Add((byte)dTill[0]);
+                        curr.AddRange(BitConverter.GetBytes(mmyyt));
+                    };
+                    if (ht) curr.AddRange(tFrom);
+                    curr.AddRange(tTill);
+                    if (hd) curr.Add(dof);
+                    return curr.ToArray();
+                };
+            };
+
+            return null;
         }
 
-        private FileBlock GetHeader0Block() // 0
+        /// <summary>
+        ///     Get DateTime onWeek Block - part of 27 Block (AlertTriggerOptions)
+        /// </summary>
+        /// <param name="text"></param>
+        /// <returns></returns>
+        private static byte[] GetDateTimeBlockOnWeek(string text) // DateTime List Entry
+        {
+            List<byte> curr = new List<byte>();
+
+            int rFrom, rTill; byte[] tFrom, tTill; byte dof; int[] dFrom, dTill;
+            bool hr = HasRange(text, 1, 52, out rFrom, out rTill);
+            bool hg = HasDates(text, 1, 5, out dFrom, out dTill);
+            bool ht = HasTime(text, out tFrom, out tTill);
+            bool hd = HasDof(text, out dof);
+            
+            if ((!hr) && (!hg)) return null;
+            if (hr == hg) return null;
+                                    
+            if (hr) curr.Add(0xE0); // week of year
+            if (hg) curr.Add(0xC0); // week of month
+            curr.Add((byte)(/*has_week*/0x02 + /*has_time_start*/(ht ? 0x04 : 0) + /*has_time_end*/0x08 + /*has_dof_end*/(hd ? 0x10 : 0))); // Flags
+            if (hr) { curr.Add((byte)rFrom); curr.Add((byte)rTill); };
+            if (hg) { curr.Add((byte)dFrom[0]); curr.Add((byte)dTill[0]); };
+            if (ht) curr.AddRange(tFrom);
+            curr.AddRange(tTill);
+            if (hd) curr.Add(dof);
+            return curr.ToArray();
+        }
+
+        /// <summary>
+        ///     Get DateTime OnMonth Block - part of 27 Block (AlertTriggerOptions)
+        /// </summary>
+        /// <param name="text"></param>
+        /// <returns></returns>
+        private static byte[] GetDateTimeBlockOnMonth(string text) // DateTime List Entry
+        {
+            List<byte> curr = new List<byte>();
+
+            int rFrom, rTill; byte[] tFrom, tTill; byte dof; int[] dFrom, dTill;           
+            bool hr = HasRange(text, 1, 12, out rFrom, out rTill);
+            bool hg = HasDates(text, 1, 12, out dFrom, out dTill);
+            bool ht = HasTime(text, out tFrom, out tTill);
+            bool hd = HasDof(text, out dof);
+            
+            if ((!hr) && (!hg)) return null;
+            if (hr == hg) return null;
+
+            curr.Add(0); // By Month
+            curr.Add((byte)(/*has_month_from*/0x01 + /*has_month_till*/0x02 + /*has_time_start*/(ht ? 0x04 : 0) + /*has_time_end*/0x08 + /*has_dof_end*/(hd ? 0x10 : 0))); // Flags
+            if (hr) { curr.Add((byte)rFrom); curr.Add((byte)rTill); };
+            if (hg) { curr.Add((byte)dFrom[0]); curr.Add((byte)dTill[0]); };
+            if (ht) curr.AddRange(tFrom);
+            curr.AddRange(tTill);
+            if (hd) curr.Add(dof);
+            return curr.ToArray();
+        }
+
+        /// <summary>
+        ///     Fill 27 Block (AlertTriggerOptions) of DateTime List
+        /// </summary>
+        /// <param name="poi"></param>
+        /// <param name="fb27"></param>
+        /// <param name="count"></param>
+        private void FillTriggerDateTime(POI poi, FileBlock fb27, ref ushort count) // Part of trigger block
+        {
+            MatchCollection mc = (new Regex(@"(?:alert_datetime=(?<value>.+))", RegexOptions.None)).Matches(poi.alert);
+            List<byte[]> intDTBlocks = new List<byte[]>();
+            ushort intDTLength = 0;
+            foreach (Match mx in mc)
+            {
+                string bal = mx.Groups["value"].Value.Replace(" ", "").Replace("\t", "").Trim('\r').ToLower();
+                if (String.IsNullOrEmpty(bal)) continue;
+
+                if ((bal.StartsWith("on_day:") && (bal.Length > 7)) || ((!bal.StartsWith("o")) && (bal.Length > 1)))
+                {
+                    if (bal.StartsWith("on_day:")) bal = bal.Substring(7).Trim();
+                    byte[] toAdd = GetDateTimeBlockOnDay(bal);
+                    if ((toAdd != null) && (toAdd.Length > 0))
+                    {
+                        intDTBlocks.Add(toAdd);
+                        intDTLength += (ushort)toAdd.Length;
+                    };                    
+                };
+                if (bal.StartsWith("on_week:") && (bal.Length > 8))
+                {
+                    bal = bal.Substring(8).Trim();
+                    byte[] toAdd = GetDateTimeBlockOnWeek(bal);
+                    if ((toAdd != null) && (toAdd.Length > 0))
+                    {
+                        intDTBlocks.Add(toAdd);
+                        intDTLength += (ushort)toAdd.Length;
+                    };                       
+                };
+                if (bal.StartsWith("on_month:") && (bal.Length > 9))
+                {
+                    bal = bal.Substring(9).Trim();
+                    byte[] toAdd = GetDateTimeBlockOnMonth(bal);
+                    if ((toAdd != null) && (toAdd.Length > 0))
+                    {
+                        intDTBlocks.Add(toAdd);
+                        intDTLength += (ushort)toAdd.Length;
+                    };                          
+                };
+
+                if (intDTBlocks.Count >= this.MaxAlertDateTimeCount) break;
+            };
+            if (intDTBlocks.Count > 0)
+            {
+                count += 8;
+                intDTBlocks[intDTBlocks.Count - 1][1] += 0x80; // last record
+                fb27.MainData.AddRange(BitConverter.GetBytes(intDTLength));
+                foreach (byte[] d in intDTBlocks) fb27.MainData.AddRange(d);
+            };
+        }
+
+        /// <summary>
+        ///     is `alert_datetime=...` has dates range
+        /// </summary>
+        /// <param name="value">text</param>
+        /// <param name="min">min day</param>
+        /// <param name="max">max day</param>
+        /// <param name="dFrom">date from dd,MM,yy</param>
+        /// <param name="dTill">date till dd,MM,yy</param>
+        /// <returns></returns>
+        private static bool HasDates(string value, int min, int max, out int[] dFrom, out int[] dTill)
+        {
+            dFrom = new int[3] { min, 0, 0 };
+            dTill = new int[3] { max, 0, 0 };
+            if (String.IsNullOrEmpty(value)) return false;
+            Regex rxDates = new Regex(@"(?<dates>(?<df>\d{1,2})(?:\.(?<mf>\d{1,2}))?(?:\.(?<yf>\d{1,4}))?-(?<dt>\d{1,2})(?:\.(?<mt>\d{1,2}))?(?:\.(?<yt>\d{1,4}))?)", RegexOptions.IgnoreCase);
+            Match mx = rxDates.Match(value);
+            if (!mx.Success) return false;
+            if (!int.TryParse(mx.Groups["df"].Value, out dFrom[0])) return false;
+            if (!int.TryParse(mx.Groups["dt"].Value, out dTill[0])) return false;
+            if (!String.IsNullOrEmpty(mx.Groups["mf"].Value)) int.TryParse(mx.Groups["mf"].Value, out dFrom[1]);
+            if (!String.IsNullOrEmpty(mx.Groups["mt"].Value)) int.TryParse(mx.Groups["mt"].Value, out dTill[1]);
+            if (!String.IsNullOrEmpty(mx.Groups["yf"].Value)) int.TryParse(mx.Groups["yf"].Value, out dFrom[2]);
+            if (!String.IsNullOrEmpty(mx.Groups["yt"].Value)) int.TryParse(mx.Groups["yt"].Value, out dTill[2]);
+            if (dFrom[0] < min) dFrom[0] = min;
+            if (dFrom[0] > max) dFrom[0] = max;
+            if (dTill[0] < min) dTill[0] = min;
+            if (dTill[0] > max) dTill[0] = max;
+            if (dFrom[1] < 0) dFrom[1] = 0;
+            if (dFrom[1] > 12) dFrom[1] = 12;
+            if (dFrom[2] < 0) dFrom[2] = 0;
+            if (dFrom[2] > 2199) dFrom[2] = 2199;
+            return true;
+        }
+
+        /// <summary>
+        ///     is `alert_datetime=...` has days of week set
+        /// </summary>
+        /// <param name="value">text</param>
+        /// <param name="dof">days of week by mask</param>
+        /// <returns></returns>
+        private static bool HasDof(string value, out byte dof)
+        {
+            dof = 0x7F;
+            if (String.IsNullOrEmpty(value)) return false;
+            bool ex = false;
+            Regex rxDof = new Regex(@"\b(?<dof>(?:\p{L}){2,3})\b", RegexOptions.IgnoreCase);
+            MatchCollection mc = rxDof.Matches(value);
+            if (mc.Count > 0) dof = 0;
+            foreach (Match mx in mc)
+            {
+                ex = true;
+                string val = mx.Groups["dof"].Value.ToLower().Substring(0, 2);
+                for (int z = 0; z < 7; z++)
+                {
+                    byte bf = (byte)Math.Pow(2, z);
+                    if (val == (new string[] { "sa", "fr", "th", "we", "tu", "mo", "su" })[z]) // EN
+                        dof += bf;
+                    else if (val == (new string[] { "סב", "ןע", "קע", "סנ", "גע", "ןמ", "גס" })[z]) // RU (2-symbols)
+                        dof += bf;
+                    else if (val == (new string[] { "סף", "ןÿ", "קו", "סנ", "גע", "ןמ", "גמ" })[z]) // RU (3-symbols)
+                        dof += bf;
+                };
+            };
+            return dof != 0x7F;
+        }
+
+        /// <summary>
+        ///     is `alert_datetime=...` has ~ range
+        /// </summary>
+        /// <param name="value">text</param>
+        /// <param name="min">min value</param>
+        /// <param name="max">max value</param>
+        /// <param name="rFrom">from value</param>
+        /// <param name="rTill">till value</param>
+        /// <returns></returns>
+        private static bool HasRange(string value, int min, int max, out int rFrom, out int rTill)
+        {
+            rFrom = 0;
+            rTill = 0;
+            if(String.IsNullOrEmpty(value)) return false;
+            Regex rxRange = new Regex(@"(?<range>(?<from>\d{1,3})~(?<till>\d{1,3}))", RegexOptions.IgnoreCase);
+            Match mx = rxRange.Match(value);
+            if (!mx.Success) return false;
+            if (!int.TryParse(mx.Groups["from"].Value, out rFrom)) return false;
+            if (!int.TryParse(mx.Groups["till"].Value, out rTill)) return false;
+            if (rFrom < min) rFrom = min;
+            if (rFrom > max) rFrom = max;
+            if (rTill < min) rTill = min;
+            if (rTill > max) rTill = max;
+            if (rTill < rFrom) return false;
+            return true;
+        }
+
+        /// <summary>
+        ///     is `alert_datetime=...` has time range
+        /// </summary>
+        /// <param name="value">text</param>
+        /// <param name="tFrom">time from hh,mm</param>
+        /// <param name="tTill">time till hh,mm</param>
+        /// <returns></returns>
+        private static bool HasTime(string value, out byte[] tFrom, out byte[] tTill)
+        {
+            tFrom = new byte[0];
+            tTill = new byte[1] { 24 };
+
+            int[] vFrom = new int[2] { 0, 0 };
+            int[] vTill = new int[2] { 24, 0 };
+            if (String.IsNullOrEmpty(value)) return false;
+            Regex rxTime = new Regex(@"(?<time>(?<hf>\d{1,2}):(?<mf>\d{1,2})\.\.(?<ht>\d{1,2}):(?<mt>\d{1,2}))", RegexOptions.IgnoreCase);
+            Match mx = rxTime.Match(value);
+            if (!mx.Success) return false;
+            if (!int.TryParse(mx.Groups["hf"].Value, out vFrom[0])) return false;
+            if (!int.TryParse(mx.Groups["mf"].Value, out vFrom[1])) return false;
+            if (!int.TryParse(mx.Groups["ht"].Value, out vTill[0])) return false;
+            if (!int.TryParse(mx.Groups["mt"].Value, out vTill[1])) return false;
+            if ((vFrom[0] == 0) && (vFrom[1] == 0) && (vTill[0] == 24)) return false;
+            if (vFrom[0] < 0) vFrom[0] = 0;
+            if (vFrom[0] > 23) vFrom[0] = 23;
+            if (vFrom[1] < 0) vFrom[1] = 0;
+            if (vFrom[1] > 59) vFrom[1] = 59;
+            if (vTill[0] < 0) vTill[0] = 0;
+            if (vTill[0] > 24) vTill[0] = 24;
+            if (vTill[1] < 0) vTill[1] = 0;
+            if (vTill[1] > 59) vTill[1] = 59;
+            if (vTill[0] < vFrom[0]) return false;
+            if ((vFrom[0] != 0) || (vFrom[1] != 0))
+            {
+                if (vFrom[1] > 0) tFrom = new byte[2] { (byte)(vFrom[0] + 0x80), (byte)(vFrom[1]) }; else tFrom = new byte[1] { (byte)(vFrom[0]) };
+            };
+            if (vTill[1] > 0) tTill = new byte[2] { (byte)(vTill[0] + 0x80), (byte)(vTill[1]) }; else tTill = new byte[1] { (byte)(vTill[0]) };
+            return true;
+        }
+
+        private FileBlock Get00Header0Block() // 0
         {
             FileBlock fb = new FileBlock();
             fb.bType = 0x00;
@@ -2061,16 +2861,12 @@ namespace KMZRebuilder
             };
             // EXTRA
             {
-                FileBlock b15 = new FileBlock(); // PRODUCT VERSION DATA
-                b15.bType = 15;
-                //b15.MainData.AddRange(new byte[] { 1, 7, 9, 0, 0 }); // Must Have; 1, 7 - FID (0x0701), 9 - PID, 0 - RgnID, 0 - VendorID
-                b15.MainData.AddRange(new byte[] { 0xFF, 0xFF, 0xFF, 0, 0 }); // Must Have; UNLOCKED
-                fb.ExtraData.AddRange(b15.Data);
+                fb.ExtraData.AddRange(Get15ProductBlock().Data);
             };
             return fb;
         }
 
-        private FileBlock GetHeader1Block() // 1
+        private FileBlock Get01Header1Block() // 1
         {
             FileBlock fb = new FileBlock();
             fb.bType = 0x01;
@@ -2084,84 +2880,12 @@ namespace KMZRebuilder
             };
             // Extra
             {
-                FileBlock b17 = new FileBlock(); // COPYRIGHTS
-                b17.bType = 17;
-                b17.MainData.AddRange(new byte[] { 20, 0, 0, 0, 0, 0, 0, 0 }); // Must Have Data
-                b17.MainData.AddRange(ToLString(String.IsNullOrEmpty(this.DataSource) ? "KMZRebuilder" : this.DataSource)); // Data Source
-                b17.MainData.AddRange(ToLString("Created with KMZRebuilder")); // Copyrights
-                b17.MainData.AddRange(new byte[] { 0x01, 0x01, 0xE7, 0x4E }); // Must Have
-                fb.ExtraData.AddRange(b17.Data);
+                fb.ExtraData.AddRange(Get17CopyrightsBlock().Data);
             };
             return fb;
         }
 
-        private FileBlock GetPOIGroupBlock() // 9
-        {
-            FileBlock fb = new FileBlock();
-            fb.bType = 9;
-            // Main
-            {
-                fb.MainData.AddRange(ToLString(String.IsNullOrEmpty(this.DataSource) ? "KMZRebuilder" : this.DataSource)); // POI Group Name
-                fb.MainData.AddRange(GetMainAreaBlock().Data); // Main Area Block
-            };
-            // Extra
-            {
-                // List Categories
-                for (int i = 0; i < Categories.Count; i++) fb.ExtraData.AddRange(GetCatBlock(i).Data);
-                // List Bitmaps
-                for (int i = 0; i < Styles.Count; i++) fb.ExtraData.AddRange(GetBmpBlock(i).Data);
-                // List Media
-                /* NO MEDIA */
-                for (int i = 0; i < MP3s.Count; i++) fb.ExtraData.AddRange(GetMediaBlock(i).Data);
-            };
-            return fb;
-        }
-
-        private FileBlock GetMainAreaBlock() // 8
-        {
-            FileBlock fb = new FileBlock();
-            fb.bType = 8;
-            // Main
-            {
-                fb.MainData.AddRange(BitConverter.GetBytes(((uint)(MaxLat * Math.Pow(2, 32) / 360.0))));
-                fb.MainData.AddRange(BitConverter.GetBytes(((uint)(MaxLon * Math.Pow(2, 32) / 360.0))));
-                fb.MainData.AddRange(BitConverter.GetBytes(((uint)(MinLat * Math.Pow(2, 32) / 360.0))));
-                fb.MainData.AddRange(BitConverter.GetBytes(((uint)(MinLon * Math.Pow(2, 32) / 360.0))));
-                fb.MainData.AddRange(new byte[] { 0, 0, 0, 0, 1, 0, 2 }); // Must Have
-            };
-            // Extra
-            {
-                // SubAreas
-                foreach (KeyValuePair<uint, List<POI>> zn in POIs)
-                    fb.ExtraData.AddRange(GetSubAreaBlock(zn.Key).Data);
-            };
-            return fb;
-        }
-
-        private FileBlock GetSubAreaBlock(uint zone) // 8
-        {
-            double lat, lon;
-            ZoneToLatLon(zone, out lat, out lon);
-            FileBlock f08 = new FileBlock();
-            f08.bType = 8;
-            // Main
-            {
-                f08.MainData.AddRange(BitConverter.GetBytes(((uint)((lat + 1) * Math.Pow(2, 32) / 360.0))));
-                f08.MainData.AddRange(BitConverter.GetBytes(((uint)((lon + 1) * Math.Pow(2, 32) / 360.0))));
-                f08.MainData.AddRange(BitConverter.GetBytes(((uint)(lat * Math.Pow(2, 32) / 360.0))));
-                f08.MainData.AddRange(BitConverter.GetBytes(((uint)(lon * Math.Pow(2, 32) / 360.0))));
-                f08.MainData.AddRange(new byte[] { 0, 0, 0, 0, 1, 0, 2 }); // Must Have
-            };
-            // Extra
-            {
-                // POIs
-                foreach (POI poi in POIs[zone])
-                    f08.ExtraData.AddRange(GetPOIBlock(poi).Data);
-            };
-            return f08;
-        }
-
-        private FileBlock GetPOIBlock(POI poi) // 2
+        private FileBlock Get02POIBlock(POI poi) // 2
         {
             FileBlock f02 = new FileBlock();
             f02.bType = 2;
@@ -2175,26 +2899,26 @@ namespace KMZRebuilder
             // Extra
             {
                 // CAT
-                f02.ExtraData.AddRange(GetCatIDBlock(poi.cat).Data);
+                f02.ExtraData.AddRange(Get06CatIDBlock(poi.cat).Data);
                 // STYLE
-                f02.ExtraData.AddRange(GetBmpIDBlock(poi.sty).Data);
+                f02.ExtraData.AddRange(Get04BmpIDBlock(poi.sty).Data);
                 // Alert
-                if (StoreAlerts && (!String.IsNullOrEmpty(poi.alert))) f02.ExtraData.AddRange(GetAlertBlock(poi).Data);
+                if (StoreAlerts && (!String.IsNullOrEmpty(poi.alert))) f02.ExtraData.AddRange(Get03AlertBlock(poi).Data);
                 // Comment
-                if (!String.IsNullOrEmpty(poi.comment)) f02.ExtraData.AddRange(GetCommentBlock(poi.comment).Data);
+                if (!String.IsNullOrEmpty(poi.comment)) f02.ExtraData.AddRange(Get10CommentBlock(poi.comment).Data);
                 // Address
-                if ((poi.addr != null) && (poi.addr.Length == 6)) f02.ExtraData.AddRange(GetAddressBlock(poi.addr).Data);
+                if ((poi.addr != null) && (poi.addr.Length == 6)) f02.ExtraData.AddRange(Get11AddressBlock(poi.addr).Data);
                 // Contact
-                if ((poi.contacts != null) && (poi.contacts.Length == 5)) f02.ExtraData.AddRange(GetContactsBlock(poi.contacts).Data);
+                if ((poi.contacts != null) && (poi.contacts.Length == 5)) f02.ExtraData.AddRange(Get12ContactsBlock(poi.contacts).Data);
                 // Image
-                if(StoreImagesAsIs) f02.ExtraData.AddRange(GetImageBlock(GetImageFromStyle(poi.sty)).Data);
+                if (StoreImagesAsIs) f02.ExtraData.AddRange(Get13ImageBlock(GetImageFromStyle(poi.sty)).Data);
                 // DESC
-                if (!String.IsNullOrEmpty(poi.description))  f02.ExtraData.AddRange(GetDescBlock(poi.description).Data);
+                if (!String.IsNullOrEmpty(poi.description)) f02.ExtraData.AddRange(Get14DescBlock(poi.description).Data);
             };
             return f02;
         }
 
-        private FileBlock GetAlertBlock(POI poi) // 3
+        private FileBlock Get03AlertBlock(POI poi) // 3
         {
             FileBlock f03 = new FileBlock();
             f03.bType = 3;
@@ -2204,13 +2928,13 @@ namespace KMZRebuilder
                 Regex rx; Match mx;
                 ushort proximity = 300;
                 rx = new Regex(@"alert_proximity=(?<proximity>\d+)", RegexOptions.None); mx = rx.Match(poi.alert);
-                if (mx.Success) ushort.TryParse(mx.Groups["proximity"].Value, out proximity);
-                ushort speed = 40;
+                if (mx.Success) ushort.TryParse(mx.Groups["proximity"].Value.Trim(), out proximity);
+                ushort speed = 00;
                 rx = new Regex(@"alert_speed=(?<speed>\d+)", RegexOptions.None); mx = rx.Match(poi.alert);
-                if (mx.Success) ushort.TryParse(mx.Groups["speed"].Value, out speed);
+                if (mx.Success) ushort.TryParse(mx.Groups["speed"].Value.Trim(), out speed);
                 byte ison = DefaultAlertIsOn ? (byte)1 : (byte)0;
                 rx = new Regex(@"alert_ison=(?<ison>\d+)", RegexOptions.None); mx = rx.Match(poi.alert);
-                if (mx.Success) byte.TryParse(mx.Groups["ison"].Value, out ison);
+                if (mx.Success) byte.TryParse(mx.Groups["ison"].Value.Trim(), out ison);
                 byte atype = 0;
                 if (!String.IsNullOrEmpty(DefaultAlertType))
                 {
@@ -2221,9 +2945,10 @@ namespace KMZRebuilder
                 rx = new Regex(@"alert_type=(?<type>\d+)", RegexOptions.None); mx = rx.Match(poi.alert);
                 if (mx.Success)
                 {
-                    if (mx.Groups["type"].Value == "proximity") atype = 0;
-                    if (mx.Groups["type"].Value == "along_road") atype = 1;
-                    if (mx.Groups["type"].Value == "toure_guide") atype = 2;
+                    string typeval = mx.Groups["type"].Value.Trim().ToLower();
+                    if (typeval == "proximity") atype = 0;
+                    if (typeval == "along_road") atype = 1;
+                    if (typeval == "toure_guide") atype = 2;
                 };
                 byte sound_number = 4;
                 if (!String.IsNullOrEmpty(DefaultAlertSound)) byte.TryParse(DefaultAlertSound, out sound_number);
@@ -2237,7 +2962,7 @@ namespace KMZRebuilder
                 rx = new Regex(@"alert_sound=(?<sound>.+)", RegexOptions.None); mx = rx.Match(poi.alert);
                 if (mx.Success)
                 {
-                    string fName = mx.Groups["sound"].Value;
+                    string fName = mx.Groups["sound"].Value.Trim('\r');
                     int medid = MP3s.IndexOf(fName);
                     if (medid >= 0)
                     {
@@ -2252,50 +2977,30 @@ namespace KMZRebuilder
                 };
             };
             { // EXTRA 
-                // ALERT CIRCLES
-                // f03.ExtraData.AddRange(GetCirclesBlock(poi).Data);
+                // AlertCircles
+                if (poi.alert.Contains("alert_circle=")) f03.ExtraData.AddRange(Get16CirclesBlock(poi).Data);
+                // AlertTriggerOptions
+                if (poi.alert.Contains("alert_bearing=") || poi.alert.Contains("alert_datetime=")) f03.ExtraData.AddRange(Get27AlertTriggerBlock(poi).Data);
             };
             return f03;
         }
 
-        private FileBlock GetCirclesBlock(POI poi) // 16
+        private FileBlock Get04BmpIDBlock(int sty) // 4
         {
-            FileBlock fb16 = new FileBlock();
-            fb16.bType = 16;
-            fb16.MainData.AddRange(BitConverter.GetBytes((ushort)1)); // count of circles
-            { // each circle
-                fb16.MainData.AddRange(BitConverter.GetBytes(((uint)(poi.lat * Math.Pow(2, 32) / 360.0))));
-                fb16.MainData.AddRange(BitConverter.GetBytes(((uint)(poi.lon * Math.Pow(2, 32) / 360.0))));
-                fb16.MainData.AddRange(BitConverter.GetBytes((uint)300)); // radius in meters
-            };
-            return fb16;
+            FileBlock f04 = new FileBlock();
+            f04.bType = 4;
+            f04.MainData.AddRange(BitConverter.GetBytes((ushort)sty)); // ID
+            return f04;
         }
 
-        private FileBlock GetCatBlock(int cat) // 7
-        {
-            FileBlock f07 = new FileBlock();
-            f07.bType = 7;
-            f07.MainData.AddRange(BitConverter.GetBytes((ushort)cat)); // ID
-            f07.MainData.AddRange(ToLString(Categories[cat])); // Name
-            return f07;
-        }
-
-        private FileBlock GetCatIDBlock(int cat) // 6
-        {
-            FileBlock f06 = new FileBlock();
-            f06.bType = 6;
-            f06.MainData.AddRange(BitConverter.GetBytes((ushort)cat)); // ID
-            return f06;
-        }
-
-        private FileBlock GetBmpBlock(int sty) // 5
+        private FileBlock Get05BmpBlock(int sty) // 5
         {
             FileBlock f05 = new FileBlock();
             f05.bType = 5;
-            
+
             List<Color> palette;
             Bitmap im = GetBitmapFromStyle(sty, out palette);
-            
+
             int lsize = im.Width + 2;
             f05.MainData.AddRange(BitConverter.GetBytes((ushort)(sty))); // BitmapID
             f05.MainData.AddRange(BitConverter.GetBytes((ushort)(im.Height))); // Height
@@ -2332,29 +3037,90 @@ namespace KMZRebuilder
             return f05;
         }
 
-        private FileBlock GetImageBlock(Image im) // 13
+        private FileBlock Get06CatIDBlock(int cat) // 6
         {
-            FileBlock f13 = new FileBlock();
-            f13.bType = 13;
-            f13.MainData.Add(0); // Reserved
-            MemoryStream ms = new MemoryStream();
-            im.Save(ms, ImageFormat.Jpeg);
-            byte[] arr = ms.ToArray();
-            ms.Close();
-            f13.MainData.AddRange(BitConverter.GetBytes((uint)arr.Length));
-            f13.MainData.AddRange(arr); // ID
-            return f13;
+            FileBlock f06 = new FileBlock();
+            f06.bType = 6;
+            f06.MainData.AddRange(BitConverter.GetBytes((ushort)cat)); // ID
+            return f06;
         }
 
-        private FileBlock GetBmpIDBlock(int sty) // 4
+        private FileBlock Get07CatBlock(int cat) // 7
         {
-            FileBlock f04 = new FileBlock();
-            f04.bType = 4;
-            f04.MainData.AddRange(BitConverter.GetBytes((ushort)sty)); // ID
-            return f04;
+            FileBlock f07 = new FileBlock();
+            f07.bType = 7;
+            f07.MainData.AddRange(BitConverter.GetBytes((ushort)cat)); // ID
+            f07.MainData.AddRange(ToLString(Categories[cat])); // Name
+            return f07;
         }
 
-        private FileBlock GetCommentBlock(string comment) // 10
+        private FileBlock Get08MainAreaBlock() // 8
+        {
+            FileBlock fb = new FileBlock();
+            fb.bType = 8;
+            // Main
+            {
+                fb.MainData.AddRange(BitConverter.GetBytes(((uint)(MaxLat * Math.Pow(2, 32) / 360.0))));
+                fb.MainData.AddRange(BitConverter.GetBytes(((uint)(MaxLon * Math.Pow(2, 32) / 360.0))));
+                fb.MainData.AddRange(BitConverter.GetBytes(((uint)(MinLat * Math.Pow(2, 32) / 360.0))));
+                fb.MainData.AddRange(BitConverter.GetBytes(((uint)(MinLon * Math.Pow(2, 32) / 360.0))));
+                fb.MainData.AddRange(new byte[] { 0, 0, 0, 0, 1, 0, 2 }); // Must Have
+            };
+            // Extra
+            {
+                // SubAreas
+                foreach (KeyValuePair<uint, List<POI>> zn in POIs)
+                    fb.ExtraData.AddRange(Get08SubAreaBlock(zn.Key).Data);
+            };
+            return fb;
+        }
+
+        private FileBlock Get08SubAreaBlock(uint zone) // 8
+        {
+            double lat, lon;
+            ZoneToLatLon(zone, out lat, out lon);
+            FileBlock f08 = new FileBlock();
+            f08.bType = 8;
+            // Main
+            {
+                f08.MainData.AddRange(BitConverter.GetBytes(((uint)((lat + 1) * Math.Pow(2, 32) / 360.0))));
+                f08.MainData.AddRange(BitConverter.GetBytes(((uint)((lon + 1) * Math.Pow(2, 32) / 360.0))));
+                f08.MainData.AddRange(BitConverter.GetBytes(((uint)(lat * Math.Pow(2, 32) / 360.0))));
+                f08.MainData.AddRange(BitConverter.GetBytes(((uint)(lon * Math.Pow(2, 32) / 360.0))));
+                f08.MainData.AddRange(new byte[] { 0, 0, 0, 0, 1, 0, 2 }); // Must Have
+            };
+            // Extra
+            {
+                // POIs
+                foreach (POI poi in POIs[zone])
+                    f08.ExtraData.AddRange(Get02POIBlock(poi).Data);
+            };
+            return f08;
+        }
+
+        private FileBlock Get09POIGroupBlock() // 9
+        {
+            FileBlock fb = new FileBlock();
+            fb.bType = 9;
+            // Main
+            {
+                fb.MainData.AddRange(ToLString(String.IsNullOrEmpty(this.DataSource) ? "KMZRebuilder" : this.DataSource)); // POI Group Name
+                fb.MainData.AddRange(Get08MainAreaBlock().Data); // Main Area Block
+            };
+            // Extra
+            {
+                // List Categories
+                for (int i = 0; i < Categories.Count; i++) fb.ExtraData.AddRange(Get07CatBlock(i).Data);
+                // List Bitmaps
+                for (int i = 0; i < Styles.Count; i++) fb.ExtraData.AddRange(Get05BmpBlock(i).Data);
+                // List Media
+                /* NO MEDIA */
+                for (int i = 0; i < MP3s.Count; i++) fb.ExtraData.AddRange(Get18MediaBlock(i).Data);
+            };
+            return fb;
+        }
+
+        private FileBlock Get10CommentBlock(string comment) // 10
         {
             FileBlock f10 = new FileBlock();
             f10.bType = 10;
@@ -2362,7 +3128,7 @@ namespace KMZRebuilder
             return f10;
         }
 
-        private FileBlock GetAddressBlock(string[] addr) // 11
+        private FileBlock Get11AddressBlock(string[] addr) // 11
         {
             FileBlock f11 = new FileBlock();
             f11.bType = 11;
@@ -2380,7 +3146,7 @@ namespace KMZRebuilder
             return f11;
         }
 
-        private FileBlock GetContactsBlock(string[] conts) // 12
+        private FileBlock Get12ContactsBlock(string[] conts) // 12
         {
             FileBlock f12 = new FileBlock();
             f12.bType = 12;
@@ -2393,7 +3159,21 @@ namespace KMZRebuilder
             return f12;
         }
 
-        private FileBlock GetDescBlock(string desc) // 14
+        private FileBlock Get13ImageBlock(Image im) // 13
+        {
+            FileBlock f13 = new FileBlock();
+            f13.bType = 13;
+            f13.MainData.Add(0); // Reserved
+            MemoryStream ms = new MemoryStream();
+            im.Save(ms, ImageFormat.Jpeg);
+            byte[] arr = ms.ToArray();
+            ms.Close();
+            f13.MainData.AddRange(BitConverter.GetBytes((uint)arr.Length));
+            f13.MainData.AddRange(arr); // ID
+            return f13;
+        }                
+
+        private FileBlock Get14DescBlock(string desc) // 14
         {
             FileBlock f14 = new FileBlock();
             f14.bType = 14;
@@ -2402,7 +3182,57 @@ namespace KMZRebuilder
             return f14;
         }
 
-        private FileBlock GetMediaBlock(int medid) // 18
+        private FileBlock Get15ProductBlock() // 15
+        {
+            FileBlock b15 = new FileBlock(); // PRODUCT VERSION DATA
+            b15.bType = 15;
+            //b15.MainData.AddRange(new byte[] { 1, 7, 9, 0, 0 }); // Must Have; 1, 7 - FID (0x0701), 9 - PID, 0 - RgnID, 0 - VendorID
+            b15.MainData.AddRange(new byte[] { 0xFF, 0xFF, 0xFF, 0, 0 }); // Must Have; UNLOCKED
+            return b15;
+        }
+
+        private FileBlock Get16CirclesBlock(POI poi) // 16
+        {
+            FileBlock fb16 = new FileBlock();
+            fb16.bType = 16;
+            MatchCollection mc = (new Regex(@"(?:alert_circle=(?<value>.+))", RegexOptions.None)).Matches(poi.alert);
+            ushort count = 0;
+            foreach (Match mx in mc)
+            {
+                double lat = poi.lat;
+                double lon = poi.lon;
+                string val = mx.Groups["value"].Value.Trim('\r');
+                if (String.IsNullOrEmpty(val)) continue;
+                string[] ryx = val.Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                if (String.IsNullOrEmpty(ryx[0])) continue;
+                uint rad = 300;
+                uint.TryParse(ryx[0], out rad);
+                if (ryx.Length == 3)
+                {
+                    if (!double.TryParse(ryx[1], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out lat)) lat = poi.lat;
+                    if (!double.TryParse(ryx[2], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out lon)) lat = poi.lon;
+                };
+                fb16.MainData.AddRange(BitConverter.GetBytes(((uint)(lat * Math.Pow(2, 32) / 360.0))));
+                fb16.MainData.AddRange(BitConverter.GetBytes(((uint)(lon * Math.Pow(2, 32) / 360.0))));
+                fb16.MainData.AddRange(BitConverter.GetBytes((uint)rad)); // radius in meters
+                count++;
+            };
+            fb16.MainData.InsertRange(0, BitConverter.GetBytes((ushort)count)); // count of circles
+            return fb16;
+        }
+
+        private FileBlock Get17CopyrightsBlock() // 17
+        {
+            FileBlock b17 = new FileBlock(); // COPYRIGHTS
+            b17.bType = 17;
+            b17.MainData.AddRange(new byte[] { 20, 0, 0, 0, 0, 0, 0, 0 }); // Must Have Data
+            b17.MainData.AddRange(ToLString(String.IsNullOrEmpty(this.DataSource) ? "KMZRebuilder" : this.DataSource)); // Data Source
+            b17.MainData.AddRange(ToLString("Created with KMZRebuilder")); // Copyrights
+            b17.MainData.AddRange(new byte[] { 0x01, 0x01, 0xE7, 0x4E }); // Must Have
+            return b17;
+        }
+
+        private FileBlock Get18MediaBlock(int medid) // 18
         {
             FileBlock f18 = new FileBlock();
             f18.bType = 18;
@@ -2440,6 +3270,19 @@ namespace KMZRebuilder
             return f18;
         }
 
+        private FileBlock Get27AlertTriggerBlock(POI poi) // 27
+        {
+            FileBlock fb27 = new FileBlock();
+            fb27.bType = 27;
+            ushort count = 0;
+            // Bearing List Entries
+            FillTriggerBearings(poi, fb27, ref count);
+            // DateTime List Entries
+            FillTriggerDateTime(poi, fb27, ref count);
+            fb27.MainData.InsertRange(0, BitConverter.GetBytes((ushort)count)); // count of circles
+            return fb27;
+        }
+       
         private FileBlock GetFooter() // end
         {
             FileBlock fb = new FileBlock();
@@ -2447,6 +3290,11 @@ namespace KMZRebuilder
             return fb;
         }
 
+        /// <summary>
+        ///     Get Image from style to store in Image Block in POI
+        /// </summary>
+        /// <param name="sty">style name from image list</param>
+        /// <returns></returns>
         private Image GetImageFromStyle(int sty)
         {
             Image im;
@@ -2466,6 +3314,12 @@ namespace KMZRebuilder
             return im;
         }
 
+        /// <summary>
+        ///     GEt Image from style to store in Bmp Block
+        /// </summary>
+        /// <param name="sty"></param>
+        /// <param name="palette"></param>
+        /// <returns></returns>
         private Bitmap GetBitmapFromStyle(int sty, out List<Color> palette)
         {
             Bitmap im;
@@ -2510,6 +3364,12 @@ namespace KMZRebuilder
             return mi.ToBitmap();
         }        
 
+        /// <summary>
+        ///     Text to Pascal-like string
+        /// </summary>
+        /// <param name="value">text</param>
+        /// <param name="translit">translit?</param>
+        /// <returns></returns>
         private byte[] ToPString(string value, bool translit) // Pascal-like String
         {
             List<byte> res = new List<byte>();
@@ -2519,17 +3379,40 @@ namespace KMZRebuilder
             return res.ToArray();
         }
 
+        /// <summary>
+        ///     Text to Multilanguage string
+        /// </summary>
+        /// <param name="value">text</param>
+        /// <returns></returns>
         private byte[] ToLString(string value) // Multilang String
         {
             List<byte> res = new List<byte>();
-            res.AddRange(Encoding.ASCII.GetBytes("EN"));
-            res.AddRange(ToPString(value, true));
-            res.AddRange(Encoding.ASCII.GetBytes("RU"));
-            res.AddRange(ToPString(value, false));
+            // EN if not (first of all)
+            if ((!StoreOnlyLocalLang) && (GPIReader.LOCALE_LANGUAGE != GPIReader.DEFAULT_LANGUAGE) && (GPIReader.LOCALE_LANGUAGE != "EN") && (GPIReader.DEFAULT_LANGUAGE != "EN"))
+            {
+                res.AddRange(Encoding.ASCII.GetBytes("EN"));
+                res.AddRange(ToPString(value, true));
+            };
+            // Default if is set
+            if ((!StoreOnlyLocalLang) && (GPIReader.LOCALE_LANGUAGE != GPIReader.DEFAULT_LANGUAGE))
+            {
+                res.AddRange(Encoding.ASCII.GetBytes(GPIReader.DEFAULT_LANGUAGE.Substring(0, 2)));
+                res.AddRange(ToPString(value, true));
+            };
+            // Local if is set
+            res.AddRange(Encoding.ASCII.GetBytes(GPIReader.LOCALE_LANGUAGE.Substring(0,2)));
+            res.AddRange(ToPString(value, false));            
             res.InsertRange(0, BitConverter.GetBytes((uint)res.Count));
             return res.ToArray();
         }
 
+        /// <summary>
+        ///     Resize image to smaller
+        /// </summary>
+        /// <param name="imgPhoto">image</param>
+        /// <param name="Width">width</param>
+        /// <param name="Height">height</param>
+        /// <returns></returns>
         private static Bitmap ResizeImage(Image imgPhoto, int Width, int Height)
         {
             int sourceWidth = imgPhoto.Width;
@@ -2580,6 +3463,11 @@ namespace KMZRebuilder
             return bmPhoto;
         }
 
+        /// <summary>
+        ///     Color to number
+        /// </summary>
+        /// <param name="c">Color</param>
+        /// <returns></returns>
         private static uint ColorToUint(Color c)
         {
             uint res = (uint)(c.R + (c.G << 8) + (c.B << 16));
@@ -2588,7 +3476,7 @@ namespace KMZRebuilder
     }
 
     /// <summary>
-    ///     Lang Translit (RU -> EN)
+    ///     Lang Translit (now is: RU -> EN)
     /// </summary>
     public class Translitter
     {

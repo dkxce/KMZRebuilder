@@ -76,7 +76,9 @@ namespace KMZRebuilder
             if (!this.Contains("gpiwriter_image_max_side")) Properties.Add(new Property("gpiwriter_image_max_side", "22", 2, "Max Image width/height in pixels (16..48)", 16, 48));
             if (!this.Contains("gpiwriter_image_transp_color")) Properties.Add(new Property("gpiwriter_image_transp_color", "#FEFEFE", 0, "Transparent color in web format HEX: #FEFEFE", 0, 7));
             if (!this.Contains("gpiwriter_save_images_jpeg")) Properties.Add(new Property("gpiwriter_save_images_jpeg", "no", 1, "Save to each POI original image as jpeg (optional)"));
+            if (!this.Contains("gpiwriter_save_only_local_lang")) Properties.Add(new Property("gpiwriter_save_only_local_lang", "no", 1, "Save text only in local language"));
             if (!this.Contains("gpireader_poi_image_from_jpeg")) Properties.Add(new Property("gpireader_poi_image_from_jpeg", "no", 1, "If yes - POI image sets from JPEG, if no - from Bitmap"));
+            if (!this.Contains("gpiwriter_alert_datetime_maxcount")) Properties.Add(new Property("gpiwriter_alert_datetime_maxcount", "16", 2, "Max Alert DateTime Triggers Count (1..32)", 1, 32));
             DefaultsIsLoaded = true;
         }
 

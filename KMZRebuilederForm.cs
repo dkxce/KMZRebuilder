@@ -1799,12 +1799,14 @@ namespace KMZRebuilder
             gw.DataSource = proj_name;
             gw.StoreDescriptions = Properties.GetBoolValue("gpiwriter_set_descriptions");
             gw.StoreAlerts = Properties.GetBoolValue("gpiwriter_set_alerts");
-            gw.StoreImagesAsIs = Properties.GetBoolValue("gpiwriter_save_images_jpeg");            
+            gw.StoreImagesAsIs = Properties.GetBoolValue("gpiwriter_save_images_jpeg");
+            gw.StoreOnlyLocalLang = Properties.GetBoolValue("gpiwriter_save_only_local_lang");
             gw.DefaultAlertIsOn = Properties.GetBoolValue("gpiwriter_default_alert_ison");
             gw.DefaultAlertType = Properties["gpiwriter_default_alert_type"];
             gw.DefaultAlertSound = Properties["gpiwriter_default_alert_sound"];
             gw.TransColor = System.Drawing.ColorTranslator.FromHtml(Properties["gpiwriter_image_transp_color"]);
-            byte.TryParse(Properties["gpiwriter_image_max_side"], out gw.MaxImageSide);            
+            byte.TryParse(Properties["gpiwriter_image_max_side"], out gw.MaxImageSide);
+            byte.TryParse(Properties["gpiwriter_alert_datetime_maxcount"], out gw.MaxAlertDateTimeCount);
             
             //POI
             AddToLog("Saving POI...");
