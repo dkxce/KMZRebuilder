@@ -18,7 +18,7 @@ You can export result kmz file to HTML Map and upload it to your site.
 - Import data from plugins.
 
 **GPI Import/Export**:
-- Multilanguage (EN or any latin, RU or anty ciryllic)
+- Multilanguage (EN or any latin, RU or any ciryllic)
 - Layers (Categories) & POIs 
 - [POI Description](https://github.com/dkxce/KMZRebuilder/blob/master/bin/Debug/gpiwriter_comaddcon_help.txt)
 - [POI Comment](https://github.com/dkxce/KMZRebuilder/blob/master/bin/Debug/gpiwriter_comaddcon_help.txt) (load/save from/to desc)
