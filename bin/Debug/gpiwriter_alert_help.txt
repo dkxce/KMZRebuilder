@@ -4,14 +4,14 @@ This values must be set in point (POI) description
 
 
 #
-# Alert proximity in meters
+# Alert proximity in meters (default is 300)
 #
 alert_proximity=300
 alert_proximity=800
 alert_proximity=1500
 
 #
-# Alert speed in km/h
+# Alert speed in km/h (default is 0)
 #
 alert_speed=20
 alert_speed=40
@@ -19,26 +19,116 @@ alert_speed=60
 alert_speed=90
 
 #
-# Alert On/Off
+# Alert On/Off (default is on)
 #
 alert_ison=no
 alert_ison=yes
 
 #
-# Alert Type
+# Alert Type (default is proximity)
 #
 alert_type=proximity
 alert_type=along_road
 alert_type=toure_guide
 
 #
-# Alert Sound File in MP3
+# Alert Sound File in MP3 or WAV
 # absolute or relative path (in kmz or of kml)
-# relative path in kmz primary is `sounds` or `media`
+# relative path in kmz primary is `sounds` or `media` 
+#   other directories are ignored when saving
 #
 alert_sound=sounds/file.mp3
 alert_sound=media/file.mp3
 
+#
+# Alert Circles in meters (default is 300)
+# lat, lon is optional
+# Format: radius[,lat,lon]
+#
+alert_circle=300
+alert_circle=300,55.55,37.55
+alert_circle=800
+alert_circle=800,55.55,37.55
+alert_circle=1500
+alert_circle=1500,55.55,37.55
 
--- sounds --
-https://sounds-mp3.com/
+#
+# Alert Bearing
+# Trigger only along the specified angles (azimuth)
+# wide, dir is optional
+# Format: azimuth[,wide,dir] 
+# Format: azimuth[,dir,wide] 
+#   azimuth: 0..359 Degrees (from North clockwise, 0 by default)
+#   wide is an angle: 0..75 Degrees (25 by default)
+#   dir is direction: `onedir` or `bidir` (onedir by default)
+# Max count is 7 bearings
+#
+alert_bearing=45
+alert_bearing=45,30
+alert_bearing=45,onedir
+alert_bearing=45,30,onedir
+alert_bearing=45,onedir,bidir
+alert_bearing=359,15,bidir
+
+#
+# Alert DateTime List
+# Trigger only on specified date intervals
+# Basic elements:
+#        - date_range      : days range of month `01-31`, or day-month range `01.01-31.12`, or full-date range `01.01.2000-31.12.2099`;
+#		 - days_range      : days of year `001~366`;
+#		 - wom_range       : weeks of month range `1-5`;
+#		 - woy_range       : weeks of year range `01~52`;
+#		 - mons_range      : monthes range `01-12` or `01~12`;
+#        - hours_range     : `00:00..24:00`;
+#        - day_of_week_set : `mo,tu,we,th,fr,sa,su` (ISO 8601, 2- or 3-symbols string code, comma separated);
+#     P.S: `~` means range in year, `-` means range in month
+# ON DAY TRIGGER:
+#    One of element is required!
+#    format (in any sequence): 
+#        alert_datetime=[date_range][hours_range][day_of_week_set]
+#    format (in any sequence): 
+#        alert_datetime=on_day:[date_range][hours_range][day_of_week_set]
+# ON YEAR DAY:
+#    days_range is required!
+#    format (in any sequence): 
+#		 alert_datetime=days_range[hours_range][day_of_week_set]
+#    format (in any sequence): 
+#		 alert_datetime=on_day:days_range[hours_range][day_of_week_set]
+# ON WEEKS:
+#    `on_week:` & wom_range is required!
+#    format (in any sequence): 
+#		 alert_datetime=on_week:wom_range[hours_range][day_of_week_set]
+#		 alert_datetime=on_week:woy_range[hours_range][day_of_week_set]
+# ON MONTHES:
+#    `on_month:` & mons_range is required!
+#    format (in any sequence): 
+#		 alert_datetime=on_month:mons_range[hours_range][day_of_week_set]
+#
+alert_datetime=su
+alert_datetime=sa,01:00..05:00
+alert_datetime=01:00..05:00,sa,fr,we,tu,mo,su
+alert_datetime=on_day:1~150,su
+alert_datetime=on_day:01-31,mo
+alert_datetime=on_day:03.01-19.10
+alert_datetime=on_day:03.01.2020-19.10.2030
+alert_datetime=on_day:03.01-19.10,01:00..05:00
+alert_datetime=on_day:03.01.2020-19.10.2030,01:00..05:00
+alert_datetime=on_day:03.01.2020-19.10.2030,01:00..05:00,we,mo
+alert_datetime=on_day:03.01.2020-19.10.2030,we,mo
+alert_datetime=on_month:1-5,01:00..05:00,th,we,tu,mo
+alert_datetime=on_month:2-12,th,we,tu
+alert_datetime=on_month:3-10,01:00..05:00
+alert_datetime=on_week:02~11,00:00..24:0,th,tu,mo
+alert_datetime=on_week:2-4,mo
+#
+alert_datetime=08:00..20:00,sa,fr,th,we,tu,mo
+alert_datetime=on_day:01:35..22:11,sa,fr,mo,su
+alert_datetime=on_day:07:17..17:27,th,we
+alert_datetime=on_day:02-13,01:11..02:19,th,we,mo
+alert_datetime=on_day:201~303,18:20..00:00,th,we
+alert_datetime=on_day:111~333,11:11..11:22,th,mo
+alert_datetime=on_week:20~40,03:33..04:44,th,tu,mo
+alert_datetime=on_week:1-4,05:00..20:00,th,tu,mo
+alert_datetime=on_day:03.01-29.10,09:00..17:00
+alert_datetime=on_day:08.01.2009-09.03.2011,10:00..14:00
+alert_datetime=on_month:3~4,01:01..05:01,th,we,tu,mo
