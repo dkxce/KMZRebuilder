@@ -27,6 +27,8 @@ You can export result kmz file to HTML Map and upload it to your site.
 - [POI Alert](https://github.com/dkxce/KMZRebuilder/blob/master/bin/Debug/gpiwriter_alert_help.txt) (load/save from/to desc) with sound & trigger options
 - POI Bitmap (get/set from/to kml style)
 - POI Image (get/set from/to kml style)
+- Command Line (Batch Mode): /kmz2gpi `kmzfile` `gpifile`    
+- Command Line (Batch Mode): /gpi2kmz `gpifile` `kmzfile`    
 
 You can use result files in [KMZViewer](https://github.com/dkxce/KMZViewer), [OruxMaps](http://oruxmaps.com), [Google Maps](https://www.google.com/maps/d/), [SASPlanet](http://www.sasgis.org/sasplaneta/) and more others...
 
