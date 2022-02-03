@@ -66,6 +66,8 @@ namespace KMZRebuilder
             if ((Properties.Count > 0) && (String.IsNullOrEmpty(Properties[0].comm))) Properties = new List<Property>();
             if (!this.Contains("gpi_localization")) Properties.Add(new Property("gpi_localization", "EN", 0, "2-symbols string, Language, ISO-639 code", 0, 2));
             if (!this.Contains("gpireader_save_media")) Properties.Add(new Property("gpireader_save_media", "no", 1, "Save media from GPI"));
+            if (!this.Contains("gpireader_multinames_in_desc")) Properties.Add(new Property("gpireader_multinames_in_desc", "yes", 1, "Save multilanguage names in description"));
+            if (!this.Contains("gpireader_create_cat_noimage")) Properties.Add(new Property("gpireader_create_cat_noimage", "no", 1, "Create Images for categories without images"));
             if (!this.Contains("gpireader_poi_image_from_jpeg")) Properties.Add(new Property("gpireader_poi_image_from_jpeg", "no", 1, "If yes - POI image sets from JPEG, if no - from Bitmap"));
             if (!this.Contains("gpiwriter_format_version")) Properties.Add(new Property("gpiwriter_format_version", "1", 2, "GPI File Format Version (00 or 01)", 0, 1));
             if (!this.Contains("gpiwriter_set_descriptions")) Properties.Add(new Property("gpiwriter_set_descriptions", "yes", 1, "Save descriptions to GPI"));
@@ -78,8 +80,12 @@ namespace KMZRebuilder
             if (!this.Contains("gpiwriter_image_max_side")) Properties.Add(new Property("gpiwriter_image_max_side", "22", 2, "Max Image width/height in pixels (16..48)", 16, 48));
             if (!this.Contains("gpiwriter_image_transp_color")) Properties.Add(new Property("gpiwriter_image_transp_color", "#FEFEFE", 0, "Transparent color in web format HEX: #FEFEFE", 0, 7));
             if (!this.Contains("gpiwriter_save_images_jpeg")) Properties.Add(new Property("gpiwriter_save_images_jpeg", "no", 1, "Save to each POI original image as jpeg (optional)"));
-            if (!this.Contains("gpiwriter_save_only_local_lang")) Properties.Add(new Property("gpiwriter_save_only_local_lang", "no", 1, "Save text only in local language"));            
+            if (!this.Contains("gpiwriter_save_only_local_lang")) Properties.Add(new Property("gpiwriter_save_only_local_lang", "no", 1, "Save text only in local language"));
+            if (!this.Contains("gpiwriter_save_only_local_addr")) Properties.Add(new Property("gpiwriter_save_only_local_addr", "no", 1, "Save Address only in local language"));
+            if (!this.Contains("gpiwriter_save_only_local_comm")) Properties.Add(new Property("gpiwriter_save_only_local_comm", "no", 1, "Save Comments only in local language"));
+            if (!this.Contains("gpiwriter_save_only_local_desc")) Properties.Add(new Property("gpiwriter_save_only_local_desc", "no", 1, "Save Descriptions only in local language"));            
             if (!this.Contains("gpiwriter_alert_datetime_maxcount")) Properties.Add(new Property("gpiwriter_alert_datetime_maxcount", "16", 2, "Max Alert DateTime Triggers Count (1..32)", 1, 32));
+            if (!this.Contains("gpiwriter_analyze_osm_tags")) Properties.Add(new Property("gpiwriter_analyze_osm_tags", "yes", 1, "Analyze OSM Tags in Description"));                        
             DefaultsIsLoaded = true;
         }
 

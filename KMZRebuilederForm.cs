@@ -116,10 +116,12 @@ namespace KMZRebuilder
                 try
                 {                                        
                     Preferences Props = Preferences.Load();
-                    GPIReader.LOCALE_LANGUAGE = Props["gpi_localization"].ToUpper();
-                    Console.WriteLine("Reading input file in {0}... ", GPIReader.LOCALE_LANGUAGE);
+                    GPIReader.LOCALE_LANGUAGE = Props["gpi_localization"].ToUpper();                    
                     GPIReader.SAVE_MEDIA = Props.GetBoolValue("gpireader_save_media");
+                    GPIReader.SAVE_MULTINAMES = Props.GetBoolValue("gpireader_multinames_in_desc");
+                    GPIReader.CREATE_CATEGORY_IMAGES_IFNO = Props.GetBoolValue("gpireader_create_cat_noimage");
                     GPIReader.POI_IMAGE_FROM_JPEG = Props.GetBoolValue("gpireader_poi_image_from_jpeg");
+                    Console.WriteLine("Reading input file in {0}... ", GPIReader.LOCALE_LANGUAGE);
                     GPIReader gpi = new GPIReader(gpiFile, AddToConsole);
                     Console.WriteLine("GPI name is `{0}`", gpi.Name);
                     Console.WriteLine("DataSource is `{0}`", gpi.DataSource);
@@ -1901,6 +1903,8 @@ namespace KMZRebuilder
         {
             GPIReader.LOCALE_LANGUAGE = Props["gpi_localization"].ToUpper();
             GPIReader.SAVE_MEDIA = Props.GetBoolValue("gpireader_save_media");
+            GPIReader.SAVE_MULTINAMES = Props.GetBoolValue("gpireader_multinames_in_desc");
+            GPIReader.CREATE_CATEGORY_IMAGES_IFNO = Props.GetBoolValue("gpireader_create_cat_noimage");
             GPIReader.POI_IMAGE_FROM_JPEG = Props.GetBoolValue("gpireader_poi_image_from_jpeg");
 
             if (proj_name != null) proj_name = proj_name.Trim(); else proj_name = "";
@@ -1917,10 +1921,14 @@ namespace KMZRebuilder
             gw.StoreAlerts = Props.GetBoolValue("gpiwriter_set_alerts");
             gw.StoreImagesAsIs = Props.GetBoolValue("gpiwriter_save_images_jpeg");
             gw.StoreOnlyLocalLang = Props.GetBoolValue("gpiwriter_save_only_local_lang");
+            gw.StoreOnlyLocalLangAddress = Props.GetBoolValue("gpiwriter_save_only_local_addr");
+            gw.StoreOnlyLocalLangComments = Props.GetBoolValue("gpiwriter_save_only_local_comm");
+            gw.StoreOnlyLocalLangDescriptions = Props.GetBoolValue("gpiwriter_save_only_local_desc");            
             gw.DefaultAlertIsOn = Props.GetBoolValue("gpiwriter_default_alert_ison");
             gw.DefaultAlertType = Props["gpiwriter_default_alert_type"];
             gw.DefaultAlertSound = Props["gpiwriter_default_alert_sound"];
-            gw.TransColor = System.Drawing.ColorTranslator.FromHtml(Props["gpiwriter_image_transp_color"]);            
+            gw.TransColor = System.Drawing.ColorTranslator.FromHtml(Props["gpiwriter_image_transp_color"]);
+            gw.AnalyzeOSMTags = Props.GetBoolValue("gpiwriter_analyze_osm_tags");
             byte.TryParse(Props["gpiwriter_image_max_side"], out gw.MaxImageSide);
             byte.TryParse(Props["gpiwriter_alert_datetime_maxcount"], out gw.MaxAlertDateTimeCount);
             
@@ -10361,9 +10369,15 @@ namespace KMZRebuilder
         public void GPI2KML(GPIReader.Add2LogProc Add2Log)
         {
             try
-            {
-                if(Add2Log != null)
-                    Add2Log(String.Format("Opening {0} file...", this.src_file_nme));
+            {                
+                Preferences Props = Preferences.Load();
+                GPIReader.LOCALE_LANGUAGE = Props["gpi_localization"].ToUpper();
+                GPIReader.SAVE_MEDIA = Props.GetBoolValue("gpireader_save_media");
+                GPIReader.SAVE_MULTINAMES = Props.GetBoolValue("gpireader_multinames_in_desc");
+                GPIReader.CREATE_CATEGORY_IMAGES_IFNO = Props.GetBoolValue("gpireader_create_cat_noimage");
+                GPIReader.POI_IMAGE_FROM_JPEG = Props.GetBoolValue("gpireader_poi_image_from_jpeg");
+                if (Add2Log != null)
+                    Add2Log(String.Format("Reading {1} in {0}... ", GPIReader.LOCALE_LANGUAGE, this.src_file_nme));
                 GPIReader gpi = new GPIReader(this.src_file_pth, Add2Log);
                 gpi.SaveToKML(this.tmp_file_dir + "doc.kml");
                 if (Add2Log != null)

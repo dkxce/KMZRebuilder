@@ -730,9 +730,17 @@ namespace KMZRebuilder
         /// </summary>
         public static bool SAVE_MEDIA = false;
         /// <summary>
+        ///     Create Images for categories without images
+        /// </summary>
+        public static bool CREATE_CATEGORY_IMAGES_IFNO = false;
+        /// <summary>
         ///     Set kmz poi image from jpeg (not bitmap); false - from bitmap; true - from image (if specified)
         /// </summary>
         public static bool POI_IMAGE_FROM_JPEG = false; // bitmap o
+        /// <summary>
+        ///     Save Multilanguage Names in Description
+        /// </summary>
+        public static bool SAVE_MULTINAMES = true;
 
         /// <summary>
         ///     Source File Name
@@ -911,14 +919,9 @@ namespace KMZRebuilder
                 sw.WriteLine("<Folder><name><![CDATA[" + kCat.Value.Name + "]]></name>");
                 desc = "CategoryID: " + kCat.Value.CategoryID.ToString() + "\r\n";
                 desc += "Objects: " + kCat.Value.Waypoints.Count.ToString() + "\r\n";
-                foreach (KeyValuePair<string, string> langval in kCat.Value.Category)
-                    desc += String.Format("name:{0}={1}\r\n", langval.Key.ToLower(), langval.Value);
-                if ((kCat.Value.Description != null) && (kCat.Value.Description.Description.Count > 0))
-                {
-                    desc += "\r\n";
-                    foreach (KeyValuePair<string, string> langval in kCat.Value.Description.Description)
-                        desc += String.Format("desc:{0}={1}\r\n\r\n", langval.Key.ToLower(), TrimDesc(langval.Value));
-                };
+                if(GPIReader.SAVE_MULTINAMES)
+                    foreach (KeyValuePair<string, string> langval in kCat.Value.Category)
+                        desc += String.Format("name:{0}={1}\r\n", langval.Key.ToLower(), langval.Value);                
                 if (kCat.Value.Comment != null)
                     foreach (KeyValuePair<string, string> langval in kCat.Value.Comment.Comment)
                         desc += String.Format("comm:{0}={1}\r\n", langval.Key.ToLower(), langval.Value);
@@ -935,14 +938,21 @@ namespace KMZRebuilder
                     if (!String.IsNullOrEmpty(kCat.Value.Contact.Web))
                         desc += String.Format("contact_web={0}\r\n", kCat.Value.Contact.Web);
                 };
+                if ((kCat.Value.Description != null) && (kCat.Value.Description.Description.Count > 0))
+                {
+                    if(desc.Length > 0) desc += "\r\n";
+                    foreach (KeyValuePair<string, string> langval in kCat.Value.Description.Description)
+                        desc += String.Format("desc:{0}={1}\r\n\r\n", langval.Key.ToLower(), TrimDesc(langval.Value));
+                };
                 sw.WriteLine("<description><![CDATA[" + desc + "]]></description>");
                 foreach (RecWaypoint wp in kCat.Value.Waypoints)
                 {
                     sw.WriteLine("<Placemark>");
                     sw.WriteLine("<name><![CDATA[" + wp.Name + "]]></name>");
                     string text = "";
-                    foreach (KeyValuePair<string, string> langval in wp.ShortName)
-                        text += String.Format("name:{0}={1}\r\n", langval.Key.ToLower(), langval.Value);                    
+                    if (GPIReader.SAVE_MULTINAMES)
+                        foreach (KeyValuePair<string, string> langval in wp.ShortName)
+                            text += String.Format("name:{0}={1}\r\n", langval.Key.ToLower(), langval.Value);                    
                     if (wp.Comment != null)
                         foreach (KeyValuePair<string, string> langval in wp.Comment.Comment)
                             text += String.Format("comm:{0}={1}\r\n", langval.Key.ToLower(), langval.Value);
@@ -1017,7 +1027,7 @@ namespace KMZRebuilder
                     };
                     if ((wp.Description != null) && (wp.Description.Description.Count > 0))
                     {
-                        text += "\r\n";
+                        if (text.Length > 0) text += "\r\n";
                         foreach (KeyValuePair<string, string> langval in wp.Description.Description)
                             text += String.Format("desc:{0}={1}\r\n\r\n", langval.Key.ToLower(), TrimDesc(langval.Value));
                     };
@@ -1047,25 +1057,32 @@ namespace KMZRebuilder
             {
                 sw.WriteLine("\t<Style id=\"" + simid + "\"><IconStyle><Icon><href>images/" + simid + ".jpg</href></Icon></IconStyle></Style>");
             };
-            if (this.Add2Log != null) this.Add2Log(String.Format("Saving Images for {0} Categories...", this.Categories.Count));
-            foreach (KeyValuePair<ushort, RecCategory> kCat in this.Categories)
+            if (CREATE_CATEGORY_IMAGES_IFNO)
             {
-                if (kCat.Value.Bitmap != null) continue;
-                string catID = "catid" + kCat.Value.CategoryID.ToString();
-                sw.WriteLine("\t<Style id=\"" + catID + "\"><IconStyle><Icon><href>images/" + catID + ".png</href></Icon></IconStyle></Style>");
-                try
+                if (this.Add2Log != null)
+                    this.Add2Log(String.Format("Saving Images for {0} Categories...", this.Categories.Count));
+                int imsvd = 0;
+                foreach (KeyValuePair<ushort, RecCategory> kCat in this.Categories)
                 {
-                    Image im = new Bitmap(16, 16);
-                    Graphics g = Graphics.FromImage(im);
-                    g.FillEllipse(Brushes.Magenta, 0, 0, 16, 16);
-                    string ttd = kCat.Value.CategoryID.ToString();
-                    while (ttd.Length < 2) ttd = "0" + ttd;
-                    g.DrawString(ttd, new Font("MS Sans Serif", 8), Brushes.Black, 0, 2);
-                    g.Dispose();
-                    im.Save(images_file_dir + catID + ".png");
-                }
-                catch (Exception ex) {};
-            }
+                    if (kCat.Value.Bitmap != null) continue;
+                    string catID = "catid" + kCat.Value.CategoryID.ToString();
+                    sw.WriteLine("\t<Style id=\"" + catID + "\"><IconStyle><Icon><href>images/" + catID + ".png</href></Icon></IconStyle></Style>");
+                    try
+                    {
+                        Image im = new Bitmap(16, 16);
+                        Graphics g = Graphics.FromImage(im);
+                        g.FillEllipse(Brushes.Magenta, 0, 0, 16, 16);
+                        string ttd = kCat.Value.CategoryID.ToString();
+                        while (ttd.Length < 2) ttd = "0" + ttd;
+                        g.DrawString(ttd, new Font("MS Sans Serif", 8), Brushes.Black, 0, 2);
+                        g.Dispose();
+                        im.Save(images_file_dir + catID + ".png");
+                        imsvd++;
+                    }
+                    catch (Exception ex) { };
+                };
+                if (this.Add2Log != null) this.Add2Log(String.Format("Saved {0} Images", imsvd));
+            };
             if (this.Add2Log != null) this.Add2Log(String.Format("Saving {0} Bitmaps...", this.Bitmaps.Count));
             foreach (KeyValuePair<ushort, RecBitmap> bitmaps in this.Bitmaps)
             {
@@ -1166,7 +1183,7 @@ namespace KMZRebuilder
         /// <returns></returns>
         private string TrimDesc(string text)
         {
-            while (text.IndexOf("\r\n\r\n") >= 0) text = text.Replace("\r\n\r\n", "");
+            while (text.IndexOf("\r\n\r\n") >= 0) text = text.Replace("\r\n\r\n", "\r\n");
             text = text.Trim(new char[] { '\r','\n' });
             return text;
         }
@@ -2231,6 +2248,18 @@ namespace KMZRebuilder
         /// </summary>
         public bool StoreOnlyLocalLang = false;
         /// <summary>
+        ///     Save Descriptions only in local language
+        /// </summary>
+        public bool StoreOnlyLocalLangDescriptions = false;
+        /// <summary>
+        ///     Save Comments only in local language
+        /// </summary>
+        public bool StoreOnlyLocalLangComments = false;
+        /// <summary>
+        ///     Save Address only in local language
+        /// </summary>
+        public bool StoreOnlyLocalLangAddress = false;
+        /// <summary>
         ///     By Default Alert in POI is on (if not specified)
         /// </summary>
         public bool DefaultAlertIsOn = true; // try is default
@@ -2258,6 +2287,10 @@ namespace KMZRebuilder
         ///     Bitmap Transparent Color (#FEFEFE or #FF00FF)
         /// </summary>
         public Color TransColor = Color.FromArgb(0xFE, 0xFE, 0xFE); // Color.FromArgb(0xFE,0xFE,0xFE); // Almost white
+        /// <summary>
+        ///     Analyze OSM Tags in Description
+        /// </summary>
+        public bool AnalyzeOSMTags = true;
 
         private byte formatVer = 1;
         public byte FormatVersion { get { return formatVer; } set { formatVer = value; if (formatVer > 1) formatVer = 1; } }
@@ -2383,6 +2416,8 @@ namespace KMZRebuilder
             POI poi = new POI(name, lat, lon);
             if (!String.IsNullOrEmpty(description))
             {
+                if (this.AnalyzeOSMTags) AnalyzeDescription.OSM(ref description);
+
                 { // GET COMMENT
                     { // full comment
                         Match mx = ((new Regex(rxcomm)).Match(description));
@@ -2524,7 +2559,7 @@ namespace KMZRebuilder
         /// <returns></returns>
         private string TrimDesc(string text)
         {
-            while (text.IndexOf("\r\n\r\n") >= 0) text = text.Replace("\r\n\r\n", "");
+            while (text.IndexOf("\r\n\r\n") >= 0) text = text.Replace("\r\n\r\n", "\r\n");
             text = text.Trim(new char[] { '\r', '\n' });
             return text;
         }
@@ -3380,7 +3415,7 @@ namespace KMZRebuilder
 
             FileBlock f10 = new FileBlock();
             f10.bType = 10;
-            f10.MainData.AddRange(ToLString(comment)); // Text
+            f10.MainData.AddRange(ToLString(comment, StoreOnlyLocalLangComments)); // Text
             return f10;
         }
 
@@ -3406,9 +3441,9 @@ namespace KMZRebuilder
                     else
                     {
                         if (formatVer == 0)
-                            f11.ExtraData.AddRange(ToLString(addr[i]));
+                            f11.ExtraData.AddRange(ToLString(addr[i], StoreOnlyLocalLangAddress));
                         else
-                            f11.MainData.AddRange(ToLString(addr[i]));
+                            f11.MainData.AddRange(ToLString(addr[i], StoreOnlyLocalLangAddress));
                     };
                 };
             return f11;
@@ -3457,7 +3492,7 @@ namespace KMZRebuilder
             FileBlock f14 = new FileBlock();
             f14.bType = 14;
             f14.MainData.Add(1); // Reserved
-            f14.MainData.AddRange(ToLString(desc)); // Text
+            f14.MainData.AddRange(ToLString(desc, StoreOnlyLocalLangDescriptions)); // Text
             return f14;
         }
 
@@ -3672,18 +3707,31 @@ namespace KMZRebuilder
         /// <returns></returns>
         private byte[] ToLString(string value) // Multilang String
         {
+            return ToLString(value, false);
+        }
+
+        /// <summary>
+        ///     Text to Multilanguage string
+        /// </summary>
+        /// <param name="value">text</param>
+        /// <returns></returns>
+        private byte[] ToLString(string value, bool onlyLocal) // Multilang String
+        {
             List<byte> res = new List<byte>();
-            // EN if not (first of all)
-            if ((!StoreOnlyLocalLang) && (GPIReader.LOCALE_LANGUAGE != GPIReader.DEFAULT_LANGUAGE) && (GPIReader.LOCALE_LANGUAGE != "EN") && (GPIReader.DEFAULT_LANGUAGE != "EN"))
+            if (!onlyLocal)
             {
-                res.AddRange(Encoding.ASCII.GetBytes("EN"));
-                res.AddRange(ToPString(value, true));
-            };
-            // Default if is set
-            if ((!StoreOnlyLocalLang) && (GPIReader.LOCALE_LANGUAGE != GPIReader.DEFAULT_LANGUAGE))
-            {
-                res.AddRange(Encoding.ASCII.GetBytes(GPIReader.DEFAULT_LANGUAGE.Substring(0, 2)));
-                res.AddRange(ToPString(value, true));
+                // EN if not (first of all)
+                if ((!StoreOnlyLocalLang) && (GPIReader.LOCALE_LANGUAGE != GPIReader.DEFAULT_LANGUAGE) && (GPIReader.LOCALE_LANGUAGE != "EN") && (GPIReader.DEFAULT_LANGUAGE != "EN"))
+                {
+                    res.AddRange(Encoding.ASCII.GetBytes("EN"));
+                    res.AddRange(ToPString(value, true));
+                };
+                // Default if is set
+                if ((!StoreOnlyLocalLang) && (GPIReader.LOCALE_LANGUAGE != GPIReader.DEFAULT_LANGUAGE))
+                {
+                    res.AddRange(Encoding.ASCII.GetBytes(GPIReader.DEFAULT_LANGUAGE.Substring(0, 2)));
+                    res.AddRange(ToPString(value, true));
+                };
             };
             // Local if is set
             res.AddRange(Encoding.ASCII.GetBytes(GPIReader.LOCALE_LANGUAGE.Substring(0,2)));
@@ -3847,5 +3895,75 @@ namespace KMZRebuilder
             foreach (KeyValuePair<string, string> pair in words) res = res.Replace(pair.Key, pair.Value);
             return res;
         }
-    }    
+    }
+
+    public static class AnalyzeDescription
+    {
+        public static bool OSM(ref string desc)
+        {
+            string origin = desc;
+            bool changed = false;
+            if (String.IsNullOrEmpty(desc)) return changed;
+
+            Match mx;
+            // Addresses
+            if ((mx = (new Regex(@"(?:addr\:postcode=(?<value>.+))")).Match(desc)).Success) { desc = desc.Replace(mx.Value.Trim('\r'), String.Format("addr_postal={0}", mx.Groups["value"].Value.Trim('\r'))); changed = true; };
+            if ((mx = (new Regex(@"(?:addr\:country=(?<value>.+))")).Match(desc)).Success) { desc = desc.Replace(mx.Value.Trim('\r'), String.Format("addr_country={0}", mx.Groups["value"].Value.Trim('\r'))); changed = true; };
+            if ((mx = (new Regex(@"(?:addr\:state=(?<value>.+))")).Match(desc)).Success) { desc = desc.Replace(mx.Value.Trim('\r'), String.Format("addr_state={0}", mx.Groups["value"].Value.Trim('\r'))); changed = true; };
+            // addr:region, addr:district, addr:subdistrict
+            {
+                string state = "";
+                Match mx1 = (new Regex(@"(?:addr\:region=(?<value>.+)\n?)")).Match(desc);
+                if (mx1.Success) { state += (state.Length == 0 ? "" : ", ") + mx1.Groups["value"].Value.Trim('\r'); desc = desc.Replace(mx1.Value, ""); };
+                Match mx2 = (new Regex(@"(?:addr\:district=(?<value>.+)\n?)")).Match(desc);
+                if (mx2.Success) { state += (state.Length == 0 ? "" : ", ") + mx2.Groups["value"].Value.Trim('\r'); desc = desc.Replace(mx2.Value, ""); };
+                Match mx3 = (new Regex(@"(?:addr\:subdistrict=(?<value>.+)\n?)")).Match(desc);
+                if (mx3.Success) { state += (state.Length == 0 ? "" : ", ") + mx3.Groups["value"].Value.Trim('\r'); desc = desc.Replace(mx3.Value, ""); };                
+                if (!String.IsNullOrEmpty(state))
+                {
+                    if (!desc.EndsWith("\r\n")) desc += "\r\n";
+                    desc += String.Format("addr_state={0}", state);
+                    changed = true;
+                };
+            };
+            // addr:city, addr:suburb, addr:place
+            {
+                string city = "";
+                Match mx1 = (new Regex(@"(?:addr\:city=(?<value>.+)\n?)")).Match(desc);
+                if (mx1.Success) { city += (city.Length == 0 ? "" : ", ") + mx1.Groups["value"].Value.Trim('\r'); desc = desc.Replace(mx1.Value, ""); };
+                Match mx2 = (new Regex(@"(?:addr\:suburb=(?<value>.+)\n?)")).Match(desc);
+                if (mx2.Success) { city += (city.Length == 0 ? "" : ", ") + mx2.Groups["value"].Value.Trim('\r'); desc = desc.Replace(mx2.Value, ""); };
+                Match mx3 = (new Regex(@"(?:addr\:place=(?<value>.+)\n?)")).Match(desc);
+                if (mx3.Success) { city += (city.Length == 0 ? "" : ", ") + mx3.Groups["value"].Value.Trim('\r'); desc = desc.Replace(mx3.Value, ""); };
+                if (!String.IsNullOrEmpty(city))
+                {
+                    if (!desc.EndsWith("\r\n")) desc += "\r\n";
+                    desc += String.Format("addr_city={0}", city);
+                    changed = true;
+                };
+            }
+            if ((mx = (new Regex(@"(?:addr\:street=(?<value>.+))")).Match(desc)).Success) { desc = desc.Replace(mx.Value.Trim('\r'), String.Format("addr_street={0}", mx.Groups["value"].Value.Trim('\r'))); changed = true; };
+            if ((mx = (new Regex(@"(?:addr\:housename=(?<value>.+))")).Match(desc)).Success) { desc = desc.Replace(mx.Value.Trim('\r'), String.Format("addr_house={0}", mx.Groups["value"].Value.Trim('\r'))); changed = true; };
+            if ((mx = (new Regex(@"(?:addr\:housenumber=(?<value>.+))")).Match(desc)).Success) { desc = desc.Replace(mx.Value.Trim('\r'), String.Format("addr_house={0}", mx.Groups["value"].Value.Trim('\r'))); changed = true; };
+            // Contacts            
+            if ((mx = (new Regex(@"(?:(?:contact\:)?phone=(?<value>.+))")).Match(desc)).Success) { desc = desc.Replace(mx.Value.Trim('\r'), String.Format("contact_phone={0}", mx.Groups["value"].Value.Trim('\r'))); changed = true; };
+            if ((mx = (new Regex(@"(?:(?:contact\:)?phone2=(?<value>.+))")).Match(desc)).Success) { desc = desc.Replace(mx.Value.Trim('\r'), String.Format("contact_phone2={0}", mx.Groups["value"].Value.Trim('\r'))); changed = true; };
+            if ((mx = (new Regex(@"(?:(?:contact\:)?email=(?<value>.+))")).Match(desc)).Success) { desc = desc.Replace(mx.Value.Trim('\r'), String.Format("contact_email={0}", mx.Groups["value"].Value.Trim('\r'))); changed = true; };
+            if ((mx = (new Regex(@"(?:(?:contact\:)?fax=(?<value>.+))")).Match(desc)).Success) { desc = desc.Replace(mx.Value.Trim('\r'), String.Format("contact_fax={0}", mx.Groups["value"].Value.Trim('\r'))); changed = true; };
+            if ((mx = (new Regex(@"(?:(?:contact\:)?ok=(?<value>.+))")).Match(desc)).Success) { desc = desc.Replace(mx.Value.Trim('\r'), String.Format("contact_web={0}", mx.Groups["value"].Value.Trim('\r'))); changed = true; };
+            if ((mx = (new Regex(@"(?:(?:contact\:)?facebook=(?<value>.+))")).Match(desc)).Success) { desc = desc.Replace(mx.Value.Trim('\r'), String.Format("contact_web={0}", mx.Groups["value"].Value.Trim('\r'))); changed = true; };
+            if ((mx = (new Regex(@"(?:(?:contact\:)?vk=(?<value>.+))")).Match(desc)).Success) { desc = desc.Replace(mx.Value.Trim('\r'), String.Format("contact_web={0}", mx.Groups["value"].Value.Trim('\r'))); changed = true; };
+            if ((mx = (new Regex(@"(?:(?:contact\:)?instagram=(?<value>.+))")).Match(desc)).Success) { desc = desc.Replace(mx.Value.Trim('\r'), String.Format("contact_web={0}", mx.Groups["value"].Value.Trim('\r'))); changed = true; };
+            if ((mx = (new Regex(@"(?:(?:contact\:)?website=(?<value>.+))")).Match(desc)).Success) { desc = desc.Replace(mx.Value.Trim('\r'), String.Format("contact_web={0}", mx.Groups["value"].Value.Trim('\r'))); changed = true; };
+            // Comment-Description
+            if ((mx = (new Regex(@"(?:desc(?:ription)?=(?<value>.+))")).Match(desc)).Success) { desc = desc.Replace(mx.Value.Trim('\r'), String.Format("comment={0}", mx.Groups["value"].Value.Trim('\r'))); changed = true; };
+            // No Name
+            if ((mx = (new Regex(@"(?:name=(?<value>.+)\n?)")).Match(desc)).Success) { desc = desc.Replace(mx.Value,""); changed = true; };
+            // NO TAG ID
+            if ((mx = (new Regex(@"(?:tag(?:id)?=(?<value>.+)\n?)")).Match(desc)).Success) { desc = desc.Replace(mx.Value, ""); changed = true; };
+            if ((mx = (new Regex(@"(?:ref(?:id)?=(?<value>.+)\n?)")).Match(desc)).Success) { desc = desc.Replace(mx.Value, ""); changed = true; };
+
+            return changed;
+        }
+    }
 }
