@@ -138,7 +138,7 @@
     </Compile>
     <Compile Include="MapsForgeReader.cs" />
     <Compile Include="MapViewerForm.cs">
-      <SubType>Form</SubType>
+      <SubType>Component</SubType>
     </Compile>
     <Compile Include="MapViewerForm.Designer.cs">
       <DependentUpon>MapViewerForm.cs</DependentUpon>

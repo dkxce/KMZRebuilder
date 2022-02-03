@@ -47,7 +47,7 @@ namespace KMZRebuilder
         public static extern bool AppendMenu(IntPtr hMenu, int uFlags, int uIDNewItem, string lpNewItem);
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        public static extern bool InsertMenu(IntPtr hMenu, int uPosition, int uFlags, int uIDNewItem, string lpNewItem);
+        public static extern bool InsertMenu(IntPtr hMenu, int uPosition, int uFlags, int uIDNewItem, string lpNewItem);        
 
         private int SYSMENU_ABOUT_ID = 0x1;
         private int SYSMENU_WGSFormX = 0x2;
@@ -96,15 +96,102 @@ namespace KMZRebuilder
 
             RegisterFileAsses();
             prepareTranslit();
-            LoadPreferences();
             MapIcons.InitZip(CurrentDirectory() + @"\mapicons\default.zip");
         }
 
-        private void LoadPreferences()
+        public static void ConvertGPI2KMZ(string gpiFile, string kmzFile)
         {
-            GPIReader.LOCALE_LANGUAGE = Properties["gpi_localization"].ToUpper();
-            GPIReader.SAVE_MEDIA = Properties.GetBoolValue("gpireader_save_media");
-            GPIReader.POI_IMAGE_FROM_JPEG = Properties.GetBoolValue("gpireader_poi_image_from_jpeg");
+            if (String.IsNullOrEmpty(gpiFile)) return;
+            if (String.IsNullOrEmpty(kmzFile)) return;
+            if (!File.Exists(gpiFile)) return;
+            if (gpiFile == kmzFile) return;
+
+            string ffext = Path.GetExtension(gpiFile).ToLower();
+            if (ffext == ".gpi")
+            {
+                Console.WriteLine("KMZRebuilder by milokz@gmail.com");
+                Console.WriteLine("Convert GPI 2 KMZ Mode");
+                Console.WriteLine("IN : {0}", Path.GetFileName(gpiFile));
+                Console.WriteLine("OUT: {0}", Path.GetFileName(kmzFile));                
+                try
+                {                                        
+                    Preferences Props = Preferences.Load();
+                    GPIReader.LOCALE_LANGUAGE = Props["gpi_localization"].ToUpper();
+                    Console.WriteLine("Reading input file in {0}... ", GPIReader.LOCALE_LANGUAGE);
+                    GPIReader.SAVE_MEDIA = Props.GetBoolValue("gpireader_save_media");
+                    GPIReader.POI_IMAGE_FROM_JPEG = Props.GetBoolValue("gpireader_poi_image_from_jpeg");
+                    GPIReader gpi = new GPIReader(gpiFile, AddToConsole);
+                    Console.WriteLine("GPI name is `{0}`", gpi.Name);
+                    Console.WriteLine("DataSource is `{0}`", gpi.DataSource);
+                    Console.WriteLine("Saving to kml... ");
+                    KMFile kmf = KMFile.CreateEmpty();
+                    gpi.SaveToKML(kmf.tmp_file_dir + "doc.kml", AddToConsole);
+                    Console.Write(String.Format("Creating {0} ... ", Path.GetFileName(kmzFile)));
+                    try
+                    {                        
+                        MakeZIP(kmzFile, kmf.tmp_file_dir);
+                        Console.WriteLine("Ok");
+                        Console.Write("Deleting temporary folders... ");
+                        string tdir = Path.GetDirectoryName(kmf.tmp_file_dir);
+                        if (!String.IsNullOrEmpty(tdir)) try { Directory.Delete(tdir, true); }
+                            catch { };
+                        Console.WriteLine("Ok");
+                    }
+                    catch (Exception ex) { Console.WriteLine("Error: {0}", ex.Message); };              
+                }
+                catch (Exception ex) { Console.WriteLine("Error: {0}", ex.Message); };
+            };
+            Console.WriteLine("DONE");
+            Console.WriteLine("Exiting...");
+        }
+
+        public static void ConvertKMZ2GPI(string kmzFile, string gpiFile)
+        {
+            if (String.IsNullOrEmpty(kmzFile)) return;
+            if (String.IsNullOrEmpty(gpiFile)) return;
+            if (!File.Exists(kmzFile)) return;
+            if (kmzFile == gpiFile) return;
+
+            string ffext = Path.GetExtension(kmzFile).ToLower();
+            bool iskmz = ffext == ".kmz";
+            if ((ffext == ".kml") || (iskmz))
+            {
+                Console.WriteLine("KMZRebuilder by milokz@gmail.com");
+                Console.WriteLine("Convert KMZ/KML 2 GPI Mode");
+                Console.WriteLine("IN : {0}", Path.GetFileName(kmzFile));
+                Console.WriteLine("OUT: {0}", Path.GetFileName(gpiFile));
+                Console.Write("Reading input file... ");
+                try
+                {
+                    KMFile kmf = new KMFile(kmzFile);
+                    if (kmf.Valid)
+                    {
+                        Console.WriteLine("OK");
+                        Console.WriteLine("Project name is `{0}`", kmf.kmldocName);
+                        int ttlpc = 0;
+                        for(int i=0;i<kmf.kmLayers.Count;i++) ttlpc += kmf.kmLayers[i].placemarks;
+                        Console.WriteLine("Found {0} POIs in {1} layers", ttlpc, kmf.kmLayers.Count);
+                        try { Save2GPIInt(gpiFile, kmf, kmf.kmldocName, AddToConsole, Preferences.Load()); }
+                        catch (Exception ex) { Console.WriteLine("Error: {0}", ex.Message); };
+                    };
+                    if (iskmz)
+                    {
+                        Console.Write("Deleting temporary folders... ");
+                        string sdir = Path.GetDirectoryName(kmzFile);
+                        string tdir = Path.GetDirectoryName(kmf.tmp_file_dir);
+                        if (sdir != tdir) try { Directory.Delete(tdir, true); } catch { };
+                        Console.WriteLine("Ok");
+                    };                    
+                }
+                catch (Exception ex) { Console.WriteLine("Error: {0}", ex.Message); };
+            };
+            Console.WriteLine("DONE");
+            Console.WriteLine("Exiting...");
+        }
+
+        private static void AddToConsole(string text)
+        {
+            Console.WriteLine(text);
         }
 
         private void RegisterFileAsses()
@@ -184,6 +271,30 @@ namespace KMZRebuilder
             ofd.Multiselect = true;
             if (ofd.ShowDialog() == DialogResult.OK) LoadFiles(ofd.FileNames);
             ofd.Dispose();
+        }
+
+        private static string KmzUnpack(string fileName)
+        {
+            string res = null;
+            ZipFile zf = new ZipFile(fileName);
+            string tmp_file_dir = KMZRebuilederForm.TempDirectory() + "IF" + DateTime.UtcNow.Ticks.ToString() + @"\";
+            foreach (ZipEntry zipEntry in zf)
+            {
+                if (!zipEntry.IsFile) continue;
+                String entryFileName = zipEntry.Name;
+                byte[] buffer = new byte[4096];     // 4K is optimum
+                Stream zipStream = zf.GetInputStream(zipEntry);
+                String fullZipToPath = Path.Combine(tmp_file_dir, entryFileName);
+                string directoryName = Path.GetDirectoryName(fullZipToPath);
+                if (directoryName.Length > 0)
+                    Directory.CreateDirectory(directoryName);
+                using (FileStream streamWriter = File.Create(fullZipToPath))
+                    StreamUtils.Copy(zipStream, streamWriter, buffer);
+                if(Path.GetExtension(fullZipToPath).ToLower()==".kml")
+                    res = fullZipToPath;
+            };
+            zf.Close();
+            return res;
         }
 
         private void LoadFiles(string[] files)
@@ -292,7 +403,7 @@ namespace KMZRebuilder
                             return;
                         };
                     };
-                    KMFile f = new KMFile(file);
+                    KMFile f = new KMFile(file, AddToLog);
                     if (!f.Valid) continue;
                     kmzFiles.Items.Add(f, f.isCheck);
                     MyMruList.AddFile(file);
@@ -1786,37 +1897,42 @@ namespace KMZRebuilder
             }
         }
 
-        private void Save2GPIInt(string gpifile, KMFile kmfile)
+        private static void Save2GPIInt(string gpifile, KMFile kmfile, string proj_name, GPIReader.Add2LogProc Add2Log, Preferences Props)
         {
-            string proj_name = kmfile.kmldocName;
-            if (proj_name == "") proj_name = outName.Text;
-            proj_name = proj_name.Trim();
+            GPIReader.LOCALE_LANGUAGE = Props["gpi_localization"].ToUpper();
+            GPIReader.SAVE_MEDIA = Props.GetBoolValue("gpireader_save_media");
+            GPIReader.POI_IMAGE_FROM_JPEG = Props.GetBoolValue("gpireader_poi_image_from_jpeg");
+
+            if (proj_name != null) proj_name = proj_name.Trim(); else proj_name = "";
             if (proj_name == "") proj_name = "KMZRebuilder Data";
 
-            AddToLog("Creating Garmin POI file...");
+            if (Add2Log != null) Add2Log(String.Format("Creating Garmin POI file in {0}...", GPIReader.LOCALE_LANGUAGE));
             GPIWriter gw = new GPIWriter(kmfile.src_file_pth);
+            byte formatVer = 1;
+            byte.TryParse(Props["gpiwriter_format_version"], out formatVer);
+            gw.FormatVersion = formatVer;
             gw.Name = proj_name;
             gw.DataSource = proj_name;
-            gw.StoreDescriptions = Properties.GetBoolValue("gpiwriter_set_descriptions");
-            gw.StoreAlerts = Properties.GetBoolValue("gpiwriter_set_alerts");
-            gw.StoreImagesAsIs = Properties.GetBoolValue("gpiwriter_save_images_jpeg");
-            gw.StoreOnlyLocalLang = Properties.GetBoolValue("gpiwriter_save_only_local_lang");
-            gw.DefaultAlertIsOn = Properties.GetBoolValue("gpiwriter_default_alert_ison");
-            gw.DefaultAlertType = Properties["gpiwriter_default_alert_type"];
-            gw.DefaultAlertSound = Properties["gpiwriter_default_alert_sound"];
-            gw.TransColor = System.Drawing.ColorTranslator.FromHtml(Properties["gpiwriter_image_transp_color"]);
-            byte.TryParse(Properties["gpiwriter_image_max_side"], out gw.MaxImageSide);
-            byte.TryParse(Properties["gpiwriter_alert_datetime_maxcount"], out gw.MaxAlertDateTimeCount);
+            gw.StoreDescriptions = Props.GetBoolValue("gpiwriter_set_descriptions");
+            gw.StoreAlerts = Props.GetBoolValue("gpiwriter_set_alerts");
+            gw.StoreImagesAsIs = Props.GetBoolValue("gpiwriter_save_images_jpeg");
+            gw.StoreOnlyLocalLang = Props.GetBoolValue("gpiwriter_save_only_local_lang");
+            gw.DefaultAlertIsOn = Props.GetBoolValue("gpiwriter_default_alert_ison");
+            gw.DefaultAlertType = Props["gpiwriter_default_alert_type"];
+            gw.DefaultAlertSound = Props["gpiwriter_default_alert_sound"];
+            gw.TransColor = System.Drawing.ColorTranslator.FromHtml(Props["gpiwriter_image_transp_color"]);            
+            byte.TryParse(Props["gpiwriter_image_max_side"], out gw.MaxImageSide);
+            byte.TryParse(Props["gpiwriter_alert_datetime_maxcount"], out gw.MaxAlertDateTimeCount);
             
             //POI
-            AddToLog("Saving POI...");
-            waitBox.Show("Export to GPI", "Wait, saving POIs...");
+            if(waitBox != null) waitBox.Show("Export to GPI", "Wait, saving POIs...");
             int poi_added = 0;
             {
                 XmlNodeList nl = kmfile.kmlDoc.SelectNodes("kml/Document/Folder/Placemark/Point/coordinates");
+                if (Add2Log != null) Add2Log(String.Format("Saving {0} POIs ...", nl.Count));
                 foreach (XmlNode n in nl)
                 {
-                    waitBox.Show("Export to GPI", String.Format("Wait, saving POIs {0}/{1} ...", poi_added + 1, nl.Count));
+                    if(waitBox != null) waitBox.Show("Export to GPI", String.Format("Wait, saving POIs {0}/{1} ...", poi_added + 1, nl.Count));
 
                     string fnam = "";
                     try { fnam = n.ParentNode.ParentNode.ParentNode.SelectSingleNode("name").ChildNodes[0].Value; }
@@ -1836,19 +1952,22 @@ namespace KMZRebuilder
                     double lon = double.Parse(ll[0].Replace("\r", "").Replace("\n", "").Replace(" ", ""), System.Globalization.CultureInfo.InvariantCulture);
                     gw.AddPOI(fnam, poi, desc, styleUrl, lat, lon);
                     poi_added++;
+
+                    if (poi_added % 1000 == 0) if (Add2Log != null) Add2Log(String.Format("Saved {0}/{1} POIs ...", poi_added ,nl.Count));
                 };
+                if (Add2Log != null) Add2Log(String.Format("Saved {0}/{1} POIs ...", poi_added, nl.Count));
             };
 
-            AddToLog("Collecting Styles...");
-            waitBox.Show("Export to GPI", "Wait, collecting styles...");
+            if(waitBox != null) waitBox.Show("Export to GPI", "Wait, collecting styles...");
             List<KMIcon> icons = new List<KMIcon>();
             int sty_added = 0;
             {
                 XmlNodeList xns = kmfile.kmlDoc.SelectNodes("kml/Document/Style/IconStyle/Icon/href");
+                if (Add2Log != null) Add2Log(String.Format("Collecting {0} Styles ...", xns.Count));
                 if (xns.Count > 0)
                     for (int x = 0; x < xns.Count; x++)
                     {
-                        waitBox.Show("Export to GPI", String.Format("Wait, collecting styles {0}/{1}...", x + 1, xns.Count));
+                        if(waitBox != null) waitBox.Show("Export to GPI", String.Format("Wait, collecting styles {0}/{1}...", x + 1, xns.Count));
 
                         XmlNode xn2 = xns[x];
                         string style = xn2.ParentNode.ParentNode.ParentNode.Attributes["id"].Value;
@@ -1870,6 +1989,7 @@ namespace KMZRebuilder
                         else
                         {
                             System.Net.HttpWebRequest request = (System.Net.HttpWebRequest)System.Net.HttpWebRequest.Create(ki.href);
+                            if (Add2Log != null) Add2Log(String.Format("Get image from: {0}", request.RequestUri));
                             try
                             {
                                 using (System.Net.HttpWebResponse response = (System.Net.HttpWebResponse)request.GetResponse())
@@ -1905,15 +2025,15 @@ namespace KMZRebuilder
                     };
             };
 
-            // STYLE MAPS
-            AddToLog("Collecting Style Maps...");
-            waitBox.Show("Export to GPI", "Wait, collecting style maps...");
+            // STYLE MAPS            
+            if(waitBox != null) waitBox.Show("Export to GPI", "Wait, collecting style maps...");
             {
                 XmlNodeList xns = kmfile.kmlDoc.SelectNodes("kml/Document/StyleMap");
+                if (Add2Log != null) Add2Log(String.Format("Collecting {0} Style Maps...", xns.Count));
                 if (xns.Count > 0)
                     for (int x = 0; x < xns.Count; x++)
                     {
-                        waitBox.Show("Export to GPI", String.Format("Wait, collecting style maps {0}/{1}...", x + 1, xns.Count));
+                        if(waitBox != null) waitBox.Show("Export to GPI", String.Format("Wait, collecting style maps {0}/{1}...", x + 1, xns.Count));
 
                         string style = xns[x].Attributes["id"].Value;
                         foreach (XmlNode xn2 in xns[x].SelectNodes("Pair/styleUrl"))
@@ -1930,27 +2050,28 @@ namespace KMZRebuilder
                     };
             };
 
-            // Saving Images
-            AddToLog("Collecting Images...");
-            waitBox.Show("Export to GPI", "Wait, collecting images...");
+            // Saving Images            
+            if(waitBox != null) waitBox.Show("Export to GPI", "Wait, collecting images...");
             int img_saved = 0;
             {
+                if (Add2Log != null) Add2Log(String.Format("Collecting {0} Images...", icons.Count));
                 for (int i = 0; i < icons.Count; i++)
                 {
                     for (int x = 0; x < icons[i].styles.Count; x++)
                     {
-                        waitBox.Show("Export to GPI", String.Format("Wait, collecting images {0}/{1}...", img_saved + 1, sty_added));
+                        if(waitBox != null)
+                            waitBox.Show("Export to GPI", String.Format("Wait, collecting images {0}/{1}...", img_saved + 1, sty_added));
                         string sty = icons[i].styles[x];
                         gw.AddImage(sty, icons[i].image);
                         img_saved++;
                     };
                 };
             };
-            AddToLog("Saving...");
-            waitBox.Show("Export to GPI", "Wait, saving gpi...");
-            gw.Save(gpifile);
-            waitBox.Hide();
-            AddToLog("Done");
+            if(Add2Log != null) Add2Log("Saving GPI Data...");
+            if(waitBox != null) waitBox.Show("Export to GPI", "Wait, saving gpi...");
+            gw.Save(gpifile, Add2Log);
+            if(waitBox != null) waitBox.Hide();
+            if(Add2Log != null) Add2Log("Done");
         }
 
         private void Save2GPI(string gpifile, KMFile kmfile)
@@ -2721,12 +2842,16 @@ namespace KMZRebuilder
 
         public void AddToLog(string txt)
         {
+            if (panel1 == null) return;
+
             if (!panel1.Visible)
                 panel1.Visible = true;
 
             log.Text += String.Format("{0}\r\n", txt);
             log.SelectionStart = log.TextLength;
             log.ScrollToCaret();
+            log.Refresh();
+            log.Invalidate();
             Refresh();
         }
 
@@ -2744,8 +2869,21 @@ namespace KMZRebuilder
             zipStream.Close();
         }
 
+        private static void MakeZIP(string filename, string folder)
+        {
+            FileStream fsOut = File.Create(filename);
+            ZipOutputStream zipStream = new ZipOutputStream(fsOut);
+            string comment_add = "";
+            zipStream.SetComment("Google KMZ file For OruxMaps\r\n\r\n" + "Created at " + DateTime.Now.ToString("HH:mm:ss dd.MM.yyyy") + "\r\nby KMZRebuilder\r\n\r\nUse OruxMaps for Android or KMZViewer for Windows to Explore file POI" + comment_add);
+            zipStream.SetLevel(3); //0-9, 9 being the highest level of compression
+            // zipStream.Password = password;  // optional. Null is the same as not setting. Required if using AES.
+            CompressFolder(folder, zipStream, folder.Length);
+            zipStream.IsStreamOwner = true; // Makes the Close also Close the underlying stream
+            zipStream.Close();
+        }
+
         // Recurses down the folder structure
-        private void CompressFolder(string path, ZipOutputStream zipStream, int folderOffset)
+        private static void CompressFolder(string path, ZipOutputStream zipStream, int folderOffset)
         {
             string[] files = Directory.GetFiles(path);
 
@@ -3091,7 +3229,7 @@ namespace KMZRebuilder
             if (kmzFiles.SelectedIndex < 0) return;
             KMFile f = (KMFile)kmzFiles.SelectedItem;
             waitBox.Show("Reloading", "Wait, reloading original `" + f.src_file_nme + "` file...");
-            f.CopySrcFileToTempDirAndLoad();
+            f.CopySrcFileToTempDirAndLoad(AddToLog);
             ReloadListboxLayers(true);
             waitBox.Hide();
         }
@@ -3140,7 +3278,6 @@ namespace KMZRebuilder
         private void FormKMZ_FormClosed(object sender, FormClosedEventArgs e)
         {
             waitBox.Hide();
-            Properties.Save();
             try { if (memFile != null) memFile.Close(); } catch { };
             try { if (Directory.Exists(TempDirectory())) System.IO.Directory.Delete(TempDirectory(), true); } catch { };
         }
@@ -8280,7 +8417,6 @@ namespace KMZRebuilder
         private void pREFERENCESToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Properties.ShowChangeDialog();
-            LoadPreferences();
             Properties.Save();
         }
 
@@ -8298,7 +8434,7 @@ namespace KMZRebuilder
                 string zdir = Save2KMZ(sfd.FileName, true);
                 ReloadXMLOnly_NoUpdateLayers();
                 KMFile kmf = KMFile.FromZDir(zdir);
-                Save2GPIInt(sfd.FileName, kmf);
+                Save2GPIInt(sfd.FileName, kmf, String.IsNullOrEmpty(kmf.kmldocName) ? outName.Text : kmf.kmldocName, AddToLog, Properties);
             };
             sfd.Dispose(); 
         }
@@ -8314,7 +8450,8 @@ namespace KMZRebuilder
             if (sfd.ShowDialog() == DialogResult.OK)
             {
                 log.Text = "";
-                Save2GPIInt(sfd.FileName, (KMFile)kmzFiles.SelectedItems[0]);
+                KMFile kmf = (KMFile)kmzFiles.SelectedItems[0];
+                Save2GPIInt(sfd.FileName, kmf, String.IsNullOrEmpty(kmf.kmldocName) ? outName.Text : kmf.kmldocName, AddToLog, Properties);
             };
             sfd.Dispose();
         }
@@ -8376,6 +8513,22 @@ namespace KMZRebuilder
                 catch { };
             if (!ok) try { System.Diagnostics.Process.Start("notepad", fName); }
                 catch { };
+        }
+
+        private void bchelpb_Click(object sender, EventArgs e)
+        {
+            string helptext = "";
+            helptext += "------------------------ Command Line Syntax: ------------------------        \r\n\r\n";
+            helptext += "  KMZ to GPI File Convertion:\r\n";
+            helptext += "    /kmz2gpi \"kmzfile\" \"gpifile\" \r\n\r\n";
+            helptext += "  GPI to KMZ File Convertion:\r\n";
+            helptext += "    /gpi2kmz \"gpifile\" \"kmzfile\" \r\n\r\n";
+            helptext += "  BenzinPriceAnalizer: /bpa\r\n\r\n";
+            helptext += "  GPX Tachograph: /tax\r\n\r\n";
+            helptext += "  Interpolate2LessPoints: /ilp\r\n\r\n";
+            helptext += "  KmFlagsEnumerator: /km\r\n\r\n";
+            helptext += "  MapPolygonCreator: /mpc\r\n\r\n";
+            MessageBox.Show(helptext, "Command Line Syntax", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
     }
 
@@ -8884,6 +9037,16 @@ namespace KMZRebuilder
             this.CopySrcFileToTempDirAndLoad();
         }
 
+        public KMFile(string filename, GPIReader.Add2LogProc Add2Log)
+        {
+            this.src_file_pth = filename;
+            this.src_file_nme = System.IO.Path.GetFileName(filename);
+            this.src_file_ext = System.IO.Path.GetExtension(filename).ToLower();
+            this.tmp_file_dir = KMZRebuilederForm.TempDirectory() + "IF" + DateTime.UtcNow.Ticks.ToString() + @"\";
+
+            this.CopySrcFileToTempDirAndLoad(Add2Log);
+        }
+
         public static KMFile CreateEmpty()
         {
             return new KMFile();
@@ -9043,14 +9206,19 @@ namespace KMZRebuilder
             res += " - " + this.kmLayers.Count.ToString() + " layers";
             return res;
         }
-        
+
         public void CopySrcFileToTempDirAndLoad()
+        {
+            CopySrcFileToTempDirAndLoad(null);
+        }
+
+        public void CopySrcFileToTempDirAndLoad(GPIReader.Add2LogProc Add2Log)
         {
             if (!this.Valid) return;
 
             if (!Directory.Exists(this.tmp_file_dir)) System.IO.Directory.CreateDirectory(this.tmp_file_dir);
             if (!Directory.Exists(this.tmp_file_dir + @"images\")) System.IO.Directory.CreateDirectory(this.tmp_file_dir + @"images\");
-
+            
             if (this.src_file_csv != null)
             {
                 CSVTXT2KML();
@@ -9097,7 +9265,7 @@ namespace KMZRebuilder
             }
             else if (this.src_file_ext == ".gpi")
             {
-                GPI2KML();
+                GPI2KML(Add2Log);
             }
             else
             {
@@ -10190,16 +10358,21 @@ namespace KMZRebuilder
             File.Copy(KMZRebuilederForm.CurrentDirectory() + @"KMZRebuilder.gpx.png", this.tmp_file_dir + @"images\noicon.png", true);
         }
 
-        public void GPI2KML()
+        public void GPI2KML(GPIReader.Add2LogProc Add2Log)
         {
             try
             {
-                GPIReader gpi = new GPIReader(this.src_file_pth);
+                if(Add2Log != null)
+                    Add2Log(String.Format("Opening {0} file...", this.src_file_nme));
+                GPIReader gpi = new GPIReader(this.src_file_pth, Add2Log);
                 gpi.SaveToKML(this.tmp_file_dir + "doc.kml");
+                if (Add2Log != null)
+                    Add2Log(String.Format("Done"));
             }
             catch (Exception ex)
             {
-                return;
+                if (Add2Log != null)
+                    Add2Log(String.Format("Reading Error: {0}", ex.Message));
             };            
         }
         

@@ -119,6 +119,7 @@ namespace KMZRebuilder
         private string formText = "Please wait...";
         private Point parentCenter;
         private Form parent;
+        private IntPtr parentWnd = IntPtr.Zero;
         private bool isModal = true;
                                 
         public WaitingBoxForm(){}
@@ -127,6 +128,7 @@ namespace KMZRebuilder
         {
             if (parent != null)
             {
+                this.parentWnd = parent.Handle;
                 this.parent = parent;
                 this.parentCenter = new Point(parent.DesktopLocation.X + (int)parent.Width / 2, parent.DesktopLocation.Y + (int)parent.Height / 2);
             };    
@@ -144,6 +146,7 @@ namespace KMZRebuilder
             this.formText = Text;
             if (parent != null)
             {
+                this.parentWnd = parent.Handle;
                 this.parent = parent;
                 this.parentCenter = new Point(parent.DesktopLocation.X + (int)parent.Width / 2, parent.DesktopLocation.Y + (int)parent.Height / 2);
             };
@@ -190,9 +193,9 @@ namespace KMZRebuilder
             get { return showForm; }
         }
 
-        private bool ApplicationIsActive()
+        private bool ApplicationIsActive(out IntPtr foregroundWindow)
         {
-            IntPtr foregroundWindow = GetForegroundWindow();
+            foregroundWindow = GetForegroundWindow();
             if (foregroundWindow == IntPtr.Zero) return false;
 
             int foregroundWindowProcessID;
@@ -210,11 +213,30 @@ namespace KMZRebuilder
         [DllImport("user32.dll")]
         private static extern bool SetForegroundWindow(IntPtr hWnd);
 
+        [DllImport("user32.dll")]
+        private static extern int GetWindowTextLength(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        private static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
+
+        [DllImport("user32.dll")]
+        private static extern UInt32 GetWindowLong(IntPtr hWnd, int index);
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetParent(IntPtr hWnd);
+
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        static extern int GetClassName(IntPtr hWnd, StringBuilder lpClassName, int nMaxCount);
+
+        [DllImport("user32.dll", ExactSpelling = true)]
+        static extern IntPtr GetAncestor(IntPtr hwnd, uint flags);
+
         private void ShowThread()
         {
             WaitingForm waitingform = new WaitingForm();
             waitingform.Text = this.formCaption;
             waitingform.Label = this.formText;
+            IntPtr mainWindowHandle = System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle;
 
             if (this.parentCenter != null)
             {
@@ -233,12 +255,38 @@ namespace KMZRebuilder
                 if (waitingform.Label != this.formText) waitingform.Label = this.formText;
                 waitingform.Refresh();
 
-                if (isModal && ApplicationIsActive())
+                IntPtr topw;
+                if (isModal && ApplicationIsActive(out topw))
                 {
-                    waitingform.BringToFront();
-                    waitingform.Activate();
-                    waitingform.Focus();
-                    waitingform.Refresh();
+                    bool skip = topw == waitingform.Handle;
+                    if ((!skip) && (topw != mainWindowHandle))
+                    {                                                
+                        string clnm = GetWindowClass(topw);
+                        if (clnm.StartsWith("#")) skip = true; // Dialog window on top
+
+                        if (!skip)
+                        {
+                            IntPtr rHwd = GetAncestor(topw, 3); // Top Window through childs                     
+                            if ((mainWindowHandle != IntPtr.Zero) && (rHwd == IntPtr.Zero)) skip = true; // Not Application, it may be .Net Error Window
+                            if ((mainWindowHandle != IntPtr.Zero) && (rHwd == topw)) skip = true; // Not Our Application, it may be .Net Error Window
+                        };
+
+                        if (!skip)
+                        {
+                            IntPtr pHwd = GetParent(topw);
+                            if ((pHwd == IntPtr.Zero) && (parentWnd != IntPtr.Zero) && (topw != parentWnd) && (topw != mainWindowHandle)
+                                && (GetWindowText(topw) == waitingform.Text))
+                                    skip = true; // .Net Standard Error Window
+                        };
+                    };
+
+                    if (!skip)
+                    {
+                        waitingform.BringToFront();
+                        waitingform.Activate();
+                        waitingform.Focus();
+                        waitingform.Refresh();
+                    };
                 };
 
                 System.Threading.Thread.Sleep(50);
@@ -246,6 +294,39 @@ namespace KMZRebuilder
             waitingform.Close();
             waitingform.Dispose();
             waitingform = null;
+        }
+
+        private static string GetWindowText(IntPtr hWnd)
+        {
+            int length = GetWindowTextLength(hWnd);
+            StringBuilder text = new StringBuilder(length + 1);
+            GetWindowText(hWnd, text, text.Capacity);
+            return text.ToString();
+        }
+
+        private static string GetWindowClass(IntPtr hWnd)
+        {
+            StringBuilder text = new StringBuilder(256);
+            GetClassName(hWnd, text, text.Capacity);
+            return text.ToString();
+        }
+
+        private static bool GetWindowIsTool(IntPtr hWnd)
+        {                                  
+            // https://docs.microsoft.com/en-us/windows/win32/winmsg/window-styles
+            int GWL_STYLE = -16;  
+            uint WS_SYSMENU = 0x00080000;
+            uint WS_BORDER = 0x00800000;
+            uint WS_CHILD = 0x40000000;
+            uint WS_POPUP = 0x80000000;
+            uint WS_POPUPWINDOW = WS_POPUP | WS_BORDER | WS_SYSMENU;
+
+            // https://docs.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
+            int GWL_EXSTYLE = -20;
+            uint WS_EX_TOOLWINDOW = 0x00000080;
+
+            uint res = GetWindowLong(hWnd, GWL_EXSTYLE);
+            return (res & WS_EX_TOOLWINDOW) > 0;
         }
 
         public void Show()
