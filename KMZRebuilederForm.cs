@@ -1911,11 +1911,12 @@ namespace KMZRebuilder
             if (proj_name == "") proj_name = "KMZRebuilder Data";
 
             if (Add2Log != null) Add2Log(String.Format("Creating Garmin POI file in {0}...", GPIReader.LOCALE_LANGUAGE));
-            GPIWriter gw = new GPIWriter(kmfile.src_file_pth);
+            GPIWriter gw = new GPIWriter(kmfile.src_file_pth);            
             byte formatVer = 1;
             byte.TryParse(Props["gpiwriter_format_version"], out formatVer);
             gw.FormatVersion = formatVer;
             gw.Name = proj_name;
+            gw.Description = kmfile.kmldocDesc;
             gw.DataSource = proj_name;
             gw.StoreDescriptions = Props.GetBoolValue("gpiwriter_set_descriptions");
             gw.StoreAlerts = Props.GetBoolValue("gpiwriter_set_alerts");
