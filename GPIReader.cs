@@ -3294,7 +3294,7 @@ namespace KMZRebuilder
                     if (DefaultAlertType == "along_road") atype = 1;
                     if (DefaultAlertType == "toure_guide") atype = 2;
                 };
-                rx = new Regex(@"alert_type=(?<type>\d+)", RegexOptions.None); mx = rx.Match(poi.alert);
+                rx = new Regex(@"alert_type=(?<type>.+)", RegexOptions.None); mx = rx.Match(poi.alert);
                 if (mx.Success)
                 {
                     string typeval = mx.Groups["type"].Value.Trim().ToLower();
