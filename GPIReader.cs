@@ -749,6 +749,7 @@ namespace KMZRebuilder
         public string Creator = "KMZRebuilder";
         [XmlElement("DT")]
         public DateTime Created = DateTime.MinValue;
+        public uint AlertZones = 0;
         public string Description = null;
     }
 
@@ -1234,8 +1235,10 @@ namespace KMZRebuilder
             if (this.Add2Log != null) this.Add2Log("All data saved");
             if ((this.MarkerData != null) && (this.Add2Log != null))
             {
+                this.Add2Log(String.Format(System.Globalization.CultureInfo.InvariantCulture, "Bounds: {0:0.000000},{2:0.000000} - {1:0.000000},{3:0.000000}", this.MarkerData.Bounds[0], this.MarkerData.Bounds[1], this.MarkerData.Bounds[2], this.MarkerData.Bounds[3]));
                 this.Add2Log(String.Format("Creator: {0}", this.MarkerData.Creator));
                 this.Add2Log(String.Format("Created: {0}", this.MarkerData.Created));
+                this.Add2Log(String.Format("Alert Zones: {0}", this.MarkerData.AlertZones));
             };
         }
 
@@ -1354,6 +1357,10 @@ namespace KMZRebuilder
                 {
                     bool processExtras = ReadMainBlock(ref data, rec);
                     if (processExtras && rec.RecHasExtra) ReadData(ref data, rec.OffsetExtra, rec.LengthExtra, rec);
+                }
+                else
+                {
+
                 };
             }
             catch (Exception ex)
@@ -1451,7 +1458,8 @@ namespace KMZRebuilder
                 uint offset = rec.OffsetMain;
                 rec.Proximity = BitConverter.ToUInt16(data, (int)offset);
                 rec.cSpeed = BitConverter.ToUInt16(data, (int)offset + 2);
-                rec.Alert = data[(int)offset + 8];
+                ushort flags = BitConverter.ToUInt16(data, (int)offset + 4);
+                rec.Alert = data[(int)offset + 8];                
                 rec.AlertType = data[(int)offset + 9];
                 rec.SoundNumber = data[(int)offset + 10];
                 rec.AudioAlert = data[(int)offset + 11];
@@ -2325,6 +2333,10 @@ namespace KMZRebuilder
         /// </summary>
         public bool StoreOnlyLocalLangAddress = false;
         /// <summary>
+        ///     Store Original Media File Names
+        /// </summary>
+        public bool StoreMediasFileNames = false;
+        /// <summary>
         ///     By Default Alert in POI is on (if not specified)
         /// </summary>
         public bool DefaultAlertIsOn = true; // try is default
@@ -2356,9 +2368,11 @@ namespace KMZRebuilder
         ///     Analyze OSM Tags in Description
         /// </summary>
         public bool AnalyzeOSMTags = true;
-
-        private byte formatVer = 1;
+        /// <summary>
+        ///     GPI File Format Version (0 or 1 (last))
+        /// </summary>
         public byte FormatVersion { get { return formatVer; } set { formatVer = value; if (formatVer > 1) formatVer = 1; } }
+        private byte formatVer = 1;        
 
         /// <summary>
         ///     POI Bounds: Min Lat
@@ -2442,6 +2456,15 @@ namespace KMZRebuilder
         /// </summary>
         private Dictionary<uint, List<POI>> POIs = new Dictionary<uint, List<POI>>();
         /// <summary>
+        ///     Zone Contains Alerts (each degree is an area)
+        /// </summary>
+        private Dictionary<uint, bool> POIa = new Dictionary<uint, bool>();
+        /// <summary>
+        ///     Is POI Contains Alerts
+        /// </summary>
+        public bool HasAlerts { get { foreach (KeyValuePair<uint, bool> ha in POIa) if (ha.Value) return true; return false; } }
+        private uint AlertZones { get { uint res = 0; foreach (KeyValuePair<uint, bool> ha in POIa) if (ha.Value) res++; return res; } }
+        /// <summary>
         ///     POI Bitmap/Image from POI style (by kml style ref)
         /// </summary>
         private Dictionary<string, Image> Images = new Dictionary<string, Image>();
@@ -2484,6 +2507,7 @@ namespace KMZRebuilder
             if (Categories.Count == 0) { MinLat = 90; MaxLat = -90; MinLon = 180; MaxLon = -180; };
 
             POI poi = new POI(name, lat, lon);
+            bool pha = false;
             if (!String.IsNullOrEmpty(description))
             {
                 if (this.AnalyzeOSMTags) AnalyzeDescription.OSM(ref description);
@@ -2561,6 +2585,7 @@ namespace KMZRebuilder
             };
             if (StoreAlerts && (Regex.IsMatch(description, @"alert_[\w]+=.+", RegexOptions.None)))
             {
+                pha = true;
                 poi.alert = description;
                 if (!String.IsNullOrEmpty(poi.alert))
                 {
@@ -2604,8 +2629,13 @@ namespace KMZRebuilder
 
             // Zone
             uint zone = LatLonToZone(lat, lon);
-            if (!POIs.ContainsKey(zone)) POIs.Add(zone, new List<POI>());
+            if (!POIs.ContainsKey(zone))
+            {
+                POIs.Add(zone, new List<POI>());
+                POIa.Add(zone, false);
+            };
             POIs[zone].Add(poi);
+            if (pha) POIa[zone] = true;
             TotalPoints++;
         }
 
@@ -3243,7 +3273,9 @@ namespace KMZRebuilder
             {
                 f02.MainData.AddRange(BitConverter.GetBytes(((uint)(poi.lat * Math.Pow(2, 32) / 360.0))));
                 f02.MainData.AddRange(BitConverter.GetBytes(((uint)(poi.lon * Math.Pow(2, 32) / 360.0))));
-                f02.MainData.AddRange(new byte[] { 1, 0, 0 }); // Reserved
+                byte lFlags = 0x02; // 3 - with alert
+                if (StoreAlerts && (!String.IsNullOrEmpty(poi.alert))) lFlags = 0x03; // ALERTS // 103?
+                f02.MainData.AddRange(new byte[] { 1 /*category or addit info is defined*/, 0, lFlags }); // Reserved 
                 f02.MainData.AddRange(ToLString(String.IsNullOrEmpty(poi.name) ? "Unknown" : poi.name)); // POI Name
             };
             // Extra
@@ -3421,7 +3453,8 @@ namespace KMZRebuilder
                 fb.MainData.AddRange(BitConverter.GetBytes(((uint)(MaxLon * Math.Pow(2, 32) / 360.0))));
                 fb.MainData.AddRange(BitConverter.GetBytes(((uint)(MinLat * Math.Pow(2, 32) / 360.0))));
                 fb.MainData.AddRange(BitConverter.GetBytes(((uint)(MinLon * Math.Pow(2, 32) / 360.0))));
-                fb.MainData.AddRange(new byte[] { 0, 0, 0, 0, 1, 0, 2 }); // Must Have
+                byte aFlags = HasAlerts ? (byte)0x03 : (byte)0x02; // 103?
+                fb.MainData.AddRange(new byte[] { 0, 0, 0, 0, 1, 0, aFlags }); // Must Have
             };
             // Extra
             {
@@ -3446,7 +3479,8 @@ namespace KMZRebuilder
                 f08.MainData.AddRange(BitConverter.GetBytes(((uint)((lon + 1) * Math.Pow(2, 32) / 360.0))));
                 f08.MainData.AddRange(BitConverter.GetBytes(((uint)(lat * Math.Pow(2, 32) / 360.0))));
                 f08.MainData.AddRange(BitConverter.GetBytes(((uint)(lon * Math.Pow(2, 32) / 360.0))));
-                f08.MainData.AddRange(new byte[] { 0, 0, 0, 0, 1, 0, 2 }); // Must Have
+                byte aFlags = POIa[zone] ? (byte)0x03 : (byte)0x02; // 103?
+                f08.MainData.AddRange(new byte[] { 0, 0, 0, 0, 1, 0, aFlags }); // Must Have
             };
             // Extra
             {
@@ -3672,8 +3706,9 @@ namespace KMZRebuilder
 
                 MarkerBlock mb = new MarkerBlock();
                 mb.Created = DateTime.Now;
-                mb.Description = this.Description;
+                mb.Description = this.Description; 
                 mb.Bounds = new double[4] { MinLat, MaxLat, MinLon, MaxLon };
+                mb.AlertZones = this.AlertZones;
                 byte[] data = mb.ToBytes();
                 long ttl_len = data.Length + 4 + 2;
                 f18.ExtraData.AddRange(BitConverter.GetBytes((uint)ttl_len)); // TOTAL LENGTH

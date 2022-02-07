@@ -3828,7 +3828,8 @@ namespace KMZRebuilder
                 System.Diagnostics.FileVersionInfo fvi = System.Diagnostics.FileVersionInfo.GetVersionInfo(assembly.Location);
                 string text = fvi.ProductName + " " + fvi.FileVersion + " by " + fvi.CompanyName + "\r\n";
                 text += fvi.LegalCopyright + "\r\n";
-                text += "\r\n-- with GPI Direct Import/Export Support --";                
+                text += "\r\n-- with GPI Direct Import/Export Support --";
+                text += "\r\n-- with GPI Voice Alerts Support --";
                 text += "\r\n-- with dkxce Route Engine Support --";
                 text += "\r\n-- with OSRM Engine Support --";
                 text += "\r\n-- with MapsForge File Support --";
