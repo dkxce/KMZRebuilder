@@ -15,7 +15,6 @@ desc:ru=multiline
 comment=start point
 comment=food shop
 comment=industrial
-comment:ru=start point
 comm:ru=food shop
 comm:ru=industrial
 
