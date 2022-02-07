@@ -27,6 +27,7 @@ You can export result kmz file to HTML Map and upload it to your site.
 - [POI Alert](https://github.com/dkxce/KMZRebuilder/blob/master/bin/Debug/gpiwriter_alert_help.txt) (load/save from/to desc) with sound & trigger options
 - POI Bitmap (get/set from/to kml style)
 - POI Image (get/set from/to kml style)
+- Voice Alerts (load/save from/to desc)     
 - Command Line (Batch Mode): /kmz2gpi `kmzfile` `gpifile`    
 - Command Line (Batch Mode): /gpi2kmz `gpifile` `kmzfile`    
 
