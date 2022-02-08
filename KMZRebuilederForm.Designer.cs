@@ -139,9 +139,7 @@ namespace KMZRebuilder
             this.checkWithPointsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.checkWithLinesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.checkWithPolygonsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripMenuItem38 = new System.Windows.Forms.ToolStripSeparator();
             this.selectNoneToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripMenuItem45 = new System.Windows.Forms.ToolStripSeparator();
             this.invertSelectionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem40 = new System.Windows.Forms.ToolStripSeparator();
             this.checkLayersWithSameNameButLessObjectsCountToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -154,6 +152,9 @@ namespace KMZRebuilder
             this.checkLayersWithSameNamesOnlyInFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.checkLayersWithSameNamesButToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.uncheckLayersWithSameNameOnlyInFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.checkLayersByRulesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.checkIfDescriptionContainsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.uncheckIfDescriptionContainsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripSeparator();
             this.addEmptyLayerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.deleteLayerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -189,17 +190,20 @@ namespace KMZRebuilder
             this.saveBtnKMZM = new System.Windows.Forms.ToolStripMenuItem();
             this.saveBtnKMZO = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem9 = new System.Windows.Forms.ToolStripSeparator();
+            this.exportToToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.c2DGPIToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem50 = new System.Windows.Forms.ToolStripSeparator();
-            this.exportToToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.export2WPTnoIconsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exportToWPTToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem53 = new System.Windows.Forms.ToolStripSeparator();
             this.export2DatToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem54 = new System.Windows.Forms.ToolStripSeparator();
             this.export2GDBToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.saveToCSVHTMLReportToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripMenuItem51 = new System.Windows.Forms.ToolStripSeparator();
+            this.convertToToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.convertToGarminPointsOfInterestsFileGPIToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveBTNG = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem51 = new System.Windows.Forms.ToolStripSeparator();
+            this.saveToCSVHTMLReportToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuStrip4 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.tOOLSToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.pROGORODPOIEditorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -247,6 +251,8 @@ namespace KMZRebuilder
             this.documentationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.gPIAlertsHelpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.gPICommentAddressContactHelpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem52 = new System.Windows.Forms.ToolStripSeparator();
+            this.bchelpb = new System.Windows.Forms.ToolStripMenuItem();
             this.pREFERENCESToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.outPanel = new System.Windows.Forms.Panel();
             this.panel3 = new System.Windows.Forms.Panel();
@@ -287,10 +293,13 @@ namespace KMZRebuilder
             this.toolStripStatusLabel4 = new System.Windows.Forms.ToolStripStatusLabel();
             this.panel11 = new System.Windows.Forms.Panel();
             this.saveURLIcons = new System.Windows.Forms.CheckBox();
-            this.bchelpb = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem38 = new System.Windows.Forms.ToolStripSeparator();
+            this.uncheckgpiskiptrueToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.uncheckprogorodskiptrueToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.unchecknavitelskiptrueToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.kmzLayers = new KMZRebuilder.LayersListBox();
             this.kmzFiles = new KMZRebuilder.FilesListBox();
-            this.toolStripMenuItem52 = new System.Windows.Forms.ToolStripSeparator();
+            this.uncheckwptskiptrueToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuStrip1.SuspendLayout();
             this.contextMenuStrip2.SuspendLayout();
             this.panel1.SuspendLayout();
@@ -848,6 +857,7 @@ namespace KMZRebuilder
             this.allLayersBatchToDoToolStripMenuItem,
             this.sortLayersToolStripMenuItem,
             this.checkLayersToolStripMenuItem,
+            this.checkLayersByRulesToolStripMenuItem,
             this.toolStripMenuItem2,
             this.addEmptyLayerToolStripMenuItem,
             this.deleteLayerToolStripMenuItem,
@@ -856,7 +866,7 @@ namespace KMZRebuilder
             this.toolStripMenuItem8,
             this.saveLayerToToolStripMenuItem});
             this.contextMenuStrip2.Name = "contextMenuStrip2";
-            this.contextMenuStrip2.Size = new System.Drawing.Size(448, 386);
+            this.contextMenuStrip2.Size = new System.Drawing.Size(448, 430);
             this.contextMenuStrip2.Text = "Split layer by Names and Save result to KMZ... (contains)";
             this.contextMenuStrip2.Opening += new System.ComponentModel.CancelEventHandler(this.LayersMenu_Opening);
             this.contextMenuStrip2.Closing += new System.Windows.Forms.ToolStripDropDownClosingEventHandler(this.contextMenuStrip2_Closing);
@@ -1112,15 +1122,13 @@ namespace KMZRebuilder
             // 
             this.checkLayersToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.selectAllToolStripMenuItem,
+            this.selectNoneToolStripMenuItem,
+            this.invertSelectionToolStripMenuItem,
             this.toolStripMenuItem39,
             this.checkOnlyWithPlacemarksToolStripMenuItem,
             this.checkWithPointsToolStripMenuItem,
             this.checkWithLinesToolStripMenuItem,
             this.checkWithPolygonsToolStripMenuItem,
-            this.toolStripMenuItem38,
-            this.selectNoneToolStripMenuItem,
-            this.toolStripMenuItem45,
-            this.invertSelectionToolStripMenuItem,
             this.toolStripMenuItem40,
             this.checkLayersWithSameNameButLessObjectsCountToolStripMenuItem,
             this.checkLayersWithSameNameButMoreObjectsCountToolStripMenuItem,
@@ -1176,22 +1184,12 @@ namespace KMZRebuilder
             this.checkWithPolygonsToolStripMenuItem.Text = "Check with Polygons";
             this.checkWithPolygonsToolStripMenuItem.Click += new System.EventHandler(this.checkWithPolygonsToolStripMenuItem_Click);
             // 
-            // toolStripMenuItem38
-            // 
-            this.toolStripMenuItem38.Name = "toolStripMenuItem38";
-            this.toolStripMenuItem38.Size = new System.Drawing.Size(413, 6);
-            // 
             // selectNoneToolStripMenuItem
             // 
             this.selectNoneToolStripMenuItem.Name = "selectNoneToolStripMenuItem";
             this.selectNoneToolStripMenuItem.Size = new System.Drawing.Size(416, 22);
             this.selectNoneToolStripMenuItem.Text = "Check None";
             this.selectNoneToolStripMenuItem.Click += new System.EventHandler(this.DeselectLayers_Click);
-            // 
-            // toolStripMenuItem45
-            // 
-            this.toolStripMenuItem45.Name = "toolStripMenuItem45";
-            this.toolStripMenuItem45.Size = new System.Drawing.Size(413, 6);
             // 
             // invertSelectionToolStripMenuItem
             // 
@@ -1270,6 +1268,34 @@ namespace KMZRebuilder
             this.uncheckLayersWithSameNameOnlyInFileToolStripMenuItem.Size = new System.Drawing.Size(416, 22);
             this.uncheckLayersWithSameNameOnlyInFileToolStripMenuItem.Text = "Uncheck layers with same name only in file ...";
             this.uncheckLayersWithSameNameOnlyInFileToolStripMenuItem.Click += new System.EventHandler(this.uncheckLayersWithSameNameOnlyInFileToolStripMenuItem_Click);
+            // 
+            // checkLayersByRulesToolStripMenuItem
+            // 
+            this.checkLayersByRulesToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.checkIfDescriptionContainsToolStripMenuItem,
+            this.uncheckIfDescriptionContainsToolStripMenuItem,
+            this.toolStripMenuItem38,
+            this.uncheckgpiskiptrueToolStripMenuItem,
+            this.uncheckwptskiptrueToolStripMenuItem,
+            this.uncheckprogorodskiptrueToolStripMenuItem,
+            this.unchecknavitelskiptrueToolStripMenuItem});
+            this.checkLayersByRulesToolStripMenuItem.Name = "checkLayersByRulesToolStripMenuItem";
+            this.checkLayersByRulesToolStripMenuItem.Size = new System.Drawing.Size(447, 22);
+            this.checkLayersByRulesToolStripMenuItem.Text = "Uncheck Layers by Rules ...";
+            // 
+            // checkIfDescriptionContainsToolStripMenuItem
+            // 
+            this.checkIfDescriptionContainsToolStripMenuItem.Name = "checkIfDescriptionContainsToolStripMenuItem";
+            this.checkIfDescriptionContainsToolStripMenuItem.Size = new System.Drawing.Size(250, 22);
+            this.checkIfDescriptionContainsToolStripMenuItem.Text = "Check if Description Contains ...";
+            this.checkIfDescriptionContainsToolStripMenuItem.Click += new System.EventHandler(this.checkIfDescriptionContainsToolStripMenuItem_Click);
+            // 
+            // uncheckIfDescriptionContainsToolStripMenuItem
+            // 
+            this.uncheckIfDescriptionContainsToolStripMenuItem.Name = "uncheckIfDescriptionContainsToolStripMenuItem";
+            this.uncheckIfDescriptionContainsToolStripMenuItem.Size = new System.Drawing.Size(250, 22);
+            this.uncheckIfDescriptionContainsToolStripMenuItem.Text = "Uncheck if Description Contains ...";
+            this.uncheckIfDescriptionContainsToolStripMenuItem.Click += new System.EventHandler(this.uncheckIfDescriptionContainsToolStripMenuItem_Click_1);
             // 
             // toolStripMenuItem2
             // 
@@ -1523,98 +1549,106 @@ namespace KMZRebuilder
             this.saveBtnKMZM,
             this.saveBtnKMZO,
             this.toolStripMenuItem9,
-            this.c2DGPIToolStripMenuItem,
-            this.toolStripMenuItem50,
             this.exportToToolStripMenuItem,
-            this.saveToCSVHTMLReportToolStripMenuItem,
+            this.convertToToolStripMenuItem,
             this.toolStripMenuItem51,
-            this.convertToGarminPointsOfInterestsFileGPIToolStripMenuItem,
-            this.saveBTNG});
+            this.saveToCSVHTMLReportToolStripMenuItem});
             this.contextMenuStrip3.Name = "contextMenuStrip3";
-            this.contextMenuStrip3.Size = new System.Drawing.Size(402, 176);
+            this.contextMenuStrip3.Size = new System.Drawing.Size(226, 126);
             this.contextMenuStrip3.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuStrip3_Opening);
             // 
             // saveBtnKMZM
             // 
             this.saveBtnKMZM.Name = "saveBtnKMZM";
-            this.saveBtnKMZM.Size = new System.Drawing.Size(401, 22);
+            this.saveBtnKMZM.Size = new System.Drawing.Size(225, 22);
             this.saveBtnKMZM.Text = "Save to multi layer KMZ...";
             this.saveBtnKMZM.Click += new System.EventHandler(this.saveCheckedLayersToKMZToolStripMenuItem_Click);
             // 
             // saveBtnKMZO
             // 
             this.saveBtnKMZO.Name = "saveBtnKMZO";
-            this.saveBtnKMZO.Size = new System.Drawing.Size(401, 22);
+            this.saveBtnKMZO.Size = new System.Drawing.Size(225, 22);
             this.saveBtnKMZO.Text = "Save to single layer KMZ...";
             this.saveBtnKMZO.Click += new System.EventHandler(this.saveBtnKMZO_Click);
             // 
             // toolStripMenuItem9
             // 
             this.toolStripMenuItem9.Name = "toolStripMenuItem9";
-            this.toolStripMenuItem9.Size = new System.Drawing.Size(398, 6);
+            this.toolStripMenuItem9.Size = new System.Drawing.Size(222, 6);
+            // 
+            // exportToToolStripMenuItem
+            // 
+            this.exportToToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.c2DGPIToolStripMenuItem,
+            this.toolStripMenuItem50,
+            this.export2WPTnoIconsToolStripMenuItem,
+            this.exportToWPTToolStripMenuItem,
+            this.toolStripMenuItem53,
+            this.export2DatToolStripMenuItem,
+            this.toolStripMenuItem54,
+            this.export2GDBToolStripMenuItem});
+            this.exportToToolStripMenuItem.Name = "exportToToolStripMenuItem";
+            this.exportToToolStripMenuItem.Size = new System.Drawing.Size(225, 22);
+            this.exportToToolStripMenuItem.Text = "Export to ...";
             // 
             // c2DGPIToolStripMenuItem
             // 
             this.c2DGPIToolStripMenuItem.Name = "c2DGPIToolStripMenuItem";
-            this.c2DGPIToolStripMenuItem.Size = new System.Drawing.Size(401, 22);
-            this.c2DGPIToolStripMenuItem.Text = "Export to GPI...";
+            this.c2DGPIToolStripMenuItem.Size = new System.Drawing.Size(430, 22);
+            this.c2DGPIToolStripMenuItem.Text = "... GPI (Garmin POI) ... [no: gpi_skip=true]";
             this.c2DGPIToolStripMenuItem.Click += new System.EventHandler(this.c2DGPIToolStripMenuItem_Click);
             // 
             // toolStripMenuItem50
             // 
             this.toolStripMenuItem50.Name = "toolStripMenuItem50";
-            this.toolStripMenuItem50.Size = new System.Drawing.Size(398, 6);
-            // 
-            // exportToToolStripMenuItem
-            // 
-            this.exportToToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.export2WPTnoIconsToolStripMenuItem,
-            this.exportToWPTToolStripMenuItem,
-            this.export2DatToolStripMenuItem,
-            this.export2GDBToolStripMenuItem});
-            this.exportToToolStripMenuItem.Name = "exportToToolStripMenuItem";
-            this.exportToToolStripMenuItem.Size = new System.Drawing.Size(401, 22);
-            this.exportToToolStripMenuItem.Text = "Export to ...";
+            this.toolStripMenuItem50.Size = new System.Drawing.Size(427, 6);
             // 
             // export2WPTnoIconsToolStripMenuItem
             // 
             this.export2WPTnoIconsToolStripMenuItem.Name = "export2WPTnoIconsToolStripMenuItem";
-            this.export2WPTnoIconsToolStripMenuItem.Size = new System.Drawing.Size(304, 22);
-            this.export2WPTnoIconsToolStripMenuItem.Text = "... WPT (no icons) ...";
+            this.export2WPTnoIconsToolStripMenuItem.Size = new System.Drawing.Size(430, 22);
+            this.export2WPTnoIconsToolStripMenuItem.Text = "... WPT (no icons) ... [no: wpt_skip=true]";
             this.export2WPTnoIconsToolStripMenuItem.Click += new System.EventHandler(this.export2WPTnoIconsToolStripMenuItem_Click);
             // 
             // exportToWPTToolStripMenuItem
             // 
             this.exportToWPTToolStripMenuItem.Name = "exportToWPTToolStripMenuItem";
-            this.exportToWPTToolStripMenuItem.Size = new System.Drawing.Size(304, 22);
-            this.exportToWPTToolStripMenuItem.Text = "... WPT (set symbols) ...";
+            this.exportToWPTToolStripMenuItem.Size = new System.Drawing.Size(430, 22);
+            this.exportToWPTToolStripMenuItem.Text = "... WPT (set symbols) ... [no: wpt_skip=true]";
             this.exportToWPTToolStripMenuItem.Click += new System.EventHandler(this.exportToWPTToolStripMenuItem_Click);
+            // 
+            // toolStripMenuItem53
+            // 
+            this.toolStripMenuItem53.Name = "toolStripMenuItem53";
+            this.toolStripMenuItem53.Size = new System.Drawing.Size(427, 6);
             // 
             // export2DatToolStripMenuItem
             // 
             this.export2DatToolStripMenuItem.Name = "export2DatToolStripMenuItem";
-            this.export2DatToolStripMenuItem.Size = new System.Drawing.Size(304, 22);
-            this.export2DatToolStripMenuItem.Text = "... DAT (favorites.dat) file for PROGOROD ...";
+            this.export2DatToolStripMenuItem.Size = new System.Drawing.Size(430, 22);
+            this.export2DatToolStripMenuItem.Text = "... DAT (favorites.dat) file for PROGOROD ... [no: progorod_skip=true]";
             this.export2DatToolStripMenuItem.Click += new System.EventHandler(this.export2DatToolStripMenuItem_Click);
+            // 
+            // toolStripMenuItem54
+            // 
+            this.toolStripMenuItem54.Name = "toolStripMenuItem54";
+            this.toolStripMenuItem54.Size = new System.Drawing.Size(427, 6);
             // 
             // export2GDBToolStripMenuItem
             // 
             this.export2GDBToolStripMenuItem.Name = "export2GDBToolStripMenuItem";
-            this.export2GDBToolStripMenuItem.Size = new System.Drawing.Size(304, 22);
-            this.export2GDBToolStripMenuItem.Text = "... GDB (Navitel .gdb) file for Navitel ...";
+            this.export2GDBToolStripMenuItem.Size = new System.Drawing.Size(430, 22);
+            this.export2GDBToolStripMenuItem.Text = "... GDB (Navitel .gdb) file for Navitel ... [no: navitel_skip=true]";
             this.export2GDBToolStripMenuItem.Click += new System.EventHandler(this.export2GDBToolStripMenuItem_Click);
             // 
-            // saveToCSVHTMLReportToolStripMenuItem
+            // convertToToolStripMenuItem
             // 
-            this.saveToCSVHTMLReportToolStripMenuItem.Name = "saveToCSVHTMLReportToolStripMenuItem";
-            this.saveToCSVHTMLReportToolStripMenuItem.Size = new System.Drawing.Size(401, 22);
-            this.saveToCSVHTMLReportToolStripMenuItem.Text = "Save to CSV/HTML Report ...";
-            this.saveToCSVHTMLReportToolStripMenuItem.Click += new System.EventHandler(this.saveToCSVHTMLReportToolStripMenuItem_Click);
-            // 
-            // toolStripMenuItem51
-            // 
-            this.toolStripMenuItem51.Name = "toolStripMenuItem51";
-            this.toolStripMenuItem51.Size = new System.Drawing.Size(398, 6);
+            this.convertToToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.convertToGarminPointsOfInterestsFileGPIToolStripMenuItem,
+            this.saveBTNG});
+            this.convertToToolStripMenuItem.Name = "convertToToolStripMenuItem";
+            this.convertToToolStripMenuItem.Size = new System.Drawing.Size(225, 22);
+            this.convertToToolStripMenuItem.Text = "Convert to ...";
             // 
             // convertToGarminPointsOfInterestsFileGPIToolStripMenuItem
             // 
@@ -1629,6 +1663,18 @@ namespace KMZRebuilder
             this.saveBTNG.Size = new System.Drawing.Size(401, 22);
             this.saveBTNG.Text = "Convert to Garmin XML project for GPI Creator...";
             this.saveBTNG.Click += new System.EventHandler(this.saveBTNG_Click);
+            // 
+            // toolStripMenuItem51
+            // 
+            this.toolStripMenuItem51.Name = "toolStripMenuItem51";
+            this.toolStripMenuItem51.Size = new System.Drawing.Size(222, 6);
+            // 
+            // saveToCSVHTMLReportToolStripMenuItem
+            // 
+            this.saveToCSVHTMLReportToolStripMenuItem.Name = "saveToCSVHTMLReportToolStripMenuItem";
+            this.saveToCSVHTMLReportToolStripMenuItem.Size = new System.Drawing.Size(225, 22);
+            this.saveToCSVHTMLReportToolStripMenuItem.Text = "Save to CSV/HTML Report ...";
+            this.saveToCSVHTMLReportToolStripMenuItem.Click += new System.EventHandler(this.saveToCSVHTMLReportToolStripMenuItem_Click);
             // 
             // contextMenuStrip4
             // 
@@ -1663,7 +1709,7 @@ namespace KMZRebuilder
             this.documentationToolStripMenuItem,
             this.pREFERENCESToolStripMenuItem});
             this.contextMenuStrip4.Name = "contextMenuStrip4";
-            this.contextMenuStrip4.Size = new System.Drawing.Size(418, 552);
+            this.contextMenuStrip4.Size = new System.Drawing.Size(418, 530);
             // 
             // tOOLSToolStripMenuItem
             // 
@@ -1982,6 +2028,18 @@ namespace KMZRebuilder
             this.gPICommentAddressContactHelpToolStripMenuItem.Size = new System.Drawing.Size(280, 22);
             this.gPICommentAddressContactHelpToolStripMenuItem.Text = "GPI Comment, Address, Contact Help ...";
             this.gPICommentAddressContactHelpToolStripMenuItem.Click += new System.EventHandler(this.gPICommentAddressContactHelpToolStripMenuItem_Click);
+            // 
+            // toolStripMenuItem52
+            // 
+            this.toolStripMenuItem52.Name = "toolStripMenuItem52";
+            this.toolStripMenuItem52.Size = new System.Drawing.Size(277, 6);
+            // 
+            // bchelpb
+            // 
+            this.bchelpb.Name = "bchelpb";
+            this.bchelpb.Size = new System.Drawing.Size(280, 22);
+            this.bchelpb.Text = "Command Line Syntax ...";
+            this.bchelpb.Click += new System.EventHandler(this.bchelpb_Click);
             // 
             // pREFERENCESToolStripMenuItem
             // 
@@ -2352,12 +2410,31 @@ namespace KMZRebuilder
             this.saveURLIcons.Text = "Save URL icons to KMZ";
             this.saveURLIcons.UseVisualStyleBackColor = true;
             // 
-            // bchelpb
+            // toolStripMenuItem38
             // 
-            this.bchelpb.Name = "bchelpb";
-            this.bchelpb.Size = new System.Drawing.Size(280, 22);
-            this.bchelpb.Text = "Command Line Syntax ...";
-            this.bchelpb.Click += new System.EventHandler(this.bchelpb_Click);
+            this.toolStripMenuItem38.Name = "toolStripMenuItem38";
+            this.toolStripMenuItem38.Size = new System.Drawing.Size(247, 6);
+            // 
+            // uncheckgpiskiptrueToolStripMenuItem
+            // 
+            this.uncheckgpiskiptrueToolStripMenuItem.Name = "uncheckgpiskiptrueToolStripMenuItem";
+            this.uncheckgpiskiptrueToolStripMenuItem.Size = new System.Drawing.Size(250, 22);
+            this.uncheckgpiskiptrueToolStripMenuItem.Text = "Uncheck [gpi_skip=true]";
+            this.uncheckgpiskiptrueToolStripMenuItem.Click += new System.EventHandler(this.uncheckgpiskiptrueToolStripMenuItem_Click);
+            // 
+            // uncheckprogorodskiptrueToolStripMenuItem
+            // 
+            this.uncheckprogorodskiptrueToolStripMenuItem.Name = "uncheckprogorodskiptrueToolStripMenuItem";
+            this.uncheckprogorodskiptrueToolStripMenuItem.Size = new System.Drawing.Size(250, 22);
+            this.uncheckprogorodskiptrueToolStripMenuItem.Text = "Uncheck [progorod_skip=true]";
+            this.uncheckprogorodskiptrueToolStripMenuItem.Click += new System.EventHandler(this.uncheckprogorodskiptrueToolStripMenuItem_Click);
+            // 
+            // unchecknavitelskiptrueToolStripMenuItem
+            // 
+            this.unchecknavitelskiptrueToolStripMenuItem.Name = "unchecknavitelskiptrueToolStripMenuItem";
+            this.unchecknavitelskiptrueToolStripMenuItem.Size = new System.Drawing.Size(250, 22);
+            this.unchecknavitelskiptrueToolStripMenuItem.Text = "Uncheck [navitel_skip=true]";
+            this.unchecknavitelskiptrueToolStripMenuItem.Click += new System.EventHandler(this.unchecknavitelskiptrueToolStripMenuItem_Click);
             // 
             // kmzLayers
             // 
@@ -2392,10 +2469,12 @@ namespace KMZRebuilder
             this.kmzFiles.DragDrop += new System.Windows.Forms.DragEventHandler(this.bgFiles_DragDrop);
             this.kmzFiles.DragEnter += new System.Windows.Forms.DragEventHandler(this.bgFiles_DragEnter);
             // 
-            // toolStripMenuItem52
+            // uncheckwptskiptrueToolStripMenuItem
             // 
-            this.toolStripMenuItem52.Name = "toolStripMenuItem52";
-            this.toolStripMenuItem52.Size = new System.Drawing.Size(277, 6);
+            this.uncheckwptskiptrueToolStripMenuItem.Name = "uncheckwptskiptrueToolStripMenuItem";
+            this.uncheckwptskiptrueToolStripMenuItem.Size = new System.Drawing.Size(250, 22);
+            this.uncheckwptskiptrueToolStripMenuItem.Text = "Uncheck [wpt_skip=true]";
+            this.uncheckwptskiptrueToolStripMenuItem.Click += new System.EventHandler(this.uncheckwptskiptrueToolStripMenuItem_Click);
             // 
             // KMZRebuilederForm
             // 
@@ -2470,7 +2549,6 @@ namespace KMZRebuilder
         private System.Windows.Forms.ToolStripMenuItem saveBtnKMZO;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem8;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem9;
-        private System.Windows.Forms.ToolStripMenuItem saveBTNG;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip4;
         private System.Windows.Forms.ToolStripMenuItem openFileAndConvertItToGarminXMLProjectForGPICreatorToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem openGarminXMLFileAndRenameLayersToolStripMenuItem;
@@ -2549,7 +2627,6 @@ namespace KMZRebuilder
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem30;
         private System.Windows.Forms.ToolStripMenuItem CFPBF;
         private System.Windows.Forms.ToolStripMenuItem sdfToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem convertToGarminPointsOfInterestsFileGPIToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem32;
         private System.Windows.Forms.ToolStripMenuItem navitelgdbFavoritescsvToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem saveLayerToGDBNavitelgdbFileForNavitelToolStripMenuItem;
@@ -2653,7 +2730,6 @@ namespace KMZRebuilder
         private System.Windows.Forms.ToolStripMenuItem checkWithPointsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem checkWithLinesToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem checkWithPolygonsToolStripMenuItem;
-        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem38;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem39;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem40;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem41;
@@ -2679,7 +2755,6 @@ namespace KMZRebuilder
         private System.Windows.Forms.ToolStripMenuItem getLayerCRCGPIToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem42;
         private System.Windows.Forms.ToolStripMenuItem compareLayersToolStripMenuItem;
-        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem45;
         private System.Windows.Forms.ToolStripMenuItem checkLayersWithSameNameButLessObjectsCountToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem checkLayersWithSameNameButMoreObjectsCountToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem unckeckLayersWithSameNamesToolStripMenuItem;
@@ -2696,11 +2771,8 @@ namespace KMZRebuilder
         private System.Windows.Forms.ToolStripMenuItem youCanSortByMouseWhenPressingAltToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem49;
         private System.Windows.Forms.ToolStripMenuItem pREFERENCESToolStripMenuItem;
-        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem51;
-        private System.Windows.Forms.ToolStripMenuItem c2DGPIToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem saveBtnGPIN;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem44;
-        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem50;
         private System.Windows.Forms.ToolStripMenuItem documentationToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem gPIAlertsHelpToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem sourcePathToolStripMenuItem;
@@ -2710,6 +2782,22 @@ namespace KMZRebuilder
         private System.Windows.Forms.ToolStripMenuItem gPICommentAddressContactHelpToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem bchelpb;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem52;
+        private System.Windows.Forms.ToolStripMenuItem c2DGPIToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem50;
+        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem53;
+        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem54;
+        private System.Windows.Forms.ToolStripMenuItem convertToToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem convertToGarminPointsOfInterestsFileGPIToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem saveBTNG;
+        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem51;
+        private System.Windows.Forms.ToolStripMenuItem checkLayersByRulesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem checkIfDescriptionContainsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem uncheckIfDescriptionContainsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem38;
+        private System.Windows.Forms.ToolStripMenuItem uncheckgpiskiptrueToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem uncheckprogorodskiptrueToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem unchecknavitelskiptrueToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem uncheckwptskiptrueToolStripMenuItem;
     }
 }
 

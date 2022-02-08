@@ -99,6 +99,11 @@ namespace KMZRebuilder
             MapIcons.InitZip(CurrentDirectory() + @"\mapicons\default.zip");
         }
 
+        private void AfterLoadPrefs()
+        {
+            convertToToolStripMenuItem.Visible = Properties.GetBoolValue("gpiwriter_hide_old_menus_items");
+        }
+
         public static void ConvertGPI2KMZ(string gpiFile, string kmzFile)
         {
             if (String.IsNullOrEmpty(gpiFile)) return;
@@ -764,6 +769,8 @@ namespace KMZRebuilder
                     if ((std != null) && (std.ChildNodes.Count > 0))
                         desc = std.ChildNodes[0].Value;
 
+                    if (desc.Contains("wpt_skip=true")) continue;
+
                     bool toTop = false;
                     if (!String.IsNullOrEmpty(desc))
                     {
@@ -954,10 +961,15 @@ namespace KMZRebuilder
 
         private string Save2KMZ(string filename, bool multilayers)
         {
-            return Save2KMZ(filename, multilayers, true);
+            return Save2KMZ(filename, multilayers, true, null);
         }
 
         private string Save2KMZ(string filename, bool multilayers, bool createArchive)
+        {
+            return Save2KMZ(filename, multilayers, createArchive, null);
+        }
+
+        private string Save2KMZ(string filename, bool multilayers, bool createArchive, string desc_filter_skip)
         {
             log.Text = "";           
 
@@ -991,11 +1003,11 @@ namespace KMZRebuilder
             int ttlpm = 0;
             for (int i = 0; i < kmzLayers.CheckedItems.Count; i++)
             {
+                bool skiplay = false;
+
                 KMLayer kml = (KMLayer)kmzLayers.CheckedItems[i];
                 CopySounds(kml.file, zdir);
                 XmlNode xn = kml.file.kmlDoc.SelectNodes("kml/Document/Folder")[kml.id];
-
-                ttlpm += kml.placemarks;
 
                 // remove names
                 if (!multilayers)
@@ -1003,8 +1015,25 @@ namespace KMZRebuilder
                     XmlNode nn = xn.SelectSingleNode("name");
                     if (nn != null) xn.RemoveChild(nn);
                     nn = xn.SelectSingleNode("description");
-                    if (nn != null) xn.RemoveChild(nn);
-                };                
+                    if (nn != null)
+                    {
+                        if (!String.IsNullOrEmpty(desc_filter_skip))
+                        {
+                            try
+                            {
+                                string description = nn.ChildNodes[0].Value;
+                                if (!String.IsNullOrEmpty(description))
+                                    if (description.Contains(desc_filter_skip))
+                                        skiplay = true;
+                            }
+                            catch { };
+                        };
+                        xn.RemoveChild(nn);
+                    };
+                };
+
+                if (skiplay) continue;
+                ttlpm += kml.placemarks;                         
 
                 // styles
                 {
@@ -1899,6 +1928,14 @@ namespace KMZRebuilder
             }
         }
 
+        private static string GetFolderDesc(XmlNode placemark)
+        {
+            string desc = "";
+            try { desc = placemark.ParentNode.SelectSingleNode("description").ChildNodes[0].Value; }
+            catch { return ""; };
+            return desc;
+        }
+
         private static void Save2GPIInt(string gpifile, KMFile kmfile, string proj_name, GPIReader.Add2LogProc Add2Log, Preferences Props)
         {
             GPIReader.LOCALE_LANGUAGE = Props["gpi_localization"].ToUpper();
@@ -1952,6 +1989,9 @@ namespace KMZRebuilder
                     try { desc = n.ParentNode.ParentNode.SelectSingleNode("description").ChildNodes[0].Value; }
                     catch { };
                     string[] ll = n.ChildNodes[0].Value.Split(new string[] { "," }, StringSplitOptions.None);
+
+                    if (GetFolderDesc(n.ParentNode.ParentNode).Contains("gpi_skip=true")) continue;
+                    if (desc.Contains("gpi_skip=true")) continue;
 
                     string styleUrl = "";
                     if (n.ParentNode.ParentNode.SelectSingleNode("styleUrl") != null) styleUrl = n.ParentNode.ParentNode.SelectSingleNode("styleUrl").ChildNodes[0].Value;
@@ -3564,6 +3604,8 @@ namespace KMZRebuilder
                         if ((std != null) && (std.ChildNodes.Count > 0))
                             desc = std.ChildNodes[0].Value;
 
+                        if (desc.Contains("wpt_skip=true")) continue;
+
                         bool toTop = false;
                         if (!String.IsNullOrEmpty(desc))
                         {
@@ -3760,7 +3802,10 @@ namespace KMZRebuilder
             export2DatToolStripMenuItem.Enabled = kmzLayers.CheckedIndices.Count > 0;
             export2GDBToolStripMenuItem.Enabled = kmzLayers.CheckedIndices.Count > 0;
             export2WPTnoIconsToolStripMenuItem.Enabled = kmzLayers.CheckedIndices.Count > 0;
+
+            convertToToolStripMenuItem.Visible = !Properties.GetBoolValue("gpiwriter_hide_old_menus_items");
             convertToGarminPointsOfInterestsFileGPIToolStripMenuItem.Enabled = saveBTNG.Enabled;
+
             c2DGPIToolStripMenuItem.Enabled = saveBTNG.Enabled;
         }
 
@@ -5465,6 +5510,8 @@ namespace KMZRebuilder
                         if ((std != null) && (std.ChildNodes.Count > 0))
                             desc = std.ChildNodes[0].Value;
 
+                        if (desc.Contains("progorod_skip=true")) continue;
+
                         ProGorodPOI.FavRecord rec = new ProGorodPOI.FavRecord();
                         rec.Name = name;                        
                         rec.Lat = double.Parse(llz[1].Replace("\r", "").Replace("\n", "").Replace(" ", ""), System.Globalization.CultureInfo.InvariantCulture);
@@ -6617,6 +6664,8 @@ namespace KMZRebuilder
                         if ((std != null) && (std.ChildNodes.Count > 0))
                             desc = std.ChildNodes[0].Value;
 
+                        if (desc.Contains("navitel_skip=true")) continue;
+
                         bool toTop = false;
                         if (!String.IsNullOrEmpty(desc))
                         {
@@ -7664,7 +7713,7 @@ namespace KMZRebuilder
         private void exportToWPTToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (kmzLayers.CheckedIndices.Count == 0) return;
-            string zdir = Save2KMZ(null, false, false);
+            string zdir = Save2KMZ(null, false, false, "wpt_skip=true");
             KMFile kf = KMFile.FromZDir(zdir);
             Export2WPT(kf.kmLayers[0]);
             ReloadOriginalFiles();
@@ -7673,7 +7722,7 @@ namespace KMZRebuilder
         private void export2DatToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (kmzLayers.CheckedIndices.Count == 0) return;
-            string zdir = Save2KMZ(null, false, false);
+            string zdir = Save2KMZ(null, false, false, "progorod_skip=true");
             KMFile kf = KMFile.FromZDir(zdir);
             Export2Dat(kf.kmLayers[0]);
             ReloadOriginalFiles();
@@ -7682,7 +7731,7 @@ namespace KMZRebuilder
         private void export2GDBToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (kmzLayers.CheckedIndices.Count == 0) return;
-            string zdir = Save2KMZ(null, false, false);
+            string zdir = Save2KMZ(null, false, false, "navitel_skip=true");
             KMFile kf = KMFile.FromZDir(zdir);
             Export2GDB(kf.kmLayers[0]);
             ReloadOriginalFiles();
@@ -7691,7 +7740,7 @@ namespace KMZRebuilder
         private void export2WPTnoIconsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (kmzLayers.CheckedIndices.Count == 0) return;
-            string zdir = Save2KMZ(null, false, false);
+            string zdir = Save2KMZ(null, false, false, "wpt_skip=true");
             KMFile kf = KMFile.FromZDir(zdir);
             Save2WPTNoIcons(kf.kmLayers[0]);
             ReloadOriginalFiles();
@@ -7699,9 +7748,11 @@ namespace KMZRebuilder
 
         private void HelpDesc_Click(object sender, EventArgs e)
         {
-            string help = "To Create GPI:\r\n";
-            help += "  gpi_name_<IMAGECRC>=<FULLNAME>\r\n";
-            help += "  gpi_subname_<IMAGECRC>=<SUBNAME>\r\n";
+            string help = "To Export GPI/WPT/DAT/GDB:\r\n";
+            help += "  gpi_skip=true\r\n";
+            help += "  wpt_skip=true\r\n";
+            help += "  navitel_skip=true\r\n";
+            help += "  progorod_skip=true\r\n";
             help += "\r\nFor Route Planner\r\n";
             help += "  route_planner_skip=true\r\n";
             help += "  route_planner_skip=false\r\n";
@@ -8540,6 +8591,67 @@ namespace KMZRebuilder
             helptext += "  MapPolygonCreator: /mpc\r\n\r\n";
             MessageBox.Show(helptext, "Command Line Syntax", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
+
+        private void SetLayersCheckByDescIf(string condition, bool check)
+        {
+            if (kmzLayers.Items.Count == 0) return;            
+            for (int i = 0; i < kmzLayers.Items.Count; i++)
+            {
+                KMLayer kml = (KMLayer)kmzLayers.Items[i];
+                XmlNode pmk = kml.file.kmlDoc.SelectNodes("kml/Document/Folder")[kml.id];
+                string description = "";
+                try
+                {
+                    description = pmk.SelectSingleNode("description").ChildNodes[0].Value;
+                    if (!String.IsNullOrEmpty(description))
+                        if (description.Contains(condition))
+                            kmzLayers.SetItemChecked(i, check);
+                }
+                catch { };
+            };
+        }
+      
+        private void checkIfDescriptionContainsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (kmzLayers.Items.Count == 0) return;       
+            string tc = "main=true";
+            if (InputBox("Check Layers", "If description contains text:", ref tc) != DialogResult.OK) return;
+            SetLayersCheckByDescIf(tc, true);
+        }
+
+        private void uncheckIfDescriptionContainsToolStripMenuItem_Click_1(object sender, EventArgs e)
+        {
+            if (kmzLayers.Items.Count == 0) return;
+            string tc = "main=true";
+            if (InputBox("Uncheck Layers", "If description contains text:", ref tc) != DialogResult.OK) return;
+            SetLayersCheckByDescIf(tc, false);
+        }
+
+        private void uncheckgpiskiptrueToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (kmzLayers.Items.Count == 0) return;
+            SetLayersCheckByDescIf("gpi_skip=true", false);
+        }
+
+        private void uncheckprogorodskiptrueToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (kmzLayers.Items.Count == 0) return;
+            SetLayersCheckByDescIf("progorod_skip=true", false);
+        }
+
+        private void unchecknavitelskiptrueToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (kmzLayers.Items.Count == 0) return;
+            SetLayersCheckByDescIf("navitel_skip=true", false);
+        }
+
+        private void uncheckwptskiptrueToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (kmzLayers.Items.Count == 0) return;
+            SetLayersCheckByDescIf("wpt_skip=true", false);
+        }
+
+
     }
 
     public class FilesListBox : CheckedListBox
@@ -10239,7 +10351,7 @@ namespace KMZRebuilder
             //List<string> types = new List<string>();
             //for (int i = 0; i < 20; i++) types.Add(((ProGorodPOI.TType)i).ToString());
 
-            FileStream fs = new FileStream(this.tmp_file_dir + "doc ", FileMode.Create, FileAccess.Write);
+            FileStream fs = new FileStream(this.tmp_file_dir + "doc.kml", FileMode.Create, FileAccess.Write);
             StreamWriter sw = new StreamWriter(fs, System.Text.Encoding.UTF8);
             sw.WriteLine("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
             sw.WriteLine("<kml>");
