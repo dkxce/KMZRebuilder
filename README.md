@@ -17,6 +17,12 @@ You can export result kmz file to HTML Map and upload it to your site.
 - Get Routes (dkxce & [OSRM](http://project-osrm.org/docs/v5.15.2/api/)).    
 - Import data from plugins.
 
+**Экспорт (и импорт) точек в навигаторы**:
+- Garmin
+- Navitel
+- Прогород
+- OziExplorer
+
 **GPI Import/Export**:
 - Multilanguage (EN or any latin, RU or any ciryllic)
 - Layers (Categories) & POIs 
