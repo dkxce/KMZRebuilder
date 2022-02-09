@@ -26,6 +26,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Serialization;
+using System.Runtime.InteropServices;
 
 namespace KMZRebuilder
 {
@@ -2349,6 +2350,10 @@ namespace KMZRebuilder
         /// </summary>
         public bool StoreOnlyLocalLangAddress = false;
         /// <summary>
+        ///     Convert Medias MP3 to Wav
+        /// </summary>
+        public bool MediasMP3toWav = false;
+        /// <summary>
         ///     By Default Alert in POI is on (if not specified)
         /// </summary>
         public bool DefaultAlertIsOn = true; // try is default
@@ -2449,6 +2454,10 @@ namespace KMZRebuilder
         public uint SavedTriggerDTBlocks { get { return savedTriggerDTBlocks; } }
         private uint savedTriggerDTs = 0;
         public uint SavedTriggerDTs { get { return savedTriggerDTs; } }
+        private double savedMediaDuration = 0;
+        public double SavedMediaDuration { get { return savedMediaDuration; } }
+        private long savedMediaLength = 0;
+        public long SavedMediaLength { get { return savedMediaLength; } }
         #endregion SavedCounters
 
         /// <summary>
@@ -2488,6 +2497,8 @@ namespace KMZRebuilder
         ///     Origin File Description
         /// </summary>
         public string Description;
+
+        private GPIReader.Add2LogProc Add2Log;
 
         /// <summary>
         ///     Clear All Added Data
@@ -2721,6 +2732,8 @@ namespace KMZRebuilder
             this.savedDescriptions = 0;
             this.savedImages = 0;
             this.savedMedias = 0;
+            this.savedMediaDuration = 0;
+            this.savedMediaLength = 0;
             this.savedPoints = 0;
             this.savedTriggerBlocks = 0;
             this.savedTriggerDTBlocks = 0;
@@ -2734,6 +2747,7 @@ namespace KMZRebuilder
         /// <param name="Add2Log">Add To Log Procedure</param>
         public void Save(string fileName)
         {
+            this.Add2Log = null;
             Save(fileName, null);
         }
         
@@ -2744,12 +2758,13 @@ namespace KMZRebuilder
         /// <param name="Add2Log">Add To Log Procedure</param>
         public void Save(string fileName, GPIReader.Add2LogProc Add2Log)
         {
+            this.Add2Log = Add2Log;
             ResetCounters();
 
             FileStream fs = new FileStream(fileName, FileMode.Create, FileAccess.Write);
             byte[] block;
-            if(Add2Log != null)
-                Add2Log(String.Format("Writing POI file, version {0:00}", this.formatVer));
+            if (this.Add2Log != null)
+                this.Add2Log(String.Format("Writing POI file, version {0:00}", this.formatVer));
             // Header0
             { 
                 block = Get00Header0Block().Data;
@@ -2764,16 +2779,19 @@ namespace KMZRebuilder
             {                
                 block = Get09POIGroupBlock().Data;
                 fs.Write(block, 0, block.Length);
-                if (Add2Log != null)
+                if (this.Add2Log != null)
                 {
-                    Add2Log(String.Format("Saved {0}/{1} POIs with {2} Images", this.savedPoints, this.TotalPoints, this.savedImages));
-                    Add2Log(String.Format(".. in {0} Cats & {1} Areas", this.savedCategories, this.savedAreas));
-                    Add2Log(String.Format(".. of {0} Bmps & {1} Medias", this.savedBitmaps, this.savedMedias));
-                    Add2Log(String.Format(".. w/ {0} addr, {1} cont, {2} comms, {3} descs", this.savedAddresses, this.savedContacts, this.savedComments, this.savedDescriptions));
-                    Add2Log(String.Format(".. w/ {0} alerts & {1} circles in {2} POIs", this.savedAlerts, this.savedCircles, this.savedCircleBlocks));
-                    Add2Log(String.Format(".. w/ {0} triggers:", this.savedTriggerBlocks));
-                    Add2Log(String.Format("....  - {0} bearings in {1} POIs", this.savedBearings, this.savedBearingBlocks));
-                    Add2Log(String.Format("....  - {0} dtimes in {1} POIs", this.savedTriggerDTs, this.savedTriggerDTBlocks));
+                    this.Add2Log(String.Format("Saved {0}/{1} POIs with {2} Images", this.savedPoints, this.TotalPoints, this.savedImages));
+                    this.Add2Log(String.Format(".. in {0} Cats & {1} Areas", this.savedCategories, this.savedAreas));
+                    if(this.savedMediaDuration > 0)
+                        this.Add2Log(String.Format(System.Globalization.CultureInfo.InvariantCulture, ".. of {0} Bmps & {1} Medias (Total {2:0.00} sec, {3})", this.savedBitmaps, this.savedMedias, this.savedMediaDuration, FileSizeAsString(this.savedMediaLength)));
+                    else
+                        this.Add2Log(String.Format(System.Globalization.CultureInfo.InvariantCulture, ".. of {0} Bmps & {1} Medias (Total {2})", this.savedBitmaps, this.savedMedias, FileSizeAsString(this.savedMediaLength)));
+                    this.Add2Log(String.Format(".. w/ {0} addr, {1} cont, {2} comms, {3} descs", this.savedAddresses, this.savedContacts, this.savedComments, this.savedDescriptions));
+                    this.Add2Log(String.Format(".. w/ {0} alerts & {1} circles in {2} POIs", this.savedAlerts, this.savedCircles, this.savedCircleBlocks));
+                    this.Add2Log(String.Format(".. w/ {0} triggers:", this.savedTriggerBlocks));
+                    this.Add2Log(String.Format("....  - {0} bearings in {1} POIs", this.savedBearings, this.savedBearingBlocks));
+                    this.Add2Log(String.Format("....  - {0} dtimes in {1} POIs", this.savedTriggerDTs, this.savedTriggerDTBlocks));
                 };
             };
             // Footer
@@ -2782,7 +2800,7 @@ namespace KMZRebuilder
                 fs.Write(block, 0, block.Length);
             };
             fs.Close();
-            if (Add2Log != null) Add2Log(String.Format("{0} writed",Path.GetFileName(fileName)));
+            if (this.Add2Log != null) this.Add2Log(String.Format("{0} writed", Path.GetFileName(fileName)));
         }
 
         /// <summary>
@@ -3509,16 +3527,20 @@ namespace KMZRebuilder
             fb.bType = 9;
             // Main
             {
+                if (this.Add2Log != null) this.Add2Log("Writing Waypoints ... ");
                 fb.MainData.AddRange(ToLString(String.IsNullOrEmpty(this.DataSource) ? "KMZRebuilder" : this.DataSource)); // POI Group Name
                 fb.MainData.AddRange(Get08MainAreaBlock().Data); // Main Area Block
             };
             // Extra
-            {
+            {                
                 // List Categories
-                for (int i = 0; i < Categories.Count; i++) fb.ExtraData.AddRange(Get07CatBlock(i).Data);
+                if (this.Add2Log != null) this.Add2Log("Writing Categories ... ");
+                for (int i = 0; i < Categories.Count; i++) fb.ExtraData.AddRange(Get07CatBlock(i).Data);                
                 // List Bitmaps
+                if (this.Add2Log != null) this.Add2Log("Writing Bitmaps ... ");
                 for (int i = 0; i < Styles.Count; i++) fb.ExtraData.AddRange(Get05BmpBlock(i).Data);
                 // List Media
+                if (this.Add2Log != null) this.Add2Log(String.Format("Writing Media {0}... ", this.MediasMP3toWav ? "(mp3->wav)" : ""));
                 for (int i = 0; i < MP3s.Count; i++) fb.ExtraData.AddRange(Get18MediaBlock(i).Data);
                 // Marker
                 fb.ExtraData.AddRange(Get18MarkerBlock().Data);
@@ -3675,7 +3697,7 @@ namespace KMZRebuilder
 
             try
             {
-                string fName = MP3s[medid].Trim(new char[] { '\r', '\n' });
+                string fName = MP3s[medid].Trim(new char[] { '\r', '\n' });                
                 FileInfo fi;
                 if (Path.IsPathRooted(fName))
                     fi = new FileInfo(fName);
@@ -3685,9 +3707,30 @@ namespace KMZRebuilder
                     fi = new FileInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, fName));
                 if (fi.Exists)
                 {
+                    WavHeader wHeader = null;
+                    string origin = fi.Name;
+
+                    string fExt = fi.Extension.ToLower();
+                    bool isTemp = false;
+                    if (this.MediasMP3toWav && (fExt == ".mp3"))
+                        isTemp = (wHeader = LameConvert(ref fi, ref fExt)) != null;
+                    if ((wHeader == null) && (fExt == ".wav"))
+                        wHeader = WavHeader.ReadHeader(fi.FullName);
+                    if (wHeader != null)
+                    {
+                        if (this.Add2Log != null)
+                            this.Add2Log(String.Format(System.Globalization.CultureInfo.InvariantCulture, "  saving {0:0.00} sec{1} from #{2} {3}", wHeader.Duration, isTemp ? " as wav" : "", medid + 1, origin));
+                        this.savedMediaDuration += wHeader.Duration;
+                    };
+                    if (fExt == ".mp3")
+                    {
+                        if (this.Add2Log != null)
+                            this.Add2Log(String.Format(System.Globalization.CultureInfo.InvariantCulture, "  saving {0} from #{1} {2}", FileSizeAsString(fi.Length), medid + 1, origin));
+                    };
+                    this.savedMediaLength += fi.Length;
                     { // MAIN DATA: 3 bytes
                         f18.MainData.AddRange(BitConverter.GetBytes((ushort)(medid + 1)));
-                        f18.MainData.Add(fi.Extension.ToLower() == ".wav" ? (byte)0 : (byte)1); // 0 - WAV, 1 - MP3
+                        f18.MainData.Add(fExt == ".wav" ? (byte)0 : (byte)1); // 0 - WAV, 1 - MP3
                     };
                     { // EXTRA DATA
                         long ttl_len = fi.Length + 4 + 2;
@@ -3700,10 +3743,60 @@ namespace KMZRebuilder
                         fs.Close();
                         f18.ExtraData.AddRange(fileData);
                     };
+                    if (isTemp)
+                        File.Delete(fi.FullName);
                 };
             }
             catch (Exception ex) { };
             return f18;
+        }
+
+        private string FileSizeAsString(long lengthOfFile)
+        {
+            string[] sizes = { "bytes", "KB", "MB", "GB" };
+            int j = 0;
+            while (lengthOfFile > 1024 && j < sizes.Length)
+            {
+                lengthOfFile = lengthOfFile / 1024;
+                j++;
+            };
+            return (lengthOfFile + " " + sizes[j]);
+        }
+
+        private WavHeader LameConvert(ref FileInfo fi, ref string fExt)
+        {
+            string lameDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Lame");
+            if (!Directory.Exists(lameDir)) return null;
+            
+            string relPath = fi.FullName.Remove(0, AppDomain.CurrentDomain.BaseDirectory.Length);
+            string tmpFile = Path.GetTempFileName();
+
+            System.Diagnostics.ProcessStartInfo psi = new System.Diagnostics.ProcessStartInfo();
+            psi.FileName = Path.Combine(lameDir, IntPtr.Size == 4 ? @"x86\lame.exe" : @"x64\lame.exe");
+            psi.WorkingDirectory = Path.GetDirectoryName(psi.FileName);
+            psi.Arguments = String.Format("--decode -m mono \"{0}\" \"{1}\"", @"..\..\" + relPath, tmpFile);
+            psi.CreateNoWindow = true;
+            psi.UseShellExecute = false;
+            try
+            {                
+                System.Diagnostics.Process proc = System.Diagnostics.Process.Start(psi);
+                proc.WaitForExit(90000);
+                if (File.Exists(tmpFile))
+                {
+                    WavHeader wh = WavHeader.ReadHeader(tmpFile);
+                    if ((wh.NumChannels == 1) && (wh.Duration >= 0.2))
+                    {
+                        fi = new FileInfo(tmpFile);
+                        fExt = ".wav";
+                        return wh;
+                    };
+                };
+            }
+            catch (Exception ex)
+            {
+                
+            };
+            return null;
         }
 
         private FileBlock Get18MarkerBlock() // 18
@@ -4108,4 +4201,43 @@ namespace KMZRebuilder
             return changed;
         }
     }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal class WavHeader
+    {
+        public UInt32 ChunkId;
+        public UInt32 ChunkSize;
+        public UInt32 Format;
+        public UInt32 Subchunk1Id;
+        public UInt32 Subchunk1Size;
+        public UInt16 AudioFormat;
+        public UInt16 NumChannels;
+        public UInt32 SampleRate;
+        public UInt32 ByteRate;
+        public UInt16 BlockAlign;
+        public UInt16 BitsPerSample;
+        public UInt32 Subchunk2Id;
+        public UInt32 Subchunk2Size;
+
+        public Double Duration { get { return 1.0 * Subchunk2Size / (BitsPerSample / 8.0) / NumChannels / SampleRate; } }
+
+        public static WavHeader ReadHeader(string fileName)
+        {
+            WavHeader header = new WavHeader();
+			int headerSize = Marshal.SizeOf(header);
+
+			FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.Read);
+			byte[] buffer = new byte[headerSize];
+			fs.Read(buffer, 0, headerSize);
+            fs.Close();
+			
+			IntPtr hPtr = Marshal.AllocHGlobal(headerSize);
+			Marshal.Copy(buffer, 0, hPtr, headerSize);
+			Marshal.PtrToStructure(hPtr, header);
+            Marshal.FreeHGlobal(hPtr);
+            
+            return header;
+        }
+    }
+
 }

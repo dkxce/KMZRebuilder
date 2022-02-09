@@ -134,13 +134,13 @@ namespace KMZRebuilder
             this.moveDownToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.checkLayersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.selectAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.selectNoneToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.invertSelectionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem39 = new System.Windows.Forms.ToolStripSeparator();
             this.checkOnlyWithPlacemarksToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.checkWithPointsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.checkWithLinesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.checkWithPolygonsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.selectNoneToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.invertSelectionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem40 = new System.Windows.Forms.ToolStripSeparator();
             this.checkLayersWithSameNameButLessObjectsCountToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.checkLayersWithSameNameButMoreObjectsCountToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -155,6 +155,11 @@ namespace KMZRebuilder
             this.checkLayersByRulesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.checkIfDescriptionContainsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.uncheckIfDescriptionContainsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripMenuItem38 = new System.Windows.Forms.ToolStripSeparator();
+            this.uncheckgpiskiptrueToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.uncheckwptskiptrueToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.uncheckprogorodskiptrueToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.unchecknavitelskiptrueToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripSeparator();
             this.addEmptyLayerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.deleteLayerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -264,6 +269,7 @@ namespace KMZRebuilder
             this.panel6 = new System.Windows.Forms.Panel();
             this.label7 = new System.Windows.Forms.Label();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.kmzFiles = new KMZRebuilder.FilesListBox();
             this.panel7 = new System.Windows.Forms.Panel();
             this.panel8 = new System.Windows.Forms.Panel();
             this.panel5 = new System.Windows.Forms.Panel();
@@ -278,6 +284,7 @@ namespace KMZRebuilder
             this.HelpDesc = new System.Windows.Forms.LinkLabel();
             this.panel13 = new System.Windows.Forms.Panel();
             this.panel9 = new System.Windows.Forms.Panel();
+            this.kmzLayers = new KMZRebuilder.LayersListBox();
             this.panel10 = new System.Windows.Forms.Panel();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.STT0 = new System.Windows.Forms.ToolStripStatusLabel();
@@ -293,13 +300,6 @@ namespace KMZRebuilder
             this.toolStripStatusLabel4 = new System.Windows.Forms.ToolStripStatusLabel();
             this.panel11 = new System.Windows.Forms.Panel();
             this.saveURLIcons = new System.Windows.Forms.CheckBox();
-            this.toolStripMenuItem38 = new System.Windows.Forms.ToolStripSeparator();
-            this.uncheckgpiskiptrueToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.uncheckprogorodskiptrueToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.unchecknavitelskiptrueToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.kmzLayers = new KMZRebuilder.LayersListBox();
-            this.kmzFiles = new KMZRebuilder.FilesListBox();
-            this.uncheckwptskiptrueToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuStrip1.SuspendLayout();
             this.contextMenuStrip2.SuspendLayout();
             this.panel1.SuspendLayout();
@@ -353,7 +353,7 @@ namespace KMZRebuilder
             this.toolStripMenuItem32,
             this.saveAsToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(296, 476);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(296, 498);
             this.contextMenuStrip1.Opening += new System.ComponentModel.CancelEventHandler(this.FilesMenu_Opening);
             // 
             // addFilesToolStripMenuItem
@@ -866,7 +866,7 @@ namespace KMZRebuilder
             this.toolStripMenuItem8,
             this.saveLayerToToolStripMenuItem});
             this.contextMenuStrip2.Name = "contextMenuStrip2";
-            this.contextMenuStrip2.Size = new System.Drawing.Size(448, 430);
+            this.contextMenuStrip2.Size = new System.Drawing.Size(448, 408);
             this.contextMenuStrip2.Text = "Split layer by Names and Save result to KMZ... (contains)";
             this.contextMenuStrip2.Opening += new System.ComponentModel.CancelEventHandler(this.LayersMenu_Opening);
             this.contextMenuStrip2.Closing += new System.Windows.Forms.ToolStripDropDownClosingEventHandler(this.contextMenuStrip2_Closing);
@@ -1151,6 +1151,20 @@ namespace KMZRebuilder
             this.selectAllToolStripMenuItem.Text = "Check All";
             this.selectAllToolStripMenuItem.Click += new System.EventHandler(this.SelectLayers_Click);
             // 
+            // selectNoneToolStripMenuItem
+            // 
+            this.selectNoneToolStripMenuItem.Name = "selectNoneToolStripMenuItem";
+            this.selectNoneToolStripMenuItem.Size = new System.Drawing.Size(416, 22);
+            this.selectNoneToolStripMenuItem.Text = "Check None";
+            this.selectNoneToolStripMenuItem.Click += new System.EventHandler(this.DeselectLayers_Click);
+            // 
+            // invertSelectionToolStripMenuItem
+            // 
+            this.invertSelectionToolStripMenuItem.Name = "invertSelectionToolStripMenuItem";
+            this.invertSelectionToolStripMenuItem.Size = new System.Drawing.Size(416, 22);
+            this.invertSelectionToolStripMenuItem.Text = "Invert Checking";
+            this.invertSelectionToolStripMenuItem.Click += new System.EventHandler(this.InvertLayers_Click);
+            // 
             // toolStripMenuItem39
             // 
             this.toolStripMenuItem39.Name = "toolStripMenuItem39";
@@ -1183,20 +1197,6 @@ namespace KMZRebuilder
             this.checkWithPolygonsToolStripMenuItem.Size = new System.Drawing.Size(416, 22);
             this.checkWithPolygonsToolStripMenuItem.Text = "Check with Polygons";
             this.checkWithPolygonsToolStripMenuItem.Click += new System.EventHandler(this.checkWithPolygonsToolStripMenuItem_Click);
-            // 
-            // selectNoneToolStripMenuItem
-            // 
-            this.selectNoneToolStripMenuItem.Name = "selectNoneToolStripMenuItem";
-            this.selectNoneToolStripMenuItem.Size = new System.Drawing.Size(416, 22);
-            this.selectNoneToolStripMenuItem.Text = "Check None";
-            this.selectNoneToolStripMenuItem.Click += new System.EventHandler(this.DeselectLayers_Click);
-            // 
-            // invertSelectionToolStripMenuItem
-            // 
-            this.invertSelectionToolStripMenuItem.Name = "invertSelectionToolStripMenuItem";
-            this.invertSelectionToolStripMenuItem.Size = new System.Drawing.Size(416, 22);
-            this.invertSelectionToolStripMenuItem.Text = "Invert Checking";
-            this.invertSelectionToolStripMenuItem.Click += new System.EventHandler(this.InvertLayers_Click);
             // 
             // toolStripMenuItem40
             // 
@@ -1296,6 +1296,39 @@ namespace KMZRebuilder
             this.uncheckIfDescriptionContainsToolStripMenuItem.Size = new System.Drawing.Size(250, 22);
             this.uncheckIfDescriptionContainsToolStripMenuItem.Text = "Uncheck if Description Contains ...";
             this.uncheckIfDescriptionContainsToolStripMenuItem.Click += new System.EventHandler(this.uncheckIfDescriptionContainsToolStripMenuItem_Click_1);
+            // 
+            // toolStripMenuItem38
+            // 
+            this.toolStripMenuItem38.Name = "toolStripMenuItem38";
+            this.toolStripMenuItem38.Size = new System.Drawing.Size(247, 6);
+            // 
+            // uncheckgpiskiptrueToolStripMenuItem
+            // 
+            this.uncheckgpiskiptrueToolStripMenuItem.Name = "uncheckgpiskiptrueToolStripMenuItem";
+            this.uncheckgpiskiptrueToolStripMenuItem.Size = new System.Drawing.Size(250, 22);
+            this.uncheckgpiskiptrueToolStripMenuItem.Text = "Uncheck [gpi_skip=true]";
+            this.uncheckgpiskiptrueToolStripMenuItem.Click += new System.EventHandler(this.uncheckgpiskiptrueToolStripMenuItem_Click);
+            // 
+            // uncheckwptskiptrueToolStripMenuItem
+            // 
+            this.uncheckwptskiptrueToolStripMenuItem.Name = "uncheckwptskiptrueToolStripMenuItem";
+            this.uncheckwptskiptrueToolStripMenuItem.Size = new System.Drawing.Size(250, 22);
+            this.uncheckwptskiptrueToolStripMenuItem.Text = "Uncheck [wpt_skip=true]";
+            this.uncheckwptskiptrueToolStripMenuItem.Click += new System.EventHandler(this.uncheckwptskiptrueToolStripMenuItem_Click);
+            // 
+            // uncheckprogorodskiptrueToolStripMenuItem
+            // 
+            this.uncheckprogorodskiptrueToolStripMenuItem.Name = "uncheckprogorodskiptrueToolStripMenuItem";
+            this.uncheckprogorodskiptrueToolStripMenuItem.Size = new System.Drawing.Size(250, 22);
+            this.uncheckprogorodskiptrueToolStripMenuItem.Text = "Uncheck [progorod_skip=true]";
+            this.uncheckprogorodskiptrueToolStripMenuItem.Click += new System.EventHandler(this.uncheckprogorodskiptrueToolStripMenuItem_Click);
+            // 
+            // unchecknavitelskiptrueToolStripMenuItem
+            // 
+            this.unchecknavitelskiptrueToolStripMenuItem.Name = "unchecknavitelskiptrueToolStripMenuItem";
+            this.unchecknavitelskiptrueToolStripMenuItem.Size = new System.Drawing.Size(250, 22);
+            this.unchecknavitelskiptrueToolStripMenuItem.Text = "Uncheck [navitel_skip=true]";
+            this.unchecknavitelskiptrueToolStripMenuItem.Click += new System.EventHandler(this.unchecknavitelskiptrueToolStripMenuItem_Click);
             // 
             // toolStripMenuItem2
             // 
@@ -2149,6 +2182,21 @@ namespace KMZRebuilder
             this.pictureBox1.TabStop = false;
             this.pictureBox1.Click += new System.EventHandler(this.pictureBox1_Click);
             // 
+            // kmzFiles
+            // 
+            this.kmzFiles.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.kmzFiles.ContextMenuStrip = this.contextMenuStrip1;
+            this.kmzFiles.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.kmzFiles.FormattingEnabled = true;
+            this.kmzFiles.Location = new System.Drawing.Point(12, 0);
+            this.kmzFiles.Name = "kmzFiles";
+            this.kmzFiles.Size = new System.Drawing.Size(867, 137);
+            this.kmzFiles.TabIndex = 38;
+            this.kmzFiles.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.kmzFiles_ItemCheck);
+            this.kmzFiles.Enter += new System.EventHandler(this.kmzFiles_Enter);
+            this.kmzFiles.DragDrop += new System.Windows.Forms.DragEventHandler(this.bgFiles_DragDrop);
+            this.kmzFiles.DragEnter += new System.Windows.Forms.DragEventHandler(this.bgFiles_DragEnter);
+            // 
             // panel7
             // 
             this.panel7.Dock = System.Windows.Forms.DockStyle.Left;
@@ -2291,6 +2339,24 @@ namespace KMZRebuilder
             this.panel9.Size = new System.Drawing.Size(892, 183);
             this.panel9.TabIndex = 27;
             // 
+            // kmzLayers
+            // 
+            this.kmzLayers.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.kmzLayers.ContextMenuStrip = this.contextMenuStrip2;
+            this.kmzLayers.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.kmzLayers.FormattingEnabled = true;
+            this.kmzLayers.Location = new System.Drawing.Point(12, 19);
+            this.kmzLayers.Margin = new System.Windows.Forms.Padding(3, 3, 3, 0);
+            this.kmzLayers.Name = "kmzLayers";
+            this.kmzLayers.Size = new System.Drawing.Size(867, 152);
+            this.kmzLayers.TabIndex = 8;
+            this.kmzLayers.MouseUp += new System.Windows.Forms.MouseEventHandler(this.kmzLayers_MouseUp);
+            this.kmzLayers.SelectedIndexChanged += new System.EventHandler(this.kmzLayers_SelectedIndexChanged);
+            this.kmzLayers.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.kmzLayers_ItemCheck);
+            this.kmzLayers.DragDrop += new System.Windows.Forms.DragEventHandler(this.bgFiles_DragDrop);
+            this.kmzLayers.MouseDown += new System.Windows.Forms.MouseEventHandler(this.kmzLayers_MouseDown);
+            this.kmzLayers.DragEnter += new System.Windows.Forms.DragEventHandler(this.bgFiles_DragEnter);
+            // 
             // panel10
             // 
             this.panel10.Controls.Add(this.statusStrip1);
@@ -2409,72 +2475,6 @@ namespace KMZRebuilder
             this.saveURLIcons.TabIndex = 18;
             this.saveURLIcons.Text = "Save URL icons to KMZ";
             this.saveURLIcons.UseVisualStyleBackColor = true;
-            // 
-            // toolStripMenuItem38
-            // 
-            this.toolStripMenuItem38.Name = "toolStripMenuItem38";
-            this.toolStripMenuItem38.Size = new System.Drawing.Size(247, 6);
-            // 
-            // uncheckgpiskiptrueToolStripMenuItem
-            // 
-            this.uncheckgpiskiptrueToolStripMenuItem.Name = "uncheckgpiskiptrueToolStripMenuItem";
-            this.uncheckgpiskiptrueToolStripMenuItem.Size = new System.Drawing.Size(250, 22);
-            this.uncheckgpiskiptrueToolStripMenuItem.Text = "Uncheck [gpi_skip=true]";
-            this.uncheckgpiskiptrueToolStripMenuItem.Click += new System.EventHandler(this.uncheckgpiskiptrueToolStripMenuItem_Click);
-            // 
-            // uncheckprogorodskiptrueToolStripMenuItem
-            // 
-            this.uncheckprogorodskiptrueToolStripMenuItem.Name = "uncheckprogorodskiptrueToolStripMenuItem";
-            this.uncheckprogorodskiptrueToolStripMenuItem.Size = new System.Drawing.Size(250, 22);
-            this.uncheckprogorodskiptrueToolStripMenuItem.Text = "Uncheck [progorod_skip=true]";
-            this.uncheckprogorodskiptrueToolStripMenuItem.Click += new System.EventHandler(this.uncheckprogorodskiptrueToolStripMenuItem_Click);
-            // 
-            // unchecknavitelskiptrueToolStripMenuItem
-            // 
-            this.unchecknavitelskiptrueToolStripMenuItem.Name = "unchecknavitelskiptrueToolStripMenuItem";
-            this.unchecknavitelskiptrueToolStripMenuItem.Size = new System.Drawing.Size(250, 22);
-            this.unchecknavitelskiptrueToolStripMenuItem.Text = "Uncheck [navitel_skip=true]";
-            this.unchecknavitelskiptrueToolStripMenuItem.Click += new System.EventHandler(this.unchecknavitelskiptrueToolStripMenuItem_Click);
-            // 
-            // kmzLayers
-            // 
-            this.kmzLayers.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.kmzLayers.ContextMenuStrip = this.contextMenuStrip2;
-            this.kmzLayers.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.kmzLayers.FormattingEnabled = true;
-            this.kmzLayers.Location = new System.Drawing.Point(12, 19);
-            this.kmzLayers.Margin = new System.Windows.Forms.Padding(3, 3, 3, 0);
-            this.kmzLayers.Name = "kmzLayers";
-            this.kmzLayers.Size = new System.Drawing.Size(867, 152);
-            this.kmzLayers.TabIndex = 8;
-            this.kmzLayers.MouseUp += new System.Windows.Forms.MouseEventHandler(this.kmzLayers_MouseUp);
-            this.kmzLayers.SelectedIndexChanged += new System.EventHandler(this.kmzLayers_SelectedIndexChanged);
-            this.kmzLayers.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.kmzLayers_ItemCheck);
-            this.kmzLayers.DragDrop += new System.Windows.Forms.DragEventHandler(this.bgFiles_DragDrop);
-            this.kmzLayers.MouseDown += new System.Windows.Forms.MouseEventHandler(this.kmzLayers_MouseDown);
-            this.kmzLayers.DragEnter += new System.Windows.Forms.DragEventHandler(this.bgFiles_DragEnter);
-            // 
-            // kmzFiles
-            // 
-            this.kmzFiles.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.kmzFiles.ContextMenuStrip = this.contextMenuStrip1;
-            this.kmzFiles.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.kmzFiles.FormattingEnabled = true;
-            this.kmzFiles.Location = new System.Drawing.Point(12, 0);
-            this.kmzFiles.Name = "kmzFiles";
-            this.kmzFiles.Size = new System.Drawing.Size(867, 137);
-            this.kmzFiles.TabIndex = 38;
-            this.kmzFiles.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.kmzFiles_ItemCheck);
-            this.kmzFiles.Enter += new System.EventHandler(this.kmzFiles_Enter);
-            this.kmzFiles.DragDrop += new System.Windows.Forms.DragEventHandler(this.bgFiles_DragDrop);
-            this.kmzFiles.DragEnter += new System.Windows.Forms.DragEventHandler(this.bgFiles_DragEnter);
-            // 
-            // uncheckwptskiptrueToolStripMenuItem
-            // 
-            this.uncheckwptskiptrueToolStripMenuItem.Name = "uncheckwptskiptrueToolStripMenuItem";
-            this.uncheckwptskiptrueToolStripMenuItem.Size = new System.Drawing.Size(250, 22);
-            this.uncheckwptskiptrueToolStripMenuItem.Text = "Uncheck [wpt_skip=true]";
-            this.uncheckwptskiptrueToolStripMenuItem.Click += new System.EventHandler(this.uncheckwptskiptrueToolStripMenuItem_Click);
             // 
             // KMZRebuilederForm
             // 

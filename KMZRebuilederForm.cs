@@ -1967,6 +1967,7 @@ namespace KMZRebuilder
             gw.DefaultAlertSound = Props["gpiwriter_default_alert_sound"];
             gw.TransColor = System.Drawing.ColorTranslator.FromHtml(Props["gpiwriter_image_transp_color"]);
             gw.AnalyzeOSMTags = Props.GetBoolValue("gpiwriter_analyze_osm_tags");
+            gw.MediasMP3toWav = Props.GetBoolValue("gpiwriter_convert_mp3_to_wav");
             byte.TryParse(Props["gpiwriter_image_max_side"], out gw.MaxImageSide);
             byte.TryParse(Props["gpiwriter_alert_datetime_maxcount"], out gw.MaxAlertDateTimeCount);
             

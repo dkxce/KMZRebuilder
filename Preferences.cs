@@ -85,7 +85,8 @@ namespace KMZRebuilder
             if (!this.Contains("gpiwriter_save_only_local_comm")) Properties.Add(new Property("gpiwriter_save_only_local_comm", "no", 1, "Save Comments only in local language"));
             if (!this.Contains("gpiwriter_save_only_local_desc")) Properties.Add(new Property("gpiwriter_save_only_local_desc", "no", 1, "Save Descriptions only in local language"));            
             if (!this.Contains("gpiwriter_alert_datetime_maxcount")) Properties.Add(new Property("gpiwriter_alert_datetime_maxcount", "16", 2, "Max Alert DateTime Triggers Count (1..32)", 1, 32));
-            if (!this.Contains("gpiwriter_hide_old_menus_items")) Properties.Add(new Property("gpiwriter_hide_old_menus_items", "yes", 1, "Hide Old (Convert to) Menu items", 1, 32));
+            if (!this.Contains("gpiwriter_hide_old_menus_items")) Properties.Add(new Property("gpiwriter_hide_old_menus_items", "yes", 1, "Hide Old (Convert to) Menu items"));
+            if (!this.Contains("gpiwriter_convert_mp3_to_wav")) Properties.Add(new Property("gpiwriter_convert_mp3_to_wav", "no", 1, "Convert mp3 files to wav (for medias)"));
             DefaultsIsLoaded = true;
         }
 
