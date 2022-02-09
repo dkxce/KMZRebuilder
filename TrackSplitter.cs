@@ -2194,7 +2194,7 @@ namespace KMZRebuilder
             ofd.Dispose();
             if (kmf.kmLayers.Count == 0) return;
 
-            Regex rx = new Regex(@"route_planner_(?<name>[^=]+)\s*=(?<value>[\S\s][^\r\n]+)", RegexOptions.IgnoreCase);
+            Regex rx = new Regex(@"route_planner_(?<name>[^=]+)\s*=(?<value>[^\r\n]+)", RegexOptions.IgnoreCase);
 
             // SELECT LAYERS
             GMLayRenamerForm sf = new GMLayRenamerForm();
@@ -2300,8 +2300,10 @@ namespace KMZRebuilder
                                     if ((mx.Groups["name"].Value.ToLower() == "skip") && (mx.Groups["value"].Value.ToLower() == "true")) todo = false;
                                     if ((mx.Groups["name"].Value.ToLower() == "skip") && (mx.Groups["value"].Value.ToLower() == "1")) todo = false;
                                     if ((mx.Groups["name"].Value.ToLower() == "skip") && (mx.Groups["value"].Value.ToLower() == "yes")) todo = false;
-                                    if ((mx.Groups["name"].Value.ToLower() == "delay") && (mx.Groups["value"].Value.ToLower() != "0")) int.TryParse(mx.Groups["value"].Value.ToLower(), out delay);
-                                    if ((mx.Groups["name"].Value.ToLower() == "speed") && (mx.Groups["value"].Value.ToLower() != "0")) int.TryParse(mx.Groups["value"].Value.ToLower(), out speed);
+                                    if ((mx.Groups["name"].Value.ToLower() == "delay") && (mx.Groups["value"].Value.ToLower() != "0")) 
+                                        int.TryParse(mx.Groups["value"].Value.ToLower(), out delay);
+                                    if ((mx.Groups["name"].Value.ToLower() == "speed") && (mx.Groups["value"].Value.ToLower() != "0")) 
+                                        int.TryParse(mx.Groups["value"].Value.ToLower(), out speed);
                                     if (mx.Groups["name"].Value.ToLower() == "doubled") bool.TryParse(mx.Groups["value"].Value.ToLower(), out doubled);
                                     if (mx.Groups["name"].Value.ToLower() == "json") json = mx.Groups["value"].Value;
                                     if ((mx.Groups["name"].Value.ToLower() == "source") && (mx.Groups["value"].Value.ToLower() == "route")) { todo = false; source = true; };
@@ -2879,7 +2881,7 @@ namespace KMZRebuilder
         {
             if (segView.Items.Count == 0) return;
             int dist = 3500;
-            if (InputBox.Show("Remove where Distance to Route is less than", "Distance to Route (in meters):", ref dist, 0, 300000) == DialogResult.OK)
+            if (InputBox.Show("Remove where Distance to Route is greater than", "Distance to Route (in meters):", ref dist, 0, 300000) == DialogResult.OK)
             {
                 for (int i = segmentsList.Count - 1; i >= 0 ; i--)
                     if (segmentsList[i].toline > dist) 

@@ -494,8 +494,8 @@ namespace KMZRebuilder
                 ofd.Filter = "Text Files (*.txt)|*.txt";
                 if (ofd.ShowDialog() == DialogResult.OK)
                 {
-                    Regex rxgpinn = new Regex(@"gpi_name_(?<crc>[^=]+)\s*=(?<name>[\S\s][^\r\n]+)", RegexOptions.IgnoreCase);
-                    Regex rxgpisn = new Regex(@"gpi_subname_(?<crc>[^=]+)\s*=(?<name>[\S\s][^\r\n]+)", RegexOptions.IgnoreCase);
+                    Regex rxgpinn = new Regex(@"gpi_name_(?<crc>[^=]+)\s*=(?<name>[^\r\n]+)", RegexOptions.IgnoreCase);
+                    Regex rxgpisn = new Regex(@"gpi_subname_(?<crc>[^=]+)\s*=(?<name>[^\r\n]+)", RegexOptions.IgnoreCase);
                     FileStream fs = new FileStream(ofd.FileName, FileMode.Open, FileAccess.Read);
                     StreamReader sr = new StreamReader(fs, true);
                     while (!sr.EndOfStream)

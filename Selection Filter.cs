@@ -662,19 +662,19 @@ namespace KMZRebuilder
 
         private void descriptionWebSiteToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            textBox1.Text = @"website=([\S\s][^\r\n]+)";
+            textBox1.Text = @"website=([^\r\n]+)";
             ApplyTo.SelectedIndex = 1;
         }
 
         private void descriptionEmailToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            textBox1.Text = @"email=([\S\s][^\r\n]+)";
+            textBox1.Text = @"email=([^\r\n]+)";
             ApplyTo.SelectedIndex = 1;
         }
 
         private void descriptionPhoneToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            textBox1.Text = @"phone=([\S\s][^\r\n]+)";
+            textBox1.Text = @"phone=([^\r\n]+)";
             ApplyTo.SelectedIndex = 1;
         }
     }

@@ -691,7 +691,7 @@ namespace KMZRebuilder
             // 
             this.map5.Name = "map5";
             this.map5.Size = new System.Drawing.Size(317, 22);
-            this.map5.Text = "Remove where Distance to Route is less than ...";
+            this.map5.Text = "Remove where Distance to Route is greater than ...";
             this.map5.Click += new System.EventHandler(this.map5_Click);
             // 
             // toolStripMenuItem11

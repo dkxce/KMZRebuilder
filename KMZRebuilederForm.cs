@@ -781,7 +781,7 @@ namespace KMZRebuilder
                         if (dtl.IndexOf("progorod_dat_office=yes") >= 0) toTop = true;
                         if (dtl.IndexOf("progorod_dat_office=1") >= 0) toTop = true;
                         if (dtl.IndexOf("progorod_dat_office=true") >= 0) toTop = true;
-                        dtl = (new Regex(@"[\w]+=[\S\s][^\r\n]+")).Replace(dtl, ""); // Remove TAGS
+                        dtl = (new Regex(@"[\w]+=[^\r\n]+")).Replace(dtl, ""); // Remove TAGS
                     };
                     
                     WPTPOI p = new WPTPOI();
@@ -2290,8 +2290,8 @@ namespace KMZRebuilder
                 };
             };
 
-            Regex rxgpisn = new Regex(@"gpi_subname_(?<crc>[^=]+)\s*=(?<name>[\S\s][^\r\n]+)", RegexOptions.IgnoreCase);
-            Regex rxgpinn = new Regex(@"gpi_name_(?<crc>[^=]+)\s*=(?<name>[\S\s][^\r\n]+)", RegexOptions.IgnoreCase);
+            Regex rxgpisn = new Regex(@"gpi_subname_(?<crc>[^=]+)\s*=(?<name>[^\r\n]+)", RegexOptions.IgnoreCase);
+            Regex rxgpinn = new Regex(@"gpi_name_(?<crc>[^=]+)\s*=(?<name>[^\r\n]+)", RegexOptions.IgnoreCase);
             AddToLog("Prepare Categories...");
             waitBox.Text = "Prepare Categories...";
             int cat_created = 0;
@@ -2669,8 +2669,8 @@ namespace KMZRebuilder
             };
             sw.WriteLine("\t\t</SymbolList>");
 
-            Regex rxgpisn = new Regex(@"gpi_subname_(?<crc>[^=]+)\s*=(?<name>[\S\s][^\r\n]+)", RegexOptions.IgnoreCase);
-            Regex rxgpinn = new Regex(@"gpi_name_(?<crc>[^=]+)\s*=(?<name>[\S\s][^\r\n]+)", RegexOptions.IgnoreCase);
+            Regex rxgpisn = new Regex(@"gpi_subname_(?<crc>[^=]+)\s*=(?<name>[^\r\n]+)", RegexOptions.IgnoreCase);
+            Regex rxgpinn = new Regex(@"gpi_name_(?<crc>[^=]+)\s*=(?<name>[^\r\n]+)", RegexOptions.IgnoreCase);
             AddToLog("Saving Symbols, Categories and POIs...");
             waitBox.Text = "Saving CategoryList...";
             int cat_created = 0;
@@ -3616,7 +3616,7 @@ namespace KMZRebuilder
                             if (dtl.IndexOf("progorod_dat_office=yes") >= 0) toTop = true;
                             if (dtl.IndexOf("progorod_dat_office=1") >= 0) toTop = true;
                             if (dtl.IndexOf("progorod_dat_office=true") >= 0) toTop = true;
-                            dtl = (new Regex(@"[\w]+=[\S\s][^\r\n]+")).Replace(dtl, ""); // Remove TAGS
+                            dtl = (new Regex(@"[\w]+=[^\r\n]+")).Replace(dtl, ""); // Remove TAGS
                         };
                         if (remd) desc = "";
 
@@ -5527,7 +5527,7 @@ namespace KMZRebuilder
                             if (dtl.IndexOf("progorod_dat_office=yes") >= 0) rec.HomeOffice = ProGorodPOI.THomeOffice.Office;
                             if (dtl.IndexOf("progorod_dat_office=1") >= 0) rec.HomeOffice = ProGorodPOI.THomeOffice.Office;
                             if (dtl.IndexOf("progorod_dat_office=true") >= 0) rec.HomeOffice = ProGorodPOI.THomeOffice.Office;
-                            dtl = (new Regex(@"[\w]+=[\S\s][^\r\n]+")).Replace(dtl, ""); // Remove TAGS
+                            dtl = (new Regex(@"[\w]+=[^\r\n]+")).Replace(dtl, ""); // Remove TAGS
                         };
                         if (remd) desc = "";
                         rec.Desc = desc;
@@ -6676,7 +6676,7 @@ namespace KMZRebuilder
                             if (dtl.IndexOf("progorod_dat_office=yes") >= 0) toTop = true;
                             if (dtl.IndexOf("progorod_dat_office=1") >= 0) toTop = true;
                             if (dtl.IndexOf("progorod_dat_office=true") >= 0) toTop = true;
-                            dtl = (new Regex(@"[\w]+=[\S\s][^\r\n]+")).Replace(dtl, ""); // Remove TAGS
+                            dtl = (new Regex(@"[\w]+=[^\r\n]+")).Replace(dtl, ""); // Remove TAGS
                         };
                         if (remd) desc = "";
 
@@ -7776,8 +7776,8 @@ namespace KMZRebuilder
             List<string> files = new List<string>();
             Dictionary<string, string> d4crc_names = new Dictionary<string, string>();
             Dictionary<string, string> d4crc_subnames = new Dictionary<string, string>();
-            Regex rxgpinn = new Regex(@"gpi_name_(?<crc>[^=]+)\s*=(?<name>[\S\s][^\r\n]+)", RegexOptions.IgnoreCase);
-            Regex rxgpisn = new Regex(@"gpi_subname_(?<crc>[^=]+)\s*=(?<name>[\S\s][^\r\n]+)", RegexOptions.IgnoreCase);
+            Regex rxgpinn = new Regex(@"gpi_name_(?<crc>[^=]+)\s*=(?<name>[^\r\n]+)", RegexOptions.IgnoreCase);
+            Regex rxgpisn = new Regex(@"gpi_subname_(?<crc>[^=]+)\s*=(?<name>[^\r\n]+)", RegexOptions.IgnoreCase);
             Regex rxgpiun = new Regex(@"gpi_(?:sub)?name_(?<crc>\d+)=", RegexOptions.IgnoreCase);
 
             if (layerId < 0)
