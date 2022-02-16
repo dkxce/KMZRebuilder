@@ -205,6 +205,7 @@ namespace KMZRebuilder
         {
             FileAss.SetFileAssociation("kmz", "KMZFile", "Open in KMZRebuilder", CurrentDirectory() + @"\KMZRebuilder.exe");
             FileAss.SetFileAssociation("kml", "KMLFile", "Open in KMZRebuilder", CurrentDirectory() + @"\KMZRebuilder.exe");
+            FileAss.SetFileAssociation("kmf", "KMZFile", "Open in KMZRebuilder", CurrentDirectory() + @"\KMZRebuilder.exe");
             FileAss.SetFileAssociation("wpt", "WPTFile", "Open in KMZRebuilder", CurrentDirectory() + @"\KMZRebuilder.exe");
             FileAss.SetFileAssociation("gpx", "GPXFile", "Open in KMZRebuilder", CurrentDirectory() + @"\KMZRebuilder.exe");
             FileAss.SetFileAssociation("gpi", "KMZFile", "Open in KMZRebuilder", CurrentDirectory() + @"\KMZRebuilder.exe");
@@ -273,7 +274,7 @@ namespace KMZRebuilder
         private void AddFiles_Click(object sender, EventArgs e)
         {
             OpenFileDialog ofd = new OpenFileDialog();
-            ofd.Filter = "Main Supported Files|*.kml;*.kmz;*.gpx;*.dat;*.wpt;*.db3;*.osm;*.gdb;*.fit;*.zip;*.rpp;*.dxml;*.gpi|KML Format (*.kml)|*.kml|KMZ Format (*.kmz)|*.kmz|GPX Exchange Format (*.gpx)|*.gpx|ProGorod Favorites.dat (*.dat)|*.dat|OziExplorer Waypoint File (*.wpt)|*.wpt|SASPlanet SQLite (*.db3)|*.db3|OSM Export File (*.osm)|*.osm|Navitel Waypoints (*.gdb)|*.gdb|Garmin Ant Fit (*.fit)|*.fit|Garmin POI (*.gpi)|*.gpi";
+            ofd.Filter = "Main Supported Files|*.kml;*.kmz;*.gpx;*.dat;*.wpt;*.db3;*.osm;*.gdb;*.fit;*.zip;*.rpp;*.dxml;*.gpi;*.kmf|KML Format (*.kml)|*.kml|KMZ Format (*.kmz)|*.kmz|GPX Exchange Format (*.gpx)|*.gpx|ProGorod Favorites.dat (*.dat)|*.dat|OziExplorer Waypoint File (*.wpt)|*.wpt|SASPlanet SQLite (*.db3)|*.db3|OSM Export File (*.osm)|*.osm|Navitel Waypoints (*.gdb)|*.gdb|Garmin Ant Fit (*.fit)|*.fit|Garmin POI (*.gpi)|*.gpi|KMZRebuilder Files List (*.kmf)|*.kmf";
             ofd.DefaultExt = ".kmz";
             ofd.Multiselect = true;
             if (ofd.ShowDialog() == DialogResult.OK) LoadFiles(ofd.FileNames);
@@ -332,6 +333,11 @@ namespace KMZRebuilder
                 };
 
             int c = kmzFiles.Items.Count;
+            if ((files.Length == 1) && ((Path.GetExtension(files[0]).ToLower() == ".kmf")))
+            {
+                OpenFilesInList(files[0]);
+                return;
+            };
             if ((files.Length == 1) && ((Path.GetExtension(files[0]).ToLower() == ".rpp")))
             {
                 waitBox.Show("Wait", "Loading map...");
@@ -3011,6 +3017,8 @@ namespace KMZRebuilder
                         
 
             CFPBF.Enabled = (File.Exists(CurrentDirectory() + @"\KMZPOIfromOSM.exe"));
+
+            savelistbtnm.Enabled = kmzFiles.Items.Count > 0;
 
             // NO ADD AFTER //
             reloadOriginalFileToolStripMenuItem.Text = "Reload Original file";
@@ -8652,7 +8660,124 @@ namespace KMZRebuilder
             SetLayersCheckByDescIf("wpt_skip=true", false);
         }
 
+        private void saveToFileToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (kmzFiles.Items.Count == 0) return;
+            SaveFileDialog sfd = new SaveFileDialog();
+            sfd.Title = "Save file list as";
+            sfd.DefaultExt = ".kmf";
+            sfd.Filter = "KMZRebuilder File List (*.kmf)|*.kmf";
+            try
+            {
+                sfd.FileName = (outName.Text.Length > 0 ? outName.Text : "File List") + ".kmf";
+            }
+            catch 
+            {
+                sfd.FileName = "File List.kmf";
+            };
+            string fn = null;
+            if (sfd.ShowDialog() == DialogResult.OK) fn = sfd.FileName;
+            sfd.Dispose();
+            if (String.IsNullOrEmpty(fn)) return;
+            SaveFilesInList(fn);
+        }
 
+        private void SaveFilesInList(string fileName)
+        {
+            if (kmzFiles.Items.Count == 0) return;
+            Directory.SetCurrentDirectory(Path.GetDirectoryName(fileName));
+            FileStream fs = new FileStream(fileName, FileMode.Create, FileAccess.Write);
+            StreamWriter sw = new StreamWriter(fs);
+            sw.WriteLine("[KMZRebuilder KMF File]");
+            sw.WriteLine("#Created " + DateTime.Now.ToString());
+            sw.WriteLine("@" + outName.Text);            
+            for (int i = 0; i < kmzFiles.Items.Count; i++)
+            {
+                KMFile kmf = (KMFile)kmzFiles.Items[i];
+                string fPath = Path.GetFullPath(kmf.src_file_pth);
+                string rPath = MakeRelativePath(fileName, fPath);
+                if(!String.IsNullOrEmpty(rPath)) sw.Write(rPath + " * " );
+                sw.WriteLine(fPath);
+                if (String.IsNullOrEmpty(fPath))
+                    sw.WriteLine(kmf.src_file_pth);
+            };
+            sw.Close();
+            fs.Close();
+        }
+
+        public static string MakeRelativePath(string fromPath, string toPath)
+        {
+            if (String.IsNullOrEmpty(fromPath)) return null;
+            if (String.IsNullOrEmpty(toPath)) return null;
+
+            try
+            {
+                Uri fromUri = new Uri(fromPath);
+                Uri toUri = new Uri(toPath);
+
+                if (fromUri.Scheme != toUri.Scheme) { return toPath; };
+
+                Uri relativeUri = fromUri.MakeRelativeUri(toUri);
+                String relativePath = Uri.UnescapeDataString(relativeUri.ToString());
+
+                if (toUri.Scheme.Equals("file", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    relativePath = relativePath.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
+                };
+
+                return relativePath;
+            }
+            catch { return null; };
+        }
+
+        private void OpenFilesInList(string fileName)
+        {
+            if (!File.Exists(fileName)) return;
+            Directory.SetCurrentDirectory(Path.GetDirectoryName(fileName));
+            FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.Read);
+            StreamReader sr = new StreamReader(fs);
+            List<string> fls = new List<string>();
+            string oName = "";
+            while (!sr.EndOfStream)
+            {
+                string line = sr.ReadLine();
+                if (String.IsNullOrEmpty(line)) continue;
+                if (line.StartsWith("[")) continue;
+                if (line.StartsWith("]")) continue;
+                if (line.StartsWith("{")) continue;
+                if (line.StartsWith("}")) continue;
+                if (line.StartsWith("?")) continue;
+                if (line.StartsWith("#")) continue;
+                if (line.StartsWith(";")) continue;
+                if (line.StartsWith("%")) continue;
+                if (line.StartsWith("^")) continue;
+                if (line.StartsWith("&")) continue;
+                if (line.StartsWith("*")) continue;
+                if (line.StartsWith("@")) { oName = line.Substring(1).Trim(); continue; };                
+
+                string[] ln = line.Split(new char[] { '*' }, StringSplitOptions.RemoveEmptyEntries);
+                if (ln == null) continue;
+                if (ln.Length == 0) continue;                
+                for (int i = 0; i < ln.Length; i++)
+                {
+                    line = ln[i].Trim();
+                    if (File.Exists(line))
+                    {
+                        line = Path.GetFullPath(line);
+                        fls.Add(line);
+                        i = ln.Length;
+                    };
+                };
+            };
+            sr.Close();
+            fs.Close();
+            if (fls.Count > 0)
+            {
+                LoadFiles(fls.ToArray());
+                if (!String.IsNullOrEmpty(oName))
+                    outName.Text = oName;
+            };
+        }
     }
 
     public class FilesListBox : CheckedListBox

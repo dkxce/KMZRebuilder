@@ -50,6 +50,7 @@ namespace KMZRebuilder
             this.CFPBF = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem43 = new System.Windows.Forms.ToolStripSeparator();
             this.openPluginsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.savelistbtnm = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem34 = new System.Windows.Forms.ToolStripSeparator();
             this.deleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.deleteCheckedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -269,7 +270,6 @@ namespace KMZRebuilder
             this.panel6 = new System.Windows.Forms.Panel();
             this.label7 = new System.Windows.Forms.Label();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.kmzFiles = new KMZRebuilder.FilesListBox();
             this.panel7 = new System.Windows.Forms.Panel();
             this.panel8 = new System.Windows.Forms.Panel();
             this.panel5 = new System.Windows.Forms.Panel();
@@ -284,7 +284,6 @@ namespace KMZRebuilder
             this.HelpDesc = new System.Windows.Forms.LinkLabel();
             this.panel13 = new System.Windows.Forms.Panel();
             this.panel9 = new System.Windows.Forms.Panel();
-            this.kmzLayers = new KMZRebuilder.LayersListBox();
             this.panel10 = new System.Windows.Forms.Panel();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.STT0 = new System.Windows.Forms.ToolStripStatusLabel();
@@ -300,6 +299,8 @@ namespace KMZRebuilder
             this.toolStripStatusLabel4 = new System.Windows.Forms.ToolStripStatusLabel();
             this.panel11 = new System.Windows.Forms.Panel();
             this.saveURLIcons = new System.Windows.Forms.CheckBox();
+            this.kmzLayers = new KMZRebuilder.LayersListBox();
+            this.kmzFiles = new KMZRebuilder.FilesListBox();
             this.contextMenuStrip1.SuspendLayout();
             this.contextMenuStrip2.SuspendLayout();
             this.panel1.SuspendLayout();
@@ -325,6 +326,7 @@ namespace KMZRebuilder
             // 
             this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.addFilesToolStripMenuItem,
+            this.savelistbtnm,
             this.MRU,
             this.importToolStripMenuItem,
             this.toolStripMenuItem34,
@@ -353,7 +355,7 @@ namespace KMZRebuilder
             this.toolStripMenuItem32,
             this.saveAsToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(296, 498);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(296, 520);
             this.contextMenuStrip1.Opening += new System.ComponentModel.CancelEventHandler(this.FilesMenu_Opening);
             // 
             // addFilesToolStripMenuItem
@@ -498,6 +500,13 @@ namespace KMZRebuilder
             this.openPluginsToolStripMenuItem.Name = "openPluginsToolStripMenuItem";
             this.openPluginsToolStripMenuItem.Size = new System.Drawing.Size(282, 22);
             this.openPluginsToolStripMenuItem.Text = "Import From Plugins ...";
+            // 
+            // savelistbtnm
+            // 
+            this.savelistbtnm.Name = "savelistbtnm";
+            this.savelistbtnm.Size = new System.Drawing.Size(295, 22);
+            this.savelistbtnm.Text = "Save List to file ...";
+            this.savelistbtnm.Click += new System.EventHandler(this.saveToFileToolStripMenuItem_Click);
             // 
             // toolStripMenuItem34
             // 
@@ -2182,21 +2191,6 @@ namespace KMZRebuilder
             this.pictureBox1.TabStop = false;
             this.pictureBox1.Click += new System.EventHandler(this.pictureBox1_Click);
             // 
-            // kmzFiles
-            // 
-            this.kmzFiles.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.kmzFiles.ContextMenuStrip = this.contextMenuStrip1;
-            this.kmzFiles.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.kmzFiles.FormattingEnabled = true;
-            this.kmzFiles.Location = new System.Drawing.Point(12, 0);
-            this.kmzFiles.Name = "kmzFiles";
-            this.kmzFiles.Size = new System.Drawing.Size(867, 137);
-            this.kmzFiles.TabIndex = 38;
-            this.kmzFiles.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.kmzFiles_ItemCheck);
-            this.kmzFiles.Enter += new System.EventHandler(this.kmzFiles_Enter);
-            this.kmzFiles.DragDrop += new System.Windows.Forms.DragEventHandler(this.bgFiles_DragDrop);
-            this.kmzFiles.DragEnter += new System.Windows.Forms.DragEventHandler(this.bgFiles_DragEnter);
-            // 
             // panel7
             // 
             this.panel7.Dock = System.Windows.Forms.DockStyle.Left;
@@ -2339,24 +2333,6 @@ namespace KMZRebuilder
             this.panel9.Size = new System.Drawing.Size(892, 183);
             this.panel9.TabIndex = 27;
             // 
-            // kmzLayers
-            // 
-            this.kmzLayers.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.kmzLayers.ContextMenuStrip = this.contextMenuStrip2;
-            this.kmzLayers.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.kmzLayers.FormattingEnabled = true;
-            this.kmzLayers.Location = new System.Drawing.Point(12, 19);
-            this.kmzLayers.Margin = new System.Windows.Forms.Padding(3, 3, 3, 0);
-            this.kmzLayers.Name = "kmzLayers";
-            this.kmzLayers.Size = new System.Drawing.Size(867, 152);
-            this.kmzLayers.TabIndex = 8;
-            this.kmzLayers.MouseUp += new System.Windows.Forms.MouseEventHandler(this.kmzLayers_MouseUp);
-            this.kmzLayers.SelectedIndexChanged += new System.EventHandler(this.kmzLayers_SelectedIndexChanged);
-            this.kmzLayers.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.kmzLayers_ItemCheck);
-            this.kmzLayers.DragDrop += new System.Windows.Forms.DragEventHandler(this.bgFiles_DragDrop);
-            this.kmzLayers.MouseDown += new System.Windows.Forms.MouseEventHandler(this.kmzLayers_MouseDown);
-            this.kmzLayers.DragEnter += new System.Windows.Forms.DragEventHandler(this.bgFiles_DragEnter);
-            // 
             // panel10
             // 
             this.panel10.Controls.Add(this.statusStrip1);
@@ -2475,6 +2451,39 @@ namespace KMZRebuilder
             this.saveURLIcons.TabIndex = 18;
             this.saveURLIcons.Text = "Save URL icons to KMZ";
             this.saveURLIcons.UseVisualStyleBackColor = true;
+            // 
+            // kmzLayers
+            // 
+            this.kmzLayers.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.kmzLayers.ContextMenuStrip = this.contextMenuStrip2;
+            this.kmzLayers.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.kmzLayers.FormattingEnabled = true;
+            this.kmzLayers.Location = new System.Drawing.Point(12, 19);
+            this.kmzLayers.Margin = new System.Windows.Forms.Padding(3, 3, 3, 0);
+            this.kmzLayers.Name = "kmzLayers";
+            this.kmzLayers.Size = new System.Drawing.Size(867, 152);
+            this.kmzLayers.TabIndex = 8;
+            this.kmzLayers.MouseUp += new System.Windows.Forms.MouseEventHandler(this.kmzLayers_MouseUp);
+            this.kmzLayers.SelectedIndexChanged += new System.EventHandler(this.kmzLayers_SelectedIndexChanged);
+            this.kmzLayers.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.kmzLayers_ItemCheck);
+            this.kmzLayers.DragDrop += new System.Windows.Forms.DragEventHandler(this.bgFiles_DragDrop);
+            this.kmzLayers.MouseDown += new System.Windows.Forms.MouseEventHandler(this.kmzLayers_MouseDown);
+            this.kmzLayers.DragEnter += new System.Windows.Forms.DragEventHandler(this.bgFiles_DragEnter);
+            // 
+            // kmzFiles
+            // 
+            this.kmzFiles.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.kmzFiles.ContextMenuStrip = this.contextMenuStrip1;
+            this.kmzFiles.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.kmzFiles.FormattingEnabled = true;
+            this.kmzFiles.Location = new System.Drawing.Point(12, 0);
+            this.kmzFiles.Name = "kmzFiles";
+            this.kmzFiles.Size = new System.Drawing.Size(867, 137);
+            this.kmzFiles.TabIndex = 38;
+            this.kmzFiles.ItemCheck += new System.Windows.Forms.ItemCheckEventHandler(this.kmzFiles_ItemCheck);
+            this.kmzFiles.Enter += new System.EventHandler(this.kmzFiles_Enter);
+            this.kmzFiles.DragDrop += new System.Windows.Forms.DragEventHandler(this.bgFiles_DragDrop);
+            this.kmzFiles.DragEnter += new System.Windows.Forms.DragEventHandler(this.bgFiles_DragEnter);
             // 
             // KMZRebuilederForm
             // 
@@ -2798,6 +2807,7 @@ namespace KMZRebuilder
         private System.Windows.Forms.ToolStripMenuItem uncheckprogorodskiptrueToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem unchecknavitelskiptrueToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem uncheckwptskiptrueToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem savelistbtnm;
     }
 }
 
