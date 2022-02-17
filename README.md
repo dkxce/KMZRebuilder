@@ -1,5 +1,9 @@
 # KMZ Rebuilder
 
+[English](https://github.com/dkxce/KMZRebuilder#EN) | [Русский](https://github.com/dkxce/KMZRebuilder#RU)
+
+## EN
+
 **KMZRebuilder** is a powerfull tool thats allow to create/edit/manage/split/merge/import/export/explore/sort yours POI.    
 Working with points, polylines and polygons. You can filter POI by text, routes/tracks, polylines or geozones/polygons/areas.    
 
@@ -17,12 +21,6 @@ You can export result kmz file to HTML Map and upload it to your site.
 - Get Routes (dkxce & [OSRM](http://project-osrm.org/docs/v5.15.2/api/)).    
 - Import data from plugins.
 
-**Экспорт (и импорт) точек в навигаторы**:
-- Garmin
-- Navitel
-- Прогород
-- OziExplorer
-
 **GPI Import/Export**:
 - Multilanguage (EN or any latin, RU or any ciryllic)
 - Layers (Categories) & POIs 
@@ -39,7 +37,48 @@ You can export result kmz file to HTML Map and upload it to your site.
 
 You can use result files in [KMZViewer](https://github.com/dkxce/KMZViewer), [OruxMaps](http://oruxmaps.com), [Google Maps](https://www.google.com/maps/d/), [SASPlanet](http://www.sasgis.org/sasplaneta/) and more others...
 
-KMZRebuilder - мощная программа для работы с KMZ/KML файлами. Импорт/экспорт/создание/редактирование ваших точек интереса в одном удобном интерфейсе. Подключение внешних тайлов и импорт из других форматов. Работа со слоями. Экспорт точек в навигаторы. Обработка треков, полилиний, полигонов и прочие возможности. 
+## RU
+
+**KMZRebuilder** - мощная программа для работы с KMZ/KML/GPI файлами. Импорт/экспорт/создание/редактирование ваших точек интереса в одном удобном интерфейсе. Подключение внешних тайлов и импорт из других форматов. Работа со слоями. Экспорт точек в навигаторы. Обработка треков, полилиний, полигонов и прочие возможности. 
+
+Открывает файлы, сохраненные в [Google Maps](https://www.google.com/maps/d/), [SASPlanet](http://www.sasgis.org/sasplaneta/).       
+Отображает вложенные в файл (kmz) картинки и картинки по url.      
+Отсутствует прямое ограничение на количество отображаемых объектов.      
+
+Повзоляет фильтровать, сортировать, изменять объекты.    
+Поддерживает точки, полигоны, линии и значки.      
+Поддерживает отображение точек из файлов GPI (Garmin Points of Interests).    
+
+Умеет сохранять данные в KMZ, CSV, HTML, RTF, WPT, Progorod, GPI.     
+
+Поддерживает визуализацию маршрутов dkxce Route Engine и [OSRM](http://project-osrm.org/docs/v5.15.2/api/).     
+
+Работает с OSM тайлами, Google, Ovi, Here, Kosmosnimki.
+Пожжерживат пользовательские тайлы.
+Возможность загружать тайлы с произвольных серверов.
+Умеет работать с кэшем SAS.Планета.
+Умеет работать с тайлами, сохранеными на диске.
+
+**Экспорт (и импорт) точек в навигаторы**:
+- Garmin
+- Navitel
+- Прогород
+- OziExplorer
+- OruxMaps
+- Locus
+
+**Полноценная поддержка GPI файлов**:
+- Multilanguage (EN or any latin, RU or any ciryllic)
+- Категории объектов (Layers (Categories))
+- Точки интересов (POI)
+- Примечания (POI Description)
+- Комментарии (POI Comment (load/save from/to desc))
+- Адресная информация (POI Address (load/save from/to desc))
+- Контактная информация (POI Contact (load/save from/to desc))
+- Предупреждения (POI Alert (load/save from/to desc)) со звуками и установками срабатывания      
+- Голосовые предупреждения     
+- Иконки (POI Bitmap (get/set from/to kml style))
+- Картинки (POI Image (get/set from/to kml style))
 
 [KMZ files Repository](https://github.com/dkxce/KMZ_FILES)     
 [Репозиторий KMZ файлов](https://github.com/dkxce/KMZ_FILES)    
